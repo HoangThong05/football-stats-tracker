@@ -43,6 +43,7 @@ public class StandingsService {
         return total.table().stream()
                 .map(e -> new StandingRow(
                         e.position(),
+                        e.team().id(),
                         e.team().name(),
                         e.team().crest(),
                         e.playedGames(),

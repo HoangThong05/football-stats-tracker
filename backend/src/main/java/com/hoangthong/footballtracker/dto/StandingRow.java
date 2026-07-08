@@ -6,6 +6,7 @@ package com.hoangthong.footballtracker.dto;
  */
 public record StandingRow(
         int position,
+        long teamId,
         String teamName,
         String crest,
         int playedGames,

@@ -17,10 +17,12 @@ import java.time.Duration;
 public class CacheConfig {
 
     public static final String STANDINGS_CACHE = "standings";
+    public static final String MATCHES_CACHE = "matches";
+    public static final String TEAMS_CACHE = "teams";
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager manager = new CaffeineCacheManager(STANDINGS_CACHE);
+        CaffeineCacheManager manager = new CaffeineCacheManager(STANDINGS_CACHE, MATCHES_CACHE, TEAMS_CACHE);
         manager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(Duration.ofMinutes(5))
                 .maximumSize(50));
