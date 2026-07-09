@@ -15,11 +15,13 @@ const VIEWS = [
   { key: 'standings', name: 'Bảng xếp hạng' },
   { key: 'upcoming', name: 'Lịch thi đấu' },
   { key: 'results', name: 'Kết quả' },
+  { key: 'scorers', name: 'Vua phá lưới' },
 ]
 
 // view -> đường dẫn API tương ứng
 function endpointFor(view, league) {
   if (view === 'standings') return `${API_BASE}/standings/${league}`
+  if (view === 'scorers') return `${API_BASE}/scorers/${league}`
   return `${API_BASE}/matches/${league}/${view}`
 }
 
@@ -181,7 +183,10 @@ export default function App() {
           {!loading && !error && view === 'standings' && (
             <StandingsTable rows={data} onSelectTeam={setSelectedTeamId} />
           )}
-          {!loading && !error && view !== 'standings' && (
+          {!loading && !error && view === 'scorers' && (
+            <ScorersTable scorers={data} onSelectTeam={setSelectedTeamId} />
+          )}
+          {!loading && !error && (view === 'upcoming' || view === 'results') && (
             <MatchList matches={data} showScore={view === 'results'} />
           )}
         </>
@@ -340,6 +345,53 @@ function StandingsTable({ rows, onSelectTeam }) {
               <td className="text-center">{r.goalsAgainst}</td>
               <td className="text-center">{r.goalDifference}</td>
               <td className="text-center fw-bold">{r.points}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function ScorersTable({ scorers, onSelectTeam }) {
+  if (scorers.length === 0) {
+    return <div className="alert alert-secondary">Chưa có dữ liệu vua phá lưới cho giải này.</div>
+  }
+
+  return (
+    <div className="table-responsive">
+      <table className="table table-hover align-middle">
+        <thead className="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Cầu thủ</th>
+            <th>Đội</th>
+            <th className="text-center">Trận</th>
+            <th className="text-center">⚽ Bàn</th>
+            <th className="text-center">Kiến tạo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {scorers.map((s) => (
+            <tr key={s.playerId}>
+              <td>{s.rank}</td>
+              <td>
+                <div className="fw-medium">{s.playerName}</div>
+                {s.nationality && <div className="text-muted small">{s.nationality}</div>}
+              </td>
+              <td>
+                <div
+                  className="d-flex align-items-center gap-2"
+                  role="button"
+                  onClick={() => onSelectTeam(s.teamId)}
+                >
+                  {s.teamCrest && <img src={s.teamCrest} alt="" width="20" height="20" />}
+                  <span>{s.teamName}</span>
+                </div>
+              </td>
+              <td className="text-center">{s.playedMatches ?? '—'}</td>
+              <td className="text-center fw-bold">{s.goals ?? '—'}</td>
+              <td className="text-center">{s.assists ?? '—'}</td>
             </tr>
           ))}
         </tbody>

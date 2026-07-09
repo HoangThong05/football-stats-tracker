@@ -1,6 +1,7 @@
 package com.hoangthong.footballtracker.client;
 
 import com.hoangthong.footballtracker.client.dto.MatchesApiResponse;
+import com.hoangthong.footballtracker.client.dto.ScorersApiResponse;
 import com.hoangthong.footballtracker.client.dto.StandingsApiResponse;
 import com.hoangthong.footballtracker.client.dto.TeamApiResponse;
 import org.springframework.stereotype.Component;
@@ -48,5 +49,12 @@ public class FootballDataClient {
                 .uri("/teams/{id}", teamId)
                 .retrieve()
                 .body(TeamApiResponse.class);
+    }
+
+    public ScorersApiResponse getScorers(String competitionCode) {
+        return restClient.get()
+                .uri("/competitions/{code}/scorers", competitionCode)
+                .retrieve()
+                .body(ScorersApiResponse.class);
     }
 }
