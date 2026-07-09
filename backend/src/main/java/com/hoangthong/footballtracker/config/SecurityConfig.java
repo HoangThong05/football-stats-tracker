@@ -38,6 +38,11 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // "/error": noi Spring forward request toi khi mot controller nem
+                        // ResponseStatusException (vd sai mat khau -> 401). Neu khong permitAll o day,
+                        // request forward se bi chinh Security chan lai (chua dang nhap) -> tra ve
+                        // 403 rong thay vi ma loi that su (401 kem thong bao).
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/standings/**", "/api/matches/**", "/api/teams/**", "/api/scorers/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()

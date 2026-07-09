@@ -287,13 +287,30 @@ function AuthPanel({ onSuccess }) {
   const [mode, setMode] = useState('login') // 'login' | 'register'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [forgotHint, setForgotHint] = useState(false)
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
 
+  const switchMode = (next) => {
+    setMode(next)
+    setError(null)
+    setConfirmPassword('')
+    setForgotHint(false)
+  }
+
   const submit = (e) => {
     e.preventDefault()
-    setSubmitting(true)
     setError(null)
+
+    if (mode === 'register' && password !== confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp.')
+      return
+    }
+
+    setSubmitting(true)
 
     fetch(`${API_BASE}/auth/${mode === 'login' ? 'login' : 'register'}`, {
       method: 'POST',
@@ -313,48 +330,126 @@ function AuthPanel({ onSuccess }) {
   }
 
   return (
-    <div className="ft-card p-4" style={{ maxWidth: 380 }}>
-      <div className="ft-view-tabs w-100 mb-3">
-        <button
-          type="button"
-          className={mode === 'login' ? 'btn btn-sm active flex-fill' : 'btn btn-sm flex-fill'}
-          onClick={() => setMode('login')}
+    <div className="ft-card p-4" style={{ maxWidth: 400 }}>
+      <div className="text-center mb-4">
+        <div
+          className="d-inline-flex align-items-center justify-content-center rounded-circle mb-2"
+          style={{ width: 56, height: 56, background: 'var(--ft-accent-soft)', fontSize: '1.6rem' }}
         >
-          Đăng nhập
-        </button>
-        <button
-          type="button"
-          className={mode === 'register' ? 'btn btn-sm active flex-fill' : 'btn btn-sm flex-fill'}
-          onClick={() => setMode('register')}
-        >
-          Đăng ký
-        </button>
+          {mode === 'login' ? '👋' : '🎉'}
+        </div>
+        <h4 className="fw-bold mb-1">{mode === 'login' ? 'Chào mừng trở lại' : 'Tạo tài khoản mới'}</h4>
+        <p className="text-secondary small mb-0">
+          {mode === 'login'
+            ? 'Đăng nhập để tiếp tục theo dõi đội bóng yêu thích của bạn.'
+            : 'Miễn phí — chỉ mất 30 giây để bắt đầu theo dõi đội yêu thích.'}
+        </p>
       </div>
 
-      <form onSubmit={submit} className="d-flex flex-column gap-2">
-        <input
-          type="email"
-          className="form-control"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          className="form-control"
-          placeholder="Mật khẩu (tối thiểu 6 ký tự)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-        />
-        <button type="submit" className="btn btn-success" disabled={submitting}>
-          {submitting ? 'Đang xử lý...' : mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
-        </button>
+      <form onSubmit={submit} className="d-flex flex-column gap-3">
+        <div>
+          <label className="form-label small fw-medium">Email</label>
+          <input
+            type="email"
+            className="form-control"
+            placeholder="ban@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoFocus
+          />
+        </div>
+
+        <div>
+          <div className="d-flex justify-content-between align-items-center">
+            <label className="form-label small fw-medium mb-1">Mật khẩu</label>
+            {mode === 'login' && (
+              <button
+                type="button"
+                className="btn btn-link btn-sm p-0 small mb-1"
+                onClick={() => setForgotHint(true)}
+              >
+                Quên mật khẩu?
+              </button>
+            )}
+          </div>
+          <div className="input-group">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              className="form-control"
+              placeholder={mode === 'register' ? 'Tối thiểu 6 ký tự' : 'Mật khẩu của bạn'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              tabIndex={-1}
+              onClick={() => setShowPassword((v) => !v)}
+              title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+            >
+              {showPassword ? '🙈' : '👁️'}
+            </button>
+          </div>
+          {forgotHint && (
+            <div className="form-text text-warning-emphasis">
+              Tính năng khôi phục mật khẩu đang được phát triển. Liên hệ quản trị viên để được hỗ trợ.
+            </div>
+          )}
+        </div>
+
+        {mode === 'register' && (
+          <div>
+            <label className="form-label small fw-medium">Xác nhận mật khẩu</label>
+            <div className="input-group">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                className="form-control"
+                placeholder="Nhập lại mật khẩu"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                tabIndex={-1}
+                onClick={() => setShowConfirmPassword((v) => !v)}
+                title={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+              >
+                {showConfirmPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {error && <div className="alert alert-danger py-2 mb-0 small">{error}</div>}
+
+        <button type="submit" className="btn btn-success w-100 fw-semibold py-2" disabled={submitting}>
+          {submitting ? 'Đang xử lý...' : mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản miễn phí'}
+        </button>
       </form>
+
+      <div className="text-center small mt-3">
+        {mode === 'login' ? (
+          <>
+            <span className="text-secondary">Chưa có tài khoản? </span>
+            <button type="button" className="btn btn-link btn-sm p-0" onClick={() => switchMode('register')}>
+              Đăng ký ngay
+            </button>
+          </>
+        ) : (
+          <>
+            <span className="text-secondary">Đã có tài khoản? </span>
+            <button type="button" className="btn btn-link btn-sm p-0" onClick={() => switchMode('login')}>
+              Đăng nhập
+            </button>
+          </>
+        )}
+      </div>
     </div>
   )
 }
