@@ -1,5 +1,10 @@
+/* Nen sang mac dinh; khi bat dark mode Bootstrap dat data-bs-theme="dark" tren <html> */
 body {
   background: #f4f6fb;
+}
+
+[data-bs-theme='dark'] body {
+  background: #14171a;
 }
 
 /* Bootstrap khong tu dat con tro pointer cho phan tu role="button" khong phai the <button> */

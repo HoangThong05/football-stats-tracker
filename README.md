@@ -10,6 +10,9 @@ user accounts (JWT + phan quyen), favorite teams, scheduled data sync, and email
 - **Bang xep hang** 6 giai hang dau (PL, La Liga, Bundesliga, Serie A, Ligue 1, Champions League)
 - **Lich thi dau & ket qua** gan day cho tung giai
 - **Vua pha luoi** (top scorers) — cau thu ghi ban nhieu nhat moi giai
+- **So sanh 2 doi** — dat canh nhau cac chi so, to xanh doi tot hon
+- **Tim kiem doi** ngay tren bang xep hang (bo dau: go "munchen" ra "München")
+- **Dark mode** — chuyen giao dien sang/toi, nho lua chon
 - **Trang chi tiet doi bong** (san nha, HLV, nam thanh lap, doi hinh)
 - **Dang ky / dang nhap** bang JWT (mat khau ma hoa BCrypt)
 - **Phan quyen USER / ADMIN** — ADMIN co trang quan tri xem danh sach nguoi dung
@@ -167,5 +170,6 @@ Flyway tu tao them bang `flyway_schema_history` de theo doi migration da chay.
 - [x] Chuyen schema sang Flyway migration
 - [x] Vua pha luoi (top scorers)
 - [x] Phan quyen USER / ADMIN + trang quan tri
+- [x] So sanh 2 doi, tim kiem doi, dark mode
 - [ ] Du doan ket qua tran dau (gamification)
 - [ ] Viet test tu dong (JUnit)

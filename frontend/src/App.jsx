@@ -16,17 +16,27 @@ const VIEWS = [
   { key: 'upcoming', name: 'Lịch thi đấu' },
   { key: 'results', name: 'Kết quả' },
   { key: 'scorers', name: 'Vua phá lưới' },
+  { key: 'compare', name: 'So sánh đội' },
 ]
 
-// view -> đường dẫn API tương ứng
+// view -> đường dẫn API tương ứng.
+// "compare" dùng lại chính dữ liệu bảng xếp hạng, không tốn thêm request.
 function endpointFor(view, league) {
-  if (view === 'standings') return `${API_BASE}/standings/${league}`
+  if (view === 'standings' || view === 'compare') return `${API_BASE}/standings/${league}`
   if (view === 'scorers') return `${API_BASE}/scorers/${league}`
   return `${API_BASE}/matches/${league}/${view}`
 }
 
 function authHeaders(token) {
   return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+// Bo dau + chuyen thuong, de go "munchen" van tim ra "FC Bayern München"
+function normalizeText(s) {
+  return (s || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
 }
 
 function formatKickoff(utcDate) {
@@ -54,6 +64,13 @@ export default function App() {
   const [showAuthForm, setShowAuthForm] = useState(false)
   const [showAdmin, setShowAdmin] = useState(false)
   const [favorites, setFavorites] = useState([])
+  const [theme, setTheme] = useState(() => localStorage.getItem('ft_theme') || 'light')
+
+  // Bootstrap 5.3 doi giao dien toi khi <html data-bs-theme="dark">
+  useEffect(() => {
+    document.documentElement.setAttribute('data-bs-theme', theme)
+    localStorage.setItem('ft_theme', theme)
+  }, [theme])
 
   useEffect(() => {
     setLoading(true)
@@ -120,43 +137,53 @@ export default function App() {
             <p className="text-muted mb-0">Bảng xếp hạng, lịch thi đấu &amp; kết quả các giải hàng đầu</p>
           </div>
 
-          {userEmail ? (
-            <div className="d-flex align-items-center gap-2 flex-wrap">
-              <button
-                className="btn btn-outline-warning btn-sm"
-                onClick={() => {
-                  setSelectedTeamId(null)
-                  setShowAdmin(false)
-                  setShowFavorites(true)
-                }}
-              >
-                ★ Đội yêu thích ({favorites.length})
-              </button>
-              {userRole === 'ADMIN' && (
+          <div className="d-flex align-items-center gap-2 flex-wrap">
+            <button
+              className="btn btn-outline-secondary btn-sm"
+              onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+              title="Chuyển giao diện sáng/tối"
+            >
+              {theme === 'dark' ? '☀️ Sáng' : '🌙 Tối'}
+            </button>
+
+            {userEmail ? (
+              <>
                 <button
-                  className="btn btn-outline-danger btn-sm"
+                  className="btn btn-outline-warning btn-sm"
                   onClick={() => {
                     setSelectedTeamId(null)
-                    setShowFavorites(false)
-                    setShowAdmin(true)
+                    setShowAdmin(false)
+                    setShowFavorites(true)
                   }}
                 >
-                  🛡 Quản trị
+                  ★ Đội yêu thích ({favorites.length})
                 </button>
-              )}
-              <span className="text-muted small">
-                {userEmail}
-                {userRole === 'ADMIN' && <span className="badge text-bg-danger ms-1">ADMIN</span>}
-              </span>
-              <button className="btn btn-outline-secondary btn-sm" onClick={handleLogout}>
-                Đăng xuất
+                {userRole === 'ADMIN' && (
+                  <button
+                    className="btn btn-outline-danger btn-sm"
+                    onClick={() => {
+                      setSelectedTeamId(null)
+                      setShowFavorites(false)
+                      setShowAdmin(true)
+                    }}
+                  >
+                    🛡 Quản trị
+                  </button>
+                )}
+                <span className="text-muted small">
+                  {userEmail}
+                  {userRole === 'ADMIN' && <span className="badge text-bg-danger ms-1">ADMIN</span>}
+                </span>
+                <button className="btn btn-outline-secondary btn-sm" onClick={handleLogout}>
+                  Đăng xuất
+                </button>
+              </>
+            ) : (
+              <button className="btn btn-primary btn-sm" onClick={() => setShowAuthForm((v) => !v)}>
+                Đăng nhập / Đăng ký
               </button>
-            </div>
-          ) : (
-            <button className="btn btn-primary btn-sm" onClick={() => setShowAuthForm((v) => !v)}>
-              Đăng nhập / Đăng ký
-            </button>
-          )}
+            )}
+          </div>
         </div>
 
         {showAuthForm && !userEmail && <AuthPanel onSuccess={handleAuthSuccess} />}
@@ -210,6 +237,9 @@ export default function App() {
           )}
           {!loading && !error && view === 'scorers' && (
             <ScorersTable scorers={data} onSelectTeam={setSelectedTeamId} />
+          )}
+          {!loading && !error && view === 'compare' && (
+            <CompareTeams rows={data} onSelectTeam={setSelectedTeamId} />
           )}
           {!loading && !error && (view === 'upcoming' || view === 'results') && (
             <MatchList matches={data} showScore={view === 'results'} />
@@ -397,45 +427,173 @@ function FavoritesList({ favorites, onSelectTeam, onBack }) {
 }
 
 function StandingsTable({ rows, onSelectTeam }) {
+  const [query, setQuery] = useState('')
+
+  const q = normalizeText(query.trim())
+  const filtered = q ? rows.filter((r) => normalizeText(r.teamName).includes(q)) : rows
+
   return (
-    <div className="table-responsive">
-      <table className="table table-hover align-middle">
-        <thead className="table-dark">
-          <tr>
-            <th>#</th>
-            <th>Đội</th>
-            <th className="text-center">Trận</th>
-            <th className="text-center">T</th>
-            <th className="text-center">H</th>
-            <th className="text-center">B</th>
-            <th className="text-center">BT</th>
-            <th className="text-center">BB</th>
-            <th className="text-center">HS</th>
-            <th className="text-center">Điểm</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.teamId} role="button" onClick={() => onSelectTeam(r.teamId)}>
-              <td>{r.position}</td>
-              <td>
-                <div className="d-flex align-items-center gap-2">
-                  {r.crest && <img src={r.crest} alt="" width="20" height="20" />}
-                  <span>{r.teamName}</span>
+    <div>
+      <input
+        type="search"
+        className="form-control form-control-sm mb-3"
+        style={{ maxWidth: 280 }}
+        placeholder="🔍 Tìm đội bóng..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+
+      {filtered.length === 0 ? (
+        <div className="alert alert-secondary">Không tìm thấy đội nào khớp “{query}”.</div>
+      ) : (
+        <div className="table-responsive">
+          <table className="table table-hover align-middle">
+            <thead className="table-dark">
+              <tr>
+                <th>#</th>
+                <th>Đội</th>
+                <th className="text-center">Trận</th>
+                <th className="text-center">T</th>
+                <th className="text-center">H</th>
+                <th className="text-center">B</th>
+                <th className="text-center">BT</th>
+                <th className="text-center">BB</th>
+                <th className="text-center">HS</th>
+                <th className="text-center">Điểm</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((r) => (
+                <tr key={r.teamId} role="button" onClick={() => onSelectTeam(r.teamId)}>
+                  <td>{r.position}</td>
+                  <td>
+                    <div className="d-flex align-items-center gap-2">
+                      {r.crest && <img src={r.crest} alt="" width="20" height="20" />}
+                      <span>{r.teamName}</span>
+                    </div>
+                  </td>
+                  <td className="text-center">{r.playedGames}</td>
+                  <td className="text-center">{r.won}</td>
+                  <td className="text-center">{r.draw}</td>
+                  <td className="text-center">{r.lost}</td>
+                  <td className="text-center">{r.goalsFor}</td>
+                  <td className="text-center">{r.goalsAgainst}</td>
+                  <td className="text-center">{r.goalDifference}</td>
+                  <td className="text-center fw-bold">{r.points}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Chi so so sanh. better: 'high' = cao hon thi tot hon, 'low' = thap hon tot hon, null = khong so sanh
+const COMPARE_METRICS = [
+  { key: 'position', label: 'Vị trí', better: 'low' },
+  { key: 'playedGames', label: 'Số trận', better: null },
+  { key: 'won', label: 'Thắng', better: 'high' },
+  { key: 'draw', label: 'Hòa', better: null },
+  { key: 'lost', label: 'Thua', better: 'low' },
+  { key: 'goalsFor', label: 'Bàn thắng', better: 'high' },
+  { key: 'goalsAgainst', label: 'Bàn thua', better: 'low' },
+  { key: 'goalDifference', label: 'Hiệu số', better: 'high' },
+  { key: 'points', label: 'Điểm', better: 'high' },
+]
+
+function CompareTeams({ rows, onSelectTeam }) {
+  const [idA, setIdA] = useState(null)
+  const [idB, setIdB] = useState(null)
+
+  // Doi giai -> chon lai 2 doi dau bang lam mac dinh
+  useEffect(() => {
+    setIdA(rows[0]?.teamId ?? null)
+    setIdB(rows[1]?.teamId ?? null)
+  }, [rows])
+
+  if (rows.length < 2) {
+    return <div className="alert alert-secondary">Giải này chưa đủ dữ liệu để so sánh.</div>
+  }
+
+  const teamA = rows.find((r) => r.teamId === idA)
+  const teamB = rows.find((r) => r.teamId === idB)
+  if (!teamA || !teamB) return null
+
+  // Tra ve 'A' | 'B' | null: ben nao tot hon o chi so nay
+  const winnerOf = (metric) => {
+    if (!metric.better) return null
+    const a = teamA[metric.key]
+    const b = teamB[metric.key]
+    if (a === b) return null
+    const aWins = metric.better === 'high' ? a > b : a < b
+    return aWins ? 'A' : 'B'
+  }
+
+  const cellClass = (metric, side) => (winnerOf(metric) === side ? 'fw-bold text-success' : '')
+
+  return (
+    <div>
+      <div className="row g-2 mb-3">
+        <div className="col-6">
+          <select className="form-select" value={idA ?? ''} onChange={(e) => setIdA(Number(e.target.value))}>
+            {rows.map((r) => (
+              <option key={r.teamId} value={r.teamId}>
+                {r.teamName}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="col-6">
+          <select className="form-select" value={idB ?? ''} onChange={(e) => setIdB(Number(e.target.value))}>
+            {rows.map((r) => (
+              <option key={r.teamId} value={r.teamId}>
+                {r.teamName}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {idA === idB && (
+        <div className="alert alert-warning py-2">Bạn đang chọn cùng một đội ở cả hai bên.</div>
+      )}
+
+      <div className="table-responsive">
+        <table className="table table-bordered align-middle text-center mb-0">
+          <thead className="table-dark">
+            <tr>
+              <th style={{ width: '35%' }} role="button" onClick={() => onSelectTeam(teamA.teamId)}>
+                <div className="d-flex align-items-center justify-content-center gap-2">
+                  {teamA.crest && <img src={teamA.crest} alt="" width="24" height="24" />}
+                  <span>{teamA.teamName}</span>
                 </div>
-              </td>
-              <td className="text-center">{r.playedGames}</td>
-              <td className="text-center">{r.won}</td>
-              <td className="text-center">{r.draw}</td>
-              <td className="text-center">{r.lost}</td>
-              <td className="text-center">{r.goalsFor}</td>
-              <td className="text-center">{r.goalsAgainst}</td>
-              <td className="text-center">{r.goalDifference}</td>
-              <td className="text-center fw-bold">{r.points}</td>
+              </th>
+              <th style={{ width: '30%' }}>Chỉ số</th>
+              <th style={{ width: '35%' }} role="button" onClick={() => onSelectTeam(teamB.teamId)}>
+                <div className="d-flex align-items-center justify-content-center gap-2">
+                  {teamB.crest && <img src={teamB.crest} alt="" width="24" height="24" />}
+                  <span>{teamB.teamName}</span>
+                </div>
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {COMPARE_METRICS.map((m) => (
+              <tr key={m.key}>
+                <td className={cellClass(m, 'A')}>{teamA[m.key]}</td>
+                <td className="text-muted small">{m.label}</td>
+                <td className={cellClass(m, 'B')}>{teamB[m.key]}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="text-muted small mt-2">
+        Chỉ số tốt hơn được <span className="fw-bold text-success">tô xanh</span>. Bấm vào tên đội để xem chi tiết.
+      </p>
     </div>
   )
 }
@@ -548,7 +706,15 @@ function TeamDetail({ teamId, onBack, token, favorites, onFavoritesChange }) {
                 <h2 className="h4 mb-1">{team.name}</h2>
                 {team.venue && <div className="text-muted small">Sân nhà: {team.venue}</div>}
                 {team.founded != null && <div className="text-muted small">Thành lập: {team.founded}</div>}
+                {team.clubColors && <div className="text-muted small">Màu áo: {team.clubColors}</div>}
                 {team.coachName && <div className="text-muted small">HLV: {team.coachName}</div>}
+                {team.website && (
+                  <div className="small">
+                    <a href={team.website} target="_blank" rel="noreferrer">
+                      Trang chủ ↗
+                    </a>
+                  </div>
+                )}
               </div>
 
               {token ? (
@@ -565,20 +731,22 @@ function TeamDetail({ teamId, onBack, token, favorites, onFavoritesChange }) {
             </div>
           </div>
 
-          <h3 className="h5">Đội hình</h3>
-          {team.squad.length === 0 ? (
-            <div className="alert alert-secondary">Không có dữ liệu đội hình.</div>
-          ) : (
-            <ul className="list-group">
-              {team.squad.map((p) => (
-                <li key={p.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <span>{p.name}</span>
-                  <span className="text-muted small">
-                    {p.position || '—'} · {p.nationality || '—'}
-                  </span>
-                </li>
-              ))}
-            </ul>
+          {/* Goi mien phi cua football-data.org khong tra ve doi hinh (squad luon rong).
+              Chi hien muc nay khi that su co du lieu -> tu dong xuat hien neu sau nay nang gop. */}
+          {team.squad.length > 0 && (
+            <>
+              <h3 className="h5">Đội hình</h3>
+              <ul className="list-group">
+                {team.squad.map((p) => (
+                  <li key={p.id} className="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{p.name}</span>
+                    <span className="text-muted small">
+                      {p.position || '—'} · {p.nationality || '—'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </>
       )}
