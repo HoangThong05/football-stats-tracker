@@ -1,13 +1,358 @@
-/* Nen sang mac dinh; khi bat dark mode Bootstrap dat data-bs-theme="dark" tren <html> */
-body {
-  background: #f4f6fb;
+/* ============================================================
+   Football Stats Tracker — lop "ao" thiet ke phu len Bootstrap
+   - Font: Be Vietnam Pro (nap trong index.html)
+   - Mau chu dao: xanh ngoc (emerald) tren nen sang/toi
+   ============================================================ */
+
+:root {
+  --ft-accent: #059669;
+  --ft-accent-strong: #047857;
+  --ft-accent-soft: rgba(5, 150, 105, 0.12);
+  --ft-header-grad: linear-gradient(120deg, #0f172a 0%, #134e4a 60%, #065f46 100%);
+  --ft-body-bg: #f1f5f9;
+  --ft-card-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px -12px rgba(15, 23, 42, 0.18);
+  --ft-radius: 14px;
+
+  /* Doi mau mac dinh cua Bootstrap sang tong xanh ngoc */
+  --bs-primary: #059669;
+  --bs-primary-rgb: 5, 150, 105;
+  --bs-link-color: #047857;
+  --bs-link-color-rgb: 4, 120, 87;
+  --bs-link-hover-color: #065f46;
+  --bs-link-hover-color-rgb: 6, 95, 70;
 }
 
-[data-bs-theme='dark'] body {
-  background: #14171a;
+[data-bs-theme='dark'] {
+  --ft-accent: #34d399;
+  --ft-accent-strong: #6ee7b7;
+  --ft-accent-soft: rgba(52, 211, 153, 0.14);
+  --ft-header-grad: linear-gradient(120deg, #020617 0%, #0f2e2b 60%, #064e3b 100%);
+  --ft-body-bg: #0b0f14;
+  --ft-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.7);
+
+  --bs-primary: #34d399;
+  --bs-primary-rgb: 52, 211, 153;
+  --bs-link-color: #34d399;
+  --bs-link-color-rgb: 52, 211, 153;
+  --bs-link-hover-color: #6ee7b7;
+  --bs-link-hover-color-rgb: 110, 231, 183;
+  --bs-body-bg: #0b0f14;
+}
+
+body {
+  background: var(--ft-body-bg);
+  font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Bootstrap khong tu dat con tro pointer cho phan tu role="button" khong phai the <button> */
 [role='button'] {
   cursor: pointer;
+}
+
+/* ---------- Thanh dieu huong tren cung ---------- */
+.ft-navbar {
+  background: var(--ft-header-grad);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  box-shadow: 0 2px 16px rgba(2, 6, 23, 0.35);
+}
+
+.ft-brand {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+  line-height: 1.1;
+}
+
+.ft-brand-sub {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.8rem;
+}
+
+.ft-ball {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  font-size: 1.35rem;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* Nut tren navbar: vien mo, chu trang, hover sang len */
+.ft-navbar .btn-nav {
+  --bs-btn-color: rgba(255, 255, 255, 0.9);
+  --bs-btn-border-color: rgba(255, 255, 255, 0.28);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: rgba(255, 255, 255, 0.14);
+  --bs-btn-hover-border-color: rgba(255, 255, 255, 0.45);
+  --bs-btn-active-bg: rgba(255, 255, 255, 0.2);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-border-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.ft-navbar .btn-nav-solid {
+  --bs-btn-color: #064e3b;
+  --bs-btn-bg: #fff;
+  --bs-btn-border-color: #fff;
+  --bs-btn-hover-color: #064e3b;
+  --bs-btn-hover-bg: #d1fae5;
+  --bs-btn-hover-border-color: #d1fae5;
+  font-weight: 600;
+}
+
+.ft-user-email {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+}
+
+/* ---------- Tab chon giai dau ---------- */
+.ft-league-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ft-league-tabs .btn {
+  --bs-btn-border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.ft-league-tabs .btn:not(.active) {
+  --bs-btn-color: var(--bs-secondary-color);
+  --bs-btn-bg: var(--bs-body-bg);
+  --bs-btn-border-color: var(--bs-border-color);
+  --bs-btn-hover-color: var(--ft-accent-strong);
+  --bs-btn-hover-border-color: var(--ft-accent);
+  --bs-btn-hover-bg: var(--ft-accent-soft);
+}
+
+.ft-league-tabs .btn.active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--ft-accent) 0%, var(--ft-accent-strong) 100%);
+  border-color: transparent;
+  box-shadow: 0 4px 14px -4px rgba(5, 150, 105, 0.55);
+}
+
+[data-bs-theme='dark'] .ft-league-tabs .btn.active {
+  color: #052e22;
+}
+
+/* ---------- Tab chon che do xem (segmented control) ---------- */
+.ft-view-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color-translucent);
+}
+
+.ft-view-tabs .btn {
+  --bs-btn-border-radius: 9px;
+  --bs-btn-border-color: transparent;
+  --bs-btn-color: var(--bs-secondary-color);
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: var(--bs-body-bg);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.ft-view-tabs .btn.active {
+  background: var(--bs-body-bg);
+  color: var(--ft-accent-strong);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+}
+
+/* ---------- Khung noi dung dang card ---------- */
+.ft-card {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: var(--ft-radius);
+  box-shadow: var(--ft-card-shadow);
+  overflow: hidden;
+}
+
+.ft-card .table {
+  margin-bottom: 0;
+}
+
+/* Card body-level padding cho danh sach tran/doi hinh */
+.ft-card > .list-group {
+  border: 0;
+}
+
+.ft-card > .list-group .list-group-item {
+  border-left: 0;
+  border-right: 0;
+}
+
+.ft-card > .list-group .list-group-item:first-child {
+  border-top: 0;
+}
+
+.ft-card > .list-group .list-group-item:last-child {
+  border-bottom: 0;
+}
+
+/* ---------- Bang: tieu de gradient + hang hover ---------- */
+.ft-card thead th {
+  background: var(--ft-header-grad);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 0;
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+  white-space: nowrap;
+}
+
+.ft-card tbody tr {
+  transition: background-color 0.12s ease;
+}
+
+.ft-card tbody tr[role='button']:hover {
+  background: var(--ft-accent-soft);
+}
+
+.ft-card td {
+  vertical-align: middle;
+}
+
+/* ---------- Huy hieu vi tri tren BXH ---------- */
+.ft-pos {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-secondary-color);
+}
+
+.ft-pos-top {
+  background: var(--ft-accent-soft);
+  color: var(--ft-accent-strong);
+  box-shadow: inset 0 0 0 1px var(--ft-accent);
+}
+
+.ft-pos-bottom {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+  box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.55);
+}
+
+[data-bs-theme='dark'] .ft-pos-bottom {
+  color: #f87171;
+}
+
+/* Chu thich vung mau duoi bang */
+.ft-legend {
+  font-size: 0.78rem;
+}
+
+.ft-legend .dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 4px;
+  vertical-align: -1px;
+}
+
+/* ---------- Ten doi trong bang ---------- */
+.ft-team-cell {
+  font-weight: 600;
+}
+
+.ft-team-cell img {
+  filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.2));
+}
+
+/* ---------- Vua pha luoi: 3 hang dau ---------- */
+.ft-rank-medal {
+  font-size: 1.05rem;
+}
+
+/* ---------- The tran dau ---------- */
+.ft-score-badge {
+  min-width: 56px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.4em 0.6em;
+  border-radius: 8px;
+}
+
+.ft-score-badge.played {
+  background: var(--ft-header-grad);
+  color: #fff;
+}
+
+.ft-score-badge.upcoming {
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-secondary-color);
+  border: 1px dashed var(--bs-border-color);
+}
+
+/* ---------- Trang chi tiet doi ---------- */
+.ft-team-hero {
+  background: var(--ft-header-grad);
+  color: #fff;
+  border-radius: var(--ft-radius);
+  box-shadow: var(--ft-card-shadow);
+}
+
+.ft-team-hero .text-muted,
+.ft-team-hero a {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.ft-team-hero a {
+  text-decoration-color: rgba(255, 255, 255, 0.4);
+}
+
+.ft-team-hero img.crest-big {
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 18px;
+  padding: 10px;
+  box-shadow: 0 6px 20px -8px rgba(2, 6, 23, 0.6);
+}
+
+/* ---------- Footer ---------- */
+.ft-footer {
+  color: var(--bs-secondary-color);
+  font-size: 0.8rem;
+}
+
+.ft-footer a {
+  color: inherit;
+}
+
+/* ---------- Hieu ung xuat hien nhe khi doi tab ---------- */
+@keyframes ft-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ft-fade {
+  animation: ft-fade-up 0.22s ease-out;
 }
