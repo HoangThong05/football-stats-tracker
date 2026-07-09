@@ -31,7 +31,7 @@ public class AuthService {
         User user = new User(request.email(), passwordEncoder.encode(request.password()));
         userRepository.save(user);
 
-        return new AuthResponse(jwtService.generateToken(user.getEmail()), user.getEmail());
+        return toAuthResponse(user);
     }
 
     public AuthResponse login(AuthRequest request) {
@@ -42,6 +42,12 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sai email hoac mat khau");
         }
 
-        return new AuthResponse(jwtService.generateToken(user.getEmail()), user.getEmail());
+        return toAuthResponse(user);
+    }
+
+    private AuthResponse toAuthResponse(User user) {
+        String role = user.getRole().name();
+        String token = jwtService.generateToken(user.getEmail(), role);
+        return new AuthResponse(token, user.getEmail(), role);
     }
 }

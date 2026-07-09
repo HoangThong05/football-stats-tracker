@@ -1,5 +1,6 @@
 package com.hoangthong.footballtracker.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,10 +28,11 @@ public class JwtService {
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(String email) {
+    public String generateToken(String email, String role) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .subject(email)
+                .claim("role", role)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(expirationMs)))
                 .signWith(key)
@@ -38,14 +40,14 @@ public class JwtService {
     }
 
     /**
-     * Tra ve email (subject) neu token hop le, ngoai le neu het han/sai chu ky.
+     * Tra ve toan bo claims (email o subject, role o claim "role") neu token hop le;
+     * nem ngoai le neu het han/sai chu ky.
      */
-    public String extractEmail(String token) {
+    public Claims parseClaims(String token) {
         return Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+                .getPayload();
     }
 }

@@ -50,7 +50,9 @@ export default function App() {
 
   const [token, setToken] = useState(() => localStorage.getItem('ft_token'))
   const [userEmail, setUserEmail] = useState(() => localStorage.getItem('ft_email'))
+  const [userRole, setUserRole] = useState(() => localStorage.getItem('ft_role'))
   const [showAuthForm, setShowAuthForm] = useState(false)
+  const [showAdmin, setShowAdmin] = useState(false)
   const [favorites, setFavorites] = useState([])
 
   useEffect(() => {
@@ -82,20 +84,25 @@ export default function App() {
     else setFavorites([])
   }, [token])
 
-  const handleAuthSuccess = (newToken, email) => {
+  const handleAuthSuccess = (newToken, email, role) => {
     localStorage.setItem('ft_token', newToken)
     localStorage.setItem('ft_email', email)
+    localStorage.setItem('ft_role', role)
     setToken(newToken)
     setUserEmail(email)
+    setUserRole(role)
     setShowAuthForm(false)
   }
 
   const handleLogout = () => {
     localStorage.removeItem('ft_token')
     localStorage.removeItem('ft_email')
+    localStorage.removeItem('ft_role')
     setToken(null)
     setUserEmail(null)
+    setUserRole(null)
     setShowFavorites(false)
+    setShowAdmin(false)
     setSelectedTeamId(null)
   }
 
@@ -119,12 +126,28 @@ export default function App() {
                 className="btn btn-outline-warning btn-sm"
                 onClick={() => {
                   setSelectedTeamId(null)
+                  setShowAdmin(false)
                   setShowFavorites(true)
                 }}
               >
                 ★ Đội yêu thích ({favorites.length})
               </button>
-              <span className="text-muted small">{userEmail}</span>
+              {userRole === 'ADMIN' && (
+                <button
+                  className="btn btn-outline-danger btn-sm"
+                  onClick={() => {
+                    setSelectedTeamId(null)
+                    setShowFavorites(false)
+                    setShowAdmin(true)
+                  }}
+                >
+                  🛡 Quản trị
+                </button>
+              )}
+              <span className="text-muted small">
+                {userEmail}
+                {userRole === 'ADMIN' && <span className="badge text-bg-danger ms-1">ADMIN</span>}
+              </span>
               <button className="btn btn-outline-secondary btn-sm" onClick={handleLogout}>
                 Đăng xuất
               </button>
@@ -149,6 +172,8 @@ export default function App() {
         />
       ) : showFavorites ? (
         <FavoritesList favorites={favorites} onSelectTeam={goToTeam} onBack={() => setShowFavorites(false)} />
+      ) : showAdmin ? (
+        <AdminUsers token={token} onBack={() => setShowAdmin(false)} />
       ) : (
         <>
           <ul className="nav nav-pills mb-2">
@@ -219,7 +244,7 @@ function AuthPanel({ onSuccess }) {
         }
         return res.json()
       })
-      .then((data) => onSuccess(data.token, data.email))
+      .then((data) => onSuccess(data.token, data.email, data.role))
       .catch((err) => setError(err.message))
       .finally(() => setSubmitting(false))
   }
@@ -273,6 +298,68 @@ function AuthPanel({ onSuccess }) {
           {error && <div className="alert alert-danger py-2 mb-0 small">{error}</div>}
         </form>
       </div>
+    </div>
+  )
+}
+
+function AdminUsers({ token, onBack }) {
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+
+    fetch(`${API_BASE}/admin/users`, { headers: authHeaders(token) })
+      .then((res) => {
+        if (!res.ok) throw new Error(`Loi ${res.status}`)
+        return res.json()
+      })
+      .then((data) => setUsers(data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [token])
+
+  return (
+    <div>
+      <button className="btn btn-link ps-0 mb-3" onClick={onBack}>
+        ← Quay lại
+      </button>
+
+      <h3 className="h5">🛡 Quản trị — Danh sách người dùng</h3>
+
+      {loading && <div className="text-center text-muted py-4">Đang tải...</div>}
+      {error && <div className="alert alert-danger">Không tải được: {error}</div>}
+
+      {!loading && !error && (
+        <div className="table-responsive">
+          <table className="table table-hover align-middle">
+            <thead className="table-dark">
+              <tr>
+                <th>#</th>
+                <th>Email</th>
+                <th>Vai trò</th>
+                <th>Ngày tạo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u.id}>
+                  <td>{u.id}</td>
+                  <td>{u.email}</td>
+                  <td>
+                    <span className={u.role === 'ADMIN' ? 'badge text-bg-danger' : 'badge text-bg-secondary'}>
+                      {u.role}
+                    </span>
+                  </td>
+                  <td className="text-muted small">{new Date(u.createdAt).toLocaleString('vi-VN')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }
