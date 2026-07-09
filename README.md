@@ -115,6 +115,25 @@ dang nhap de theo doi doi yeu thich (tai khoan ADMIN co them nut **Quan tri**).
 | DELETE | `/api/favorites/{teamId}` | Bo theo doi | dang nhap |
 | GET | `/api/admin/users` | Danh sach tat ca nguoi dung | **ADMIN** |
 
+## 🧪 Chay test
+
+```bash
+mvn -f backend/pom.xml test
+```
+
+37 test (JUnit 5 + Mockito + MockMvc), **khong can DB hay mang** — tat ca phu thuoc ngoai
+deu duoc mock, nen chay o dau cung duoc:
+
+| File test | Kiem tra |
+|-----------|----------|
+| `JwtServiceTest` | Sinh/doc token, claim `role`, token het han / bi sua / sai chu ky |
+| `AuthServiceTest` | Trung email → 409, sai mat khau → 401, tra ve dung `role` |
+| `AdminSecurityTest` | USER goi `/api/admin/**` → 403, ADMIN → 200, API cong khai van mo |
+| `StandingsServiceTest` | Map dung cac truong, chi lay block `TOTAL` |
+| `MatchesServiceTest` | Loc `upcoming`/`results`, sap xep, ti so `null` khi chua da |
+| `ScorersServiceTest` | Danh so thu hang, giu `assists = null` |
+| `FavoriteServiceTest` | Theo doi trung → 409, bo theo doi khong co → 404 |
+
 ## 📚 League codes
 
 | Code | League |
@@ -171,5 +190,6 @@ Flyway tu tao them bang `flyway_schema_history` de theo doi migration da chay.
 - [x] Vua pha luoi (top scorers)
 - [x] Phan quyen USER / ADMIN + trang quan tri
 - [x] So sanh 2 doi, tim kiem doi, dark mode
+- [x] Toi uu toc do: cache TTL 30 phut, canh bao quota, lazy-load anh
+- [x] Viet test tu dong (JUnit) — 37 test
 - [ ] Du doan ket qua tran dau (gamification)
-- [ ] Viet test tu dong (JUnit)

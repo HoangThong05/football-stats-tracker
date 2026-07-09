@@ -416,7 +416,7 @@ function FavoritesList({ favorites, onSelectTeam, onBack }) {
               role="button"
               onClick={() => onSelectTeam(f.teamId)}
             >
-              {f.teamCrest && <img src={f.teamCrest} alt="" width="24" height="24" />}
+              {f.teamCrest && <img src={f.teamCrest} alt="" width="24" height="24" loading="lazy" />}
               <span>{f.teamName}</span>
             </li>
           ))}
@@ -468,7 +468,7 @@ function StandingsTable({ rows, onSelectTeam }) {
                   <td>{r.position}</td>
                   <td>
                     <div className="d-flex align-items-center gap-2">
-                      {r.crest && <img src={r.crest} alt="" width="20" height="20" />}
+                      {r.crest && <img src={r.crest} alt="" width="20" height="20" loading="lazy" />}
                       <span>{r.teamName}</span>
                     </div>
                   </td>
@@ -630,7 +630,7 @@ function ScorersTable({ scorers, onSelectTeam }) {
                   role="button"
                   onClick={() => onSelectTeam(s.teamId)}
                 >
-                  {s.teamCrest && <img src={s.teamCrest} alt="" width="20" height="20" />}
+                  {s.teamCrest && <img src={s.teamCrest} alt="" width="20" height="20" loading="lazy" />}
                   <span>{s.teamName}</span>
                 </div>
               </td>
@@ -770,7 +770,7 @@ function MatchList({ matches, showScore }) {
 
           <div className="d-flex align-items-center justify-content-end gap-2 flex-grow-1" style={{ minWidth: 0 }}>
             <span className="text-truncate">{m.homeTeam}</span>
-            {m.homeCrest && <img src={m.homeCrest} alt="" width="20" height="20" />}
+            {m.homeCrest && <img src={m.homeCrest} alt="" width="20" height="20" loading="lazy" />}
           </div>
 
           <span
@@ -781,7 +781,7 @@ function MatchList({ matches, showScore }) {
           </span>
 
           <div className="d-flex align-items-center gap-2 flex-grow-1" style={{ minWidth: 0 }}>
-            {m.awayCrest && <img src={m.awayCrest} alt="" width="20" height="20" />}
+            {m.awayCrest && <img src={m.awayCrest} alt="" width="20" height="20" loading="lazy" />}
             <span className="text-truncate">{m.awayTeam}</span>
           </div>
         </li>

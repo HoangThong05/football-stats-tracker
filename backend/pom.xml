@@ -19,6 +19,14 @@
 
     <properties>
         <java.version>21</java.version>
+        <!--
+          Spring Boot 3.3.5 keo theo Mockito/ByteBuddy doi cu, khong instrument duoc
+          bytecode cua JDK moi (may dev dang chay JDK 25) -> test nem
+          "MockitoException: Could not modify all classes".
+          Nang len ban ho tro JDK moi.
+        -->
+        <mockito.version>5.18.0</mockito.version>
+        <byte-buddy.version>1.17.6</byte-buddy.version>
     </properties>
 
     <dependencies>
