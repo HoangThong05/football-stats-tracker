@@ -1,16 +1,18 @@
 # ⚽ Football Stats Tracker
 
-A full-stack app that tracks football league standings, results, fixtures, and team details.
+A full-stack app that tracks football league standings, results, fixtures, top scorers, and team details.
 Built with **Spring Boot** (backend) and **React + Bootstrap** (frontend), pulling data from
 the free [football-data.org](https://www.football-data.org) API with server-side caching,
-user accounts (JWT), favorite teams, scheduled data sync, and email reminders.
+user accounts (JWT + phan quyen), favorite teams, scheduled data sync, and email reminders.
 
 ## ✨ Features
 
 - **Bang xep hang** 6 giai hang dau (PL, La Liga, Bundesliga, Serie A, Ligue 1, Champions League)
 - **Lich thi dau & ket qua** gan day cho tung giai
+- **Vua pha luoi** (top scorers) — cau thu ghi ban nhieu nhat moi giai
 - **Trang chi tiet doi bong** (san nha, HLV, nam thanh lap, doi hinh)
 - **Dang ky / dang nhap** bang JWT (mat khau ma hoa BCrypt)
+- **Phan quyen USER / ADMIN** — ADMIN co trang quan tri xem danh sach nguoi dung
 - **Theo doi doi yeu thich** — luu vao SQL Server theo tung tai khoan
 - **Job @Scheduled** tu dong dong bo tran dau vao DB moi 30 phut
 - **Email nhac nho** khi doi yeu thich sap thi dau (trong 24h toi)
@@ -91,21 +93,24 @@ npm install
 npm run dev
 ```
 
-Mo http://localhost:5173 → chon giai → xem bang xep hang, lich, ket qua, dang nhap, theo doi doi.
+Mo http://localhost:5173 → chon giai → xem bang xep hang, lich thi dau, ket qua, vua pha luoi;
+dang nhap de theo doi doi yeu thich (tai khoan ADMIN co them nut **Quan tri**).
 
 ## 📡 API Endpoints
 
-| Method | Endpoint | Mo ta | Can dang nhap |
+| Method | Endpoint | Mo ta | Quyen |
 |--------|----------|-------|:---:|
-| GET | `/api/standings/{code}` | Bang xep hang | |
-| GET | `/api/matches/{code}/upcoming` | Lich 14 ngay toi | |
-| GET | `/api/matches/{code}/results` | Ket qua 14 ngay qua | |
-| GET | `/api/teams/{id}` | Chi tiet doi bong | |
-| POST | `/api/auth/register` | Dang ky | |
-| POST | `/api/auth/login` | Dang nhap (tra JWT) | |
-| GET | `/api/favorites` | Danh sach doi yeu thich | ✅ |
-| POST | `/api/favorites` | Theo doi 1 doi | ✅ |
-| DELETE | `/api/favorites/{teamId}` | Bo theo doi | ✅ |
+| GET | `/api/standings/{code}` | Bang xep hang | cong khai |
+| GET | `/api/matches/{code}/upcoming` | Lich 14 ngay toi | cong khai |
+| GET | `/api/matches/{code}/results` | Ket qua 14 ngay qua | cong khai |
+| GET | `/api/scorers/{code}` | Vua pha luoi | cong khai |
+| GET | `/api/teams/{id}` | Chi tiet doi bong | cong khai |
+| POST | `/api/auth/register` | Dang ky | cong khai |
+| POST | `/api/auth/login` | Dang nhap (tra JWT + role) | cong khai |
+| GET | `/api/favorites` | Danh sach doi yeu thich | dang nhap |
+| POST | `/api/favorites` | Theo doi 1 doi | dang nhap |
+| DELETE | `/api/favorites/{teamId}` | Bo theo doi | dang nhap |
+| GET | `/api/admin/users` | Danh sach tat ca nguoi dung | **ADMIN** |
 
 ## 📚 League codes
 
@@ -118,16 +123,37 @@ Mo http://localhost:5173 → chon giai → xem bang xep hang, lich, ket qua, dan
 | FL1 | Ligue 1 |
 | CL | Champions League |
 
+## 👥 Phan quyen (Roles)
+
+Moi tai khoan co 1 trong 2 vai tro, luu o cot `app_user.role`:
+
+| Role | Quyen |
+|------|-------|
+| `USER` | Mac dinh khi dang ky. Xem du lieu, theo doi doi yeu thich. |
+| `ADMIN` | Nhu USER, cong them truy cap `/api/admin/**` va trang quan tri tren web. |
+
+Role duoc nhung vao JWT luc dang nhap. **Tao ADMIN dau tien** bang cach dang ky binh thuong
+roi nang quyen truc tiep trong DB:
+
+```sql
+UPDATE app_user SET role = 'ADMIN' WHERE email = 'email_cua_ban@example.com';
+```
+
+> Sau khi doi role, phai **dang xuat va dang nhap lai** de nhan JWT moi. Token cu van mang
+> role cu cho toi khi het han (JWT la stateless, khong tu cap nhat).
+
 ## 🗄️ Database
 
-4 bang (xem chi tiet + comment trong `backend/src/main/resources/db/migration/V1__init.sql`):
+4 bang (xem chi tiet + comment trong `backend/src/main/resources/db/migration/`):
 
 | Bang | Vai tro |
 |------|---------|
-| `app_user` | Tai khoan nguoi dung |
+| `app_user` | Tai khoan nguoi dung (email, mat khau BCrypt, `role`) |
 | `favorite_team` | Doi bong moi user theo doi (FK → app_user) |
 | `match_fixture` | Tran dau dong bo tu football-data.org |
 | `sent_notification` | Danh dau email da gui (chong trung) |
+
+Flyway tu tao them bang `flyway_schema_history` de theo doi migration da chay.
 
 ## 🗺️ Roadmap
 
@@ -139,3 +165,7 @@ Mo http://localhost:5173 → chon giai → xem bang xep hang, lich, ket qua, dan
 - [x] Email thong bao khi doi yeu thich sap thi dau
 - [x] Swagger/OpenAPI cho tai lieu API
 - [x] Chuyen schema sang Flyway migration
+- [x] Vua pha luoi (top scorers)
+- [x] Phan quyen USER / ADMIN + trang quan tri
+- [ ] Du doan ket qua tran dau (gamification)
+- [ ] Viet test tu dong (JUnit)
