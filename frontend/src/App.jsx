@@ -53,13 +53,15 @@ function formatKickoff(utcDate) {
   })
 }
 
-function Loading() {
+function Loading({ rows = 6 }) {
   return (
-    <div className="text-center py-5">
-      <div className="spinner-border text-success" role="status" style={{ width: 44, height: 44 }}>
-        <span className="visually-hidden">Đang tải...</span>
+    <div className="ft-card p-3" aria-busy="true">
+      <span className="visually-hidden">Đang tải dữ liệu...</span>
+      <div className="d-flex flex-column gap-2">
+        {Array.from({ length: rows }).map((_, i) => (
+          <div key={i} className="ft-skeleton-row" style={{ animationDelay: `${i * 0.06}s` }} />
+        ))}
       </div>
-      <div className="text-secondary small mt-3">Đang tải dữ liệu...</div>
     </div>
   )
 }
@@ -81,12 +83,20 @@ export default function App() {
   const [showAdmin, setShowAdmin] = useState(false)
   const [favorites, setFavorites] = useState([])
   const [theme, setTheme] = useState(() => localStorage.getItem('ft_theme') || 'light')
+  const [scrolled, setScrolled] = useState(false)
 
   // Bootstrap 5.3 doi giao dien toi khi <html data-bs-theme="dark">
   useEffect(() => {
     document.documentElement.setAttribute('data-bs-theme', theme)
     localStorage.setItem('ft_theme', theme)
   }, [theme])
+
+  // Navbar do bong sau hon khi cuon trang xuong, cho cam giac "noi" tren noi dung
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   const loadViewData = () => {
     setLoading(true)
@@ -155,7 +165,7 @@ export default function App() {
   return (
     <>
       {/* ===== Thanh dieu huong ===== */}
-      <nav className="ft-navbar py-3 mb-4">
+      <nav className={scrolled ? 'ft-navbar py-3 mb-4 scrolled' : 'ft-navbar py-3 mb-4'}>
         <div className="container" style={{ maxWidth: 960 }}>
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div className="d-flex align-items-center gap-3">
@@ -361,8 +371,9 @@ function AuthPanel({ onSuccess }) {
     <div className="ft-card p-4" style={{ maxWidth: 400 }}>
       <div className="text-center mb-4">
         <div
-          className="d-inline-flex align-items-center justify-content-center rounded-circle mb-2"
+          className="ft-auth-icon d-inline-flex align-items-center justify-content-center rounded-circle mb-2"
           style={{ width: 56, height: 56, background: 'var(--ft-accent-soft)', fontSize: '1.6rem' }}
+          key={mode}
         >
           {mode === 'login' ? '👋' : '🎉'}
         </div>
@@ -523,7 +534,7 @@ function AdminUsers({ token, onBack }) {
                 <th>Ngày tạo</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="ft-stagger">
               {users.map((u) => (
                 <tr key={u.id}>
                   <td>{u.id}</td>
@@ -559,7 +570,7 @@ function FavoritesList({ favorites, onSelectTeam, onBack }) {
         </div>
       ) : (
         <div className="ft-card">
-          <ul className="list-group list-group-flush">
+          <ul className="list-group list-group-flush ft-stagger">
             {favorites.map((f) => (
               <li
                 key={f.teamId}
@@ -629,7 +640,7 @@ function LeaderboardView({ token, userEmail, onBack }) {
                 <th className="text-center">Điểm</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="ft-stagger">
               {rows.map((r) => (
                 <tr key={r.email} className={r.email === userEmail ? 'table-active' : ''}>
                   <td>
@@ -700,7 +711,7 @@ function StandingsTable({ rows, zones, onSelectTeam }) {
                   <th className="text-center">Điểm</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="ft-stagger">
                 {filtered.map((r) => (
                   <tr key={r.teamId} role="button" onClick={() => onSelectTeam(r.teamId)}>
                     <td>
@@ -834,7 +845,7 @@ function CompareTeams({ rows, onSelectTeam }) {
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="ft-stagger">
             {COMPARE_METRICS.map((m) => (
               <tr key={m.key}>
                 <td className={cellClass(m, 'A')}>{teamA[m.key]}</td>
@@ -920,7 +931,7 @@ function PredictionsView({ matches, token, onRefresh }) {
       )}
 
       <div className="ft-card">
-        <ul className="list-group list-group-flush">
+        <ul className="list-group list-group-flush ft-stagger">
           {matches.map((m) => {
             const draft = drafts[m.matchId] || { home: '', away: '' }
             const already = m.myHomeScore != null
@@ -1017,7 +1028,7 @@ function ScorersTable({ scorers, onSelectTeam }) {
             <th className="text-center">Kiến tạo</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="ft-stagger">
           {scorers.map((s) => (
             <tr key={s.playerId}>
               <td>
@@ -1146,7 +1157,7 @@ function TeamDetail({ teamId, onBack, token, favorites, onFavoritesChange }) {
             <>
               <h3 className="h5 mb-3">Đội hình</h3>
               <div className="ft-card">
-                <ul className="list-group list-group-flush">
+                <ul className="list-group list-group-flush ft-stagger">
                   {team.squad.map((p) => (
                     <li key={p.id} className="list-group-item d-flex justify-content-between align-items-center">
                       <span className="fw-medium">{p.name}</span>
@@ -1177,7 +1188,7 @@ function MatchList({ matches, showScore }) {
 
   return (
     <div className="ft-card">
-      <ul className="list-group list-group-flush">
+      <ul className="list-group list-group-flush ft-stagger">
         {matches.map((m) => (
           <li key={m.id} className="list-group-item d-flex align-items-center flex-wrap gap-2 py-3">
             <small className="text-secondary" style={{ minWidth: 132 }}>
