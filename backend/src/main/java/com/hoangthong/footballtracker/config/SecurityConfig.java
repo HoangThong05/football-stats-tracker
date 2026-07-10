@@ -45,6 +45,9 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/standings/**", "/api/matches/**", "/api/teams/**", "/api/scorers/**").permitAll()
+                        // Xem lich du doan + BXH du doan la cong khai; GUI du doan (POST /api/predictions)
+                        // va xem lich su ca nhan (/api/predictions/mine) van roi vao anyRequest().authenticated().
+                        .requestMatchers("/api/predictions/matches/**", "/api/predictions/leaderboard").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())

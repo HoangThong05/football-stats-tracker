@@ -14,4 +14,10 @@ public interface MatchFixtureRepository extends JpaRepository<MatchFixture, Long
      */
     List<MatchFixture> findByStatusInAndUtcDateBetween(
             List<String> statuses, Instant from, Instant to);
+
+    /** Cac tran sap dien ra cua 1 giai, sap xep gan nhat truoc -> dung cho man hinh du doan. */
+    List<MatchFixture> findByCompetitionAndStatusInOrderByUtcDateAsc(String competition, List<String> statuses);
+
+    /** Tran da ket thuc, dung cho job cham diem du doan. */
+    List<MatchFixture> findByStatus(String status);
 }

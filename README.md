@@ -10,6 +10,8 @@ user accounts (JWT + phan quyen), favorite teams, scheduled data sync, and email
 - **Bang xep hang** 6 giai hang dau (PL, La Liga, Bundesliga, Serie A, Ligue 1, Champions League)
 - **Lich thi dau & ket qua** gan day cho tung giai
 - **Vua pha luoi** (top scorers) — cau thu ghi ban nhieu nhat moi giai
+- **Du doan ket qua** — doan ti so tran sap dien ra, tu dong cham diem sau khi tran ket thuc,
+  co bang xep hang nguoi du doan gioi nhat
 - **So sanh 2 doi** — dat canh nhau cac chi so, to xanh doi tot hon
 - **Tim kiem doi** ngay tren bang xep hang (bo dau: go "munchen" ra "München")
 - **Dark mode** — chuyen giao dien sang/toi, nho lua chon
@@ -97,7 +99,7 @@ npm run dev
 ```
 
 Mo http://localhost:5173 → chon giai → xem bang xep hang, lich thi dau, ket qua, vua pha luoi;
-dang nhap de theo doi doi yeu thich (tai khoan ADMIN co them nut **Quan tri**).
+dang nhap de theo doi doi yeu thich va tham gia **du doan ket qua** (tai khoan ADMIN co them nut **Quan tri**).
 
 ## 📡 API Endpoints
 
@@ -114,6 +116,10 @@ dang nhap de theo doi doi yeu thich (tai khoan ADMIN co them nut **Quan tri**).
 | POST | `/api/favorites` | Theo doi 1 doi | dang nhap |
 | DELETE | `/api/favorites/{teamId}` | Bo theo doi | dang nhap |
 | GET | `/api/admin/users` | Danh sach tat ca nguoi dung | **ADMIN** |
+| GET | `/api/predictions/matches/{code}` | Tran sap dien ra kem du doan hien tai (neu co dang nhap) | cong khai |
+| GET | `/api/predictions/leaderboard` | BXH nguoi du doan diem cao nhat | cong khai |
+| POST | `/api/predictions` | Gui/sua du doan ti so (chi khi tran chua bat dau) | dang nhap |
+| GET | `/api/predictions/mine` | Lich su du doan cua ban (moi giai) | dang nhap |
 
 ## 🧪 Chay test
 
@@ -121,7 +127,7 @@ dang nhap de theo doi doi yeu thich (tai khoan ADMIN co them nut **Quan tri**).
 mvn -f backend/pom.xml test
 ```
 
-37 test (JUnit 5 + Mockito + MockMvc), **khong can DB hay mang** — tat ca phu thuoc ngoai
+56 test (JUnit 5 + Mockito + MockMvc), **khong can DB hay mang** — tat ca phu thuoc ngoai
 deu duoc mock, nen chay o dau cung duoc:
 
 | File test | Kiem tra |
@@ -133,6 +139,8 @@ deu duoc mock, nen chay o dau cung duoc:
 | `MatchesServiceTest` | Loc `upcoming`/`results`, sap xep, ti so `null` khi chua da |
 | `ScorersServiceTest` | Danh so thu hang, giu `assists = null` |
 | `FavoriteServiceTest` | Theo doi trung → 409, bo theo doi khong co → 404 |
+| `PredictionScoringServiceTest` | Luat cham diem (3/1/0 diem) qua nhieu tinh huong |
+| `PredictionServiceTest` | Tran da bat dau → 409, ti so am → 400, cap nhat thay vi trung lap |
 
 ## 📚 League codes
 
@@ -164,9 +172,23 @@ UPDATE app_user SET role = 'ADMIN' WHERE email = 'email_cua_ban@example.com';
 > Sau khi doi role, phai **dang xuat va dang nhap lai** de nhan JWT moi. Token cu van mang
 > role cu cho toi khi het han (JWT la stateless, khong tu cap nhat).
 
+## 🎯 Du doan ket qua
+
+1. Vao tab **"Du doan"**, chon giai → nhap ti so du doan cho cac tran sap dien ra
+   (co the sua lai nhieu lan, mien tran chua bat dau).
+2. Job `@Scheduled` (`PredictionScoringService`) tu dong cham diem khi tran chuyen
+   sang trang thai `FINISHED`:
+   - **3 diem**: dung chinh xac ti so
+   - **1 diem**: dung ket qua (thang/hoa/thua) nhung sai ti so cu the
+   - **0 diem**: sai hoan toan
+3. Xem **"🏆 BXH du doan"** tren navbar de biet ai dang dan dau — cong khai, khong can dang nhap de xem.
+
+> Du doan chi thuc hien duoc voi tran DA DUOC DONG BO vao bang `match_fixture` (qua `MatchSyncService`),
+> nen trong mua he off-season danh sach co the trong — day la du lieu thuc, khong phai loi.
+
 ## 🗄️ Database
 
-4 bang (xem chi tiet + comment trong `backend/src/main/resources/db/migration/`):
+5 bang (xem chi tiet + comment trong `backend/src/main/resources/db/migration/`):
 
 | Bang | Vai tro |
 |------|---------|
@@ -174,6 +196,7 @@ UPDATE app_user SET role = 'ADMIN' WHERE email = 'email_cua_ban@example.com';
 | `favorite_team` | Doi bong moi user theo doi (FK → app_user) |
 | `match_fixture` | Tran dau dong bo tu football-data.org |
 | `sent_notification` | Danh dau email da gui (chong trung) |
+| `prediction` | Du doan ti so cua user cho 1 tran (FK → app_user, match_fixture); `points` NULL toi khi cham diem |
 
 Flyway tu tao them bang `flyway_schema_history` de theo doi migration da chay.
 
@@ -191,5 +214,5 @@ Flyway tu tao them bang `flyway_schema_history` de theo doi migration da chay.
 - [x] Phan quyen USER / ADMIN + trang quan tri
 - [x] So sanh 2 doi, tim kiem doi, dark mode
 - [x] Toi uu toc do: cache TTL 30 phut, canh bao quota, lazy-load anh
-- [x] Viet test tu dong (JUnit) — 37 test
-- [ ] Du doan ket qua tran dau (gamification)
+- [x] Viet test tu dong (JUnit) — 56 test
+- [x] Du doan ket qua tran dau (gamification) — cham diem tu dong + BXH

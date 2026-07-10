@@ -19,6 +19,7 @@ const VIEWS = [
   { key: 'results', name: 'Kết quả' },
   { key: 'scorers', name: 'Vua phá lưới' },
   { key: 'compare', name: 'So sánh đội' },
+  { key: 'predict', name: 'Dự đoán' },
 ]
 
 // view -> đường dẫn API tương ứng.
@@ -26,6 +27,7 @@ const VIEWS = [
 function endpointFor(view, league) {
   if (view === 'standings' || view === 'compare') return `${API_BASE}/standings/${league}`
   if (view === 'scorers') return `${API_BASE}/scorers/${league}`
+  if (view === 'predict') return `${API_BASE}/predictions/matches/${league}`
   return `${API_BASE}/matches/${league}/${view}`
 }
 
@@ -70,6 +72,7 @@ export default function App() {
   const [error, setError] = useState(null)
   const [selectedTeamId, setSelectedTeamId] = useState(null)
   const [showFavorites, setShowFavorites] = useState(false)
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
 
   const [token, setToken] = useState(() => localStorage.getItem('ft_token'))
   const [userEmail, setUserEmail] = useState(() => localStorage.getItem('ft_email'))
@@ -85,11 +88,13 @@ export default function App() {
     localStorage.setItem('ft_theme', theme)
   }, [theme])
 
-  useEffect(() => {
+  const loadViewData = () => {
     setLoading(true)
     setError(null)
 
-    fetch(endpointFor(view, league))
+    // Gan them token (neu co) cho moi request: cac endpoint cong khai bo qua header nay,
+    // rieng "predict" dung no de biet du doan hien tai cua nguoi dung.
+    fetch(endpointFor(view, league), { headers: authHeaders(token) })
       .then((res) => {
         if (!res.ok) throw new Error(`Loi ${res.status}`)
         return res.json()
@@ -97,7 +102,9 @@ export default function App() {
       .then((data) => setData(data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
-  }, [league, view])
+  }
+
+  useEffect(loadViewData, [league, view, token])
 
   const refreshFavorites = (currentToken) => {
     fetch(`${API_BASE}/favorites`, { headers: authHeaders(currentToken) })
@@ -133,11 +140,13 @@ export default function App() {
     setUserRole(null)
     setShowFavorites(false)
     setShowAdmin(false)
+    setShowLeaderboard(false)
     setSelectedTeamId(null)
   }
 
   const goToTeam = (teamId) => {
     setShowFavorites(false)
+    setShowLeaderboard(false)
     setSelectedTeamId(teamId)
   }
 
@@ -166,6 +175,18 @@ export default function App() {
                 {theme === 'dark' ? '☀️' : '🌙'}
               </button>
 
+              <button
+                className="btn btn-nav btn-sm"
+                onClick={() => {
+                  setSelectedTeamId(null)
+                  setShowFavorites(false)
+                  setShowAdmin(false)
+                  setShowLeaderboard(true)
+                }}
+              >
+                🏆 BXH dự đoán
+              </button>
+
               {userEmail ? (
                 <>
                   <button
@@ -173,6 +194,7 @@ export default function App() {
                     onClick={() => {
                       setSelectedTeamId(null)
                       setShowAdmin(false)
+                      setShowLeaderboard(false)
                       setShowFavorites(true)
                     }}
                   >
@@ -184,6 +206,7 @@ export default function App() {
                       onClick={() => {
                         setSelectedTeamId(null)
                         setShowFavorites(false)
+                        setShowLeaderboard(false)
                         setShowAdmin(true)
                       }}
                     >
@@ -227,6 +250,8 @@ export default function App() {
           <FavoritesList favorites={favorites} onSelectTeam={goToTeam} onBack={() => setShowFavorites(false)} />
         ) : showAdmin ? (
           <AdminUsers token={token} onBack={() => setShowAdmin(false)} />
+        ) : showLeaderboard ? (
+          <LeaderboardView token={token} userEmail={userEmail} onBack={() => setShowLeaderboard(false)} />
         ) : (
           <>
             <div className="ft-league-tabs mb-3">
@@ -263,6 +288,9 @@ export default function App() {
                 )}
                 {view === 'scorers' && <ScorersTable scorers={data} onSelectTeam={setSelectedTeamId} />}
                 {view === 'compare' && <CompareTeams rows={data} onSelectTeam={setSelectedTeamId} />}
+                {view === 'predict' && (
+                  <PredictionsView matches={data} token={token} onRefresh={loadViewData} />
+                )}
                 {(view === 'upcoming' || view === 'results') && (
                   <MatchList matches={data} showScore={view === 'results'} />
                 )}
@@ -551,6 +579,82 @@ function FavoritesList({ favorites, onSelectTeam, onBack }) {
   )
 }
 
+function LeaderboardView({ token, userEmail, onBack }) {
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+
+    fetch(`${API_BASE}/predictions/leaderboard`, { headers: authHeaders(token) })
+      .then((res) => {
+        if (!res.ok) throw new Error(`Loi ${res.status}`)
+        return res.json()
+      })
+      .then((data) => setRows(data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [token])
+
+  return (
+    <div className="ft-fade">
+      <button className="btn btn-link ps-0 mb-3" onClick={onBack}>
+        ← Quay lại
+      </button>
+
+      <h3 className="h5 mb-3">🏆 Bảng xếp hạng dự đoán</h3>
+      <p className="text-secondary small">
+        Đúng chính xác tỉ số: <strong>3 điểm</strong> · Đúng thắng/hòa/thua (sai tỉ số): <strong>1 điểm</strong>
+      </p>
+
+      {loading && <Loading />}
+      {error && <div className="alert alert-danger">Không tải được: {error}</div>}
+
+      {!loading && !error && rows.length === 0 && (
+        <div className="alert alert-secondary">
+          Chưa có ai được chấm điểm. Vào tab "Dự đoán" để tham gia — điểm sẽ hiện sau khi trận đấu kết thúc.
+        </div>
+      )}
+
+      {!loading && !error && rows.length > 0 && (
+        <div className="ft-card table-responsive">
+          <table className="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Người chơi</th>
+                <th className="text-center">Lượt đoán</th>
+                <th className="text-center">Điểm</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.email} className={r.email === userEmail ? 'table-active' : ''}>
+                  <td>
+                    {RANK_MEDALS[r.rank] ? (
+                      <span className="ft-rank-medal">{RANK_MEDALS[r.rank]}</span>
+                    ) : (
+                      <span className="ft-pos">{r.rank}</span>
+                    )}
+                  </td>
+                  <td className="fw-medium">
+                    {r.email}
+                    {r.email === userEmail && <span className="badge text-bg-success ms-2">Bạn</span>}
+                  </td>
+                  <td className="text-center">{r.totalPredictions}</td>
+                  <td className="text-center fw-bold fs-6">{r.totalPoints}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Tra ve class huy hieu vi tri theo vung (suat cup chau Au / nguy hiem)
 function posClass(position, total, zones) {
   if (!zones) return 'ft-pos'
@@ -746,6 +850,148 @@ function CompareTeams({ rows, onSelectTeam }) {
 
       <p className="ft-legend text-secondary mt-2 ps-1">
         Chỉ số tốt hơn được <span className="fw-bold text-success">tô xanh</span>. Bấm vào tên đội để xem chi tiết.
+      </p>
+    </div>
+  )
+}
+
+function PredictionsView({ matches, token, onRefresh }) {
+  // Luu ti so dang nhap cho tung tran: { [matchId]: { home: '2', away: '1' } }
+  const [drafts, setDrafts] = useState({})
+  const [savingId, setSavingId] = useState(null)
+  const [errorId, setErrorId] = useState(null)
+
+  useEffect(() => {
+    const initial = {}
+    for (const m of matches) {
+      initial[m.matchId] = {
+        home: m.myHomeScore ?? '',
+        away: m.myAwayScore ?? '',
+      }
+    }
+    setDrafts(initial)
+  }, [matches])
+
+  const setDraft = (matchId, field, value) => {
+    setDrafts((prev) => ({ ...prev, [matchId]: { ...prev[matchId], [field]: value } }))
+  }
+
+  const submit = (matchId) => {
+    const draft = drafts[matchId]
+    const home = Number(draft?.home)
+    const away = Number(draft?.away)
+    if (draft?.home === '' || draft?.away === '' || Number.isNaN(home) || Number.isNaN(away) || home < 0 || away < 0) {
+      setErrorId(matchId)
+      return
+    }
+
+    setErrorId(null)
+    setSavingId(matchId)
+
+    fetch(`${API_BASE}/predictions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+      body: JSON.stringify({ matchId, homeScore: home, awayScore: away }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`Loi ${res.status}`)
+        onRefresh()
+      })
+      .catch(() => setErrorId(matchId))
+      .finally(() => setSavingId(null))
+  }
+
+  if (matches.length === 0) {
+    return (
+      <div className="alert alert-secondary d-flex align-items-center gap-2">
+        <span style={{ fontSize: '1.3rem' }}>🎯</span>
+        <span>Không có trận nào để dự đoán trong 14 ngày tới.</span>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      {!token && (
+        <div className="alert alert-warning d-flex align-items-center gap-2">
+          <span style={{ fontSize: '1.3rem' }}>🔒</span>
+          <span>Đăng nhập để tham gia dự đoán và ghi điểm trên bảng xếp hạng!</span>
+        </div>
+      )}
+
+      <div className="ft-card">
+        <ul className="list-group list-group-flush">
+          {matches.map((m) => {
+            const draft = drafts[m.matchId] || { home: '', away: '' }
+            const already = m.myHomeScore != null
+
+            return (
+              <li key={m.matchId} className="list-group-item py-3">
+                <div className="d-flex align-items-center flex-wrap gap-3">
+                  <small className="text-secondary" style={{ minWidth: 132 }}>
+                    {formatKickoff(m.utcDate)}
+                    {m.matchday != null && <span className="text-body-tertiary"> · Vòng {m.matchday}</span>}
+                  </small>
+
+                  <div className="d-flex align-items-center justify-content-end gap-2 flex-grow-1" style={{ minWidth: 0 }}>
+                    <span className="text-truncate fw-medium">{m.homeTeam}</span>
+                    {m.homeCrest && <img src={m.homeCrest} alt="" width="22" height="22" loading="lazy" />}
+                  </div>
+
+                  {token ? (
+                    <div className="d-flex align-items-center gap-1">
+                      <input
+                        type="number"
+                        min="0"
+                        max="20"
+                        className="form-control form-control-sm text-center"
+                        style={{ width: 52 }}
+                        value={draft.home}
+                        onChange={(e) => setDraft(m.matchId, 'home', e.target.value)}
+                      />
+                      <span className="text-secondary">-</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="20"
+                        className="form-control form-control-sm text-center"
+                        style={{ width: 52 }}
+                        value={draft.away}
+                        onChange={(e) => setDraft(m.matchId, 'away', e.target.value)}
+                      />
+                    </div>
+                  ) : (
+                    <span className="ft-score-badge upcoming text-center">VS</span>
+                  )}
+
+                  <div className="d-flex align-items-center gap-2 flex-grow-1" style={{ minWidth: 0 }}>
+                    {m.awayCrest && <img src={m.awayCrest} alt="" width="22" height="22" loading="lazy" />}
+                    <span className="text-truncate fw-medium">{m.awayTeam}</span>
+                  </div>
+
+                  {token && (
+                    <button
+                      className={already ? 'btn btn-outline-success btn-sm' : 'btn btn-success btn-sm'}
+                      onClick={() => submit(m.matchId)}
+                      disabled={savingId === m.matchId}
+                    >
+                      {savingId === m.matchId ? '...' : already ? 'Cập nhật' : 'Dự đoán'}
+                    </button>
+                  )}
+                </div>
+
+                {errorId === m.matchId && (
+                  <div className="text-danger small mt-1">Tỉ số không hợp lệ, vui lòng nhập lại.</div>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+
+      <p className="ft-legend text-secondary mt-2 ps-1">
+        Đúng chính xác tỉ số: <strong>3 điểm</strong> · Đúng thắng/hòa/thua: <strong>1 điểm</strong> · Có thể sửa
+        dự đoán tới trước giờ bóng lăn.
       </p>
     </div>
   )
