@@ -3,94 +3,95 @@
 A full-stack app that tracks football league standings, results, fixtures, top scorers, and team details.
 Built with **Spring Boot** (backend) and **React + Bootstrap** (frontend), pulling data from
 the free [football-data.org](https://www.football-data.org) API with server-side caching,
-user accounts (JWT + phan quyen), favorite teams, scheduled data sync, and email reminders.
+user accounts (JWT + roles), favorite teams, scheduled data sync, and email reminders.
 
 ## ✨ Features
 
-- **Bang xep hang** 6 giai hang dau (PL, La Liga, Bundesliga, Serie A, Ligue 1, Champions League)
-- **Lich thi dau & ket qua** gan day cho tung giai
-- **Vua pha luoi** (top scorers) — cau thu ghi ban nhieu nhat moi giai
-- **Du doan ket qua** — doan ti so tran sap dien ra, tu dong cham diem sau khi tran ket thuc,
-  co bang xep hang nguoi du doan gioi nhat
-- **So sanh 2 doi** — dat canh nhau cac chi so, to xanh doi tot hon
-- **Tim kiem doi** ngay tren bang xep hang (bo dau: go "munchen" ra "München")
-- **Dark mode** — chuyen giao dien sang/toi, nho lua chon
-- **Trang chi tiet doi bong** (san nha, HLV, nam thanh lap, doi hinh)
-- **Dang ky / dang nhap** bang JWT (mat khau ma hoa BCrypt)
-- **Phan quyen USER / ADMIN** — ADMIN co trang quan tri xem danh sach nguoi dung
-- **Theo doi doi yeu thich** — luu vao SQL Server theo tung tai khoan
-- **Job @Scheduled** tu dong dong bo tran dau vao DB moi 30 phut
-- **Email nhac nho** khi doi yeu thich sap thi dau (trong 24h toi)
-- **Swagger UI** de test API truc tiep
+- **Standings** for 6 top leagues (PL, La Liga, Bundesliga, Serie A, Ligue 1, Champions League)
+- **Fixtures & results** for the last/next 14 days per league
+- **Top scorers** — goal-scoring leaderboard for each league
+- **Score predictions** — predict upcoming match scores, auto-scored once the match finishes,
+  with a public leaderboard of the best predictors and a personal prediction history
+- **Head-to-head comparison** — put two teams side by side, best metric highlighted
+- **Team search** right on the standings table (accent-insensitive: typing "munchen" matches "München")
+- **Dark mode** — toggle between light/dark theme, remembered across visits
+- **Team detail page** (venue, coach, founding year, squad)
+- **Sign up / log in** with JWT (passwords hashed with BCrypt)
+- **USER / ADMIN roles** — admins get a dashboard listing all registered users
+- **Favorite teams** — saved to SQL Server per account
+- **Scheduled sync job** — automatically refreshes match data into the DB every 30 minutes
+- **Email reminders** when a favorite team's match is coming up (within 24h)
+- **Swagger UI** for exploring/testing the API directly
 
 ## 🧱 Architecture
 
 ```
-React + Bootstrap (5173)  ──►  Spring Boot API (8080)  ──►  cache 5' / DB  ──►  football-data.org
+React + Bootstrap (5173)  ──►  Spring Boot API (8080)  ──►  cache 30' / DB  ──►  football-data.org
                                         │
-                                        ├─►  SQL Server (users, favorites, matches)
-                                        └─►  @Scheduled: sync tran + gui email nhac
+                                        ├─►  SQL Server (users, favorites, matches, predictions)
+                                        └─►  @Scheduled: sync matches + score predictions + send emails
 ```
 
-Frontend khong bao gio goi thang football-data.org. Backend giu API key, cache phan hoi
-(Caffeine, TTL 5 phut) → luon nam duoi gioi han 10 request/phut cua goi mien phi.
+The frontend never calls football-data.org directly. The backend holds the API key and caches
+responses (Caffeine, 30-minute TTL) to stay comfortably under the free tier's 10 requests/minute limit.
 
 ## 🛠️ Tech Stack
 
-| Layer | Cong nghe |
+| Layer | Technology |
 |-------|-----------|
 | Backend | Java 21, Spring Boot 3.3, Spring Security (JWT), Spring Data JPA, Caffeine cache |
-| Database | SQL Server |
+| Database | SQL Server, Flyway migrations |
 | Frontend | React 18, Vite, Bootstrap 5 |
-| API doc | springdoc-openapi (Swagger UI) |
+| API docs | springdoc-openapi (Swagger UI) |
 | Email | Spring Mail (SMTP) |
+| Testing | JUnit 5, Mockito, MockMvc (56 tests) |
 
 ## 🚀 Getting Started
 
-### Yeu cau
+### Requirements
 - **JDK 21+**
 - **Node.js 18+**
-- **SQL Server** (dang chay, cho phep SQL Authentication)
+- **SQL Server** (running, with SQL Authentication enabled)
 
-### 0. Lay API key mien phi
-1. Dang ky tai https://www.football-data.org/client/register
-2. Copy API token tu email xac nhan.
+### 0. Get a free API key
+1. Register at https://www.football-data.org/client/register
+2. Copy the API token from the confirmation email.
 
-### 1. Chuan bi database
-Chi can tao database TRONG (chua co bang) — **Flyway se tu tao cac bang** khi app chay lan dau.
+### 1. Prepare the database
+Just create an **empty** database — **Flyway creates the tables automatically** on first run.
 
 ```bash
 sqlcmd -S localhost -U sa -P your_sa_password -Q "IF DB_ID('football_tracker') IS NULL CREATE DATABASE football_tracker"
 ```
 
-> Luoc do bang duoc quan ly boi Flyway trong `backend/src/main/resources/db/migration/`.
-> Moi lan doi schema, them 1 file `V2__mo_ta.sql`, `V3__...` — Flyway tu chay theo thu tu.
+> The schema is managed by Flyway under `backend/src/main/resources/db/migration/`.
+> Whenever the schema changes, a new `V4__description.sql`, `V5__...` file is added — Flyway runs them in order automatically.
 
-### 2. Chay backend (Spring Boot)
-Dat cac bien moi truong roi chay. Vi du tren **Windows CMD**:
+### 2. Run the backend (Spring Boot)
+Set the environment variables, then run. Example on **Windows CMD**:
 
 ```cmd
 set FOOTBALL_DATA_API_KEY=your_api_key
 set DB_USERNAME=sa
 set DB_PASSWORD=your_sa_password
-set JWT_SECRET=chuoi_ngau_nhien_toi_thieu_32_ky_tu
+set JWT_SECRET=a_random_string_at_least_32_characters_long
 mvn -f backend/pom.xml spring-boot:run
 ```
 
-| Bien | Bat buoc | Y nghia |
-|------|----------|---------|
-| `FOOTBALL_DATA_API_KEY` | ✅ | API key football-data.org |
-| `DB_USERNAME` | ✅ | User SQL Server (mac dinh `sa`) |
-| `DB_PASSWORD` | ✅ | Mat khau SQL Server |
-| `JWT_SECRET` | ✅ | Chuoi bi mat ky JWT (>= 32 ky tu) |
-| `MAIL_USERNAME` | ⬜ | Email gui thong bao (Gmail App Password) |
-| `MAIL_PASSWORD` | ⬜ | Mat khau ung dung cua email tren |
+| Variable | Required | Purpose |
+|----------|:---:|---------|
+| `FOOTBALL_DATA_API_KEY` | ✅ | football-data.org API key |
+| `DB_USERNAME` | ✅ | SQL Server login (defaults to `sa`) |
+| `DB_PASSWORD` | ✅ | SQL Server password |
+| `JWT_SECRET` | ✅ | Secret used to sign JWTs (≥ 32 chars) |
+| `MAIL_USERNAME` | ⬜ | Sender email for notifications (Gmail App Password) |
+| `MAIL_PASSWORD` | ⬜ | App password for the email above |
 
-> Neu khong dat `MAIL_*`, app van chay binh thuong — chi ghi log thay vi gui email that.
+> If `MAIL_*` is left unset, the app still runs fine — it just logs instead of sending real emails.
 
-Kiem tra: mo http://localhost:8080/swagger-ui/index.html → thay danh sach API.
+Check it worked: open http://localhost:8080/swagger-ui/index.html and you should see the API list.
 
-### 3. Chay frontend (React)
+### 3. Run the frontend (React)
 
 ```bash
 cd frontend
@@ -98,49 +99,49 @@ npm install
 npm run dev
 ```
 
-Mo http://localhost:5173 → chon giai → xem bang xep hang, lich thi dau, ket qua, vua pha luoi;
-dang nhap de theo doi doi yeu thich va tham gia **du doan ket qua** (tai khoan ADMIN co them nut **Quan tri**).
+Open http://localhost:5173 → pick a league → browse standings, fixtures, results, top scorers;
+log in to follow favorite teams and join **score predictions** (ADMIN accounts get an extra **Admin** button).
 
 ## 📡 API Endpoints
 
-| Method | Endpoint | Mo ta | Quyen |
-|--------|----------|-------|:---:|
-| GET | `/api/standings/{code}` | Bang xep hang | cong khai |
-| GET | `/api/matches/{code}/upcoming` | Lich 14 ngay toi | cong khai |
-| GET | `/api/matches/{code}/results` | Ket qua 14 ngay qua | cong khai |
-| GET | `/api/scorers/{code}` | Vua pha luoi | cong khai |
-| GET | `/api/teams/{id}` | Chi tiet doi bong | cong khai |
-| POST | `/api/auth/register` | Dang ky | cong khai |
-| POST | `/api/auth/login` | Dang nhap (tra JWT + role) | cong khai |
-| GET | `/api/favorites` | Danh sach doi yeu thich | dang nhap |
-| POST | `/api/favorites` | Theo doi 1 doi | dang nhap |
-| DELETE | `/api/favorites/{teamId}` | Bo theo doi | dang nhap |
-| GET | `/api/admin/users` | Danh sach tat ca nguoi dung | **ADMIN** |
-| GET | `/api/predictions/matches/{code}` | Tran sap dien ra kem du doan hien tai (neu co dang nhap) | cong khai |
-| GET | `/api/predictions/leaderboard` | BXH nguoi du doan diem cao nhat | cong khai |
-| POST | `/api/predictions` | Gui/sua du doan ti so (chi khi tran chua bat dau) | dang nhap |
-| GET | `/api/predictions/mine` | Lich su du doan cua ban (moi giai) | dang nhap |
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|:---:|
+| GET | `/api/standings/{code}` | League standings | public |
+| GET | `/api/matches/{code}/upcoming` | Fixtures for the next 14 days | public |
+| GET | `/api/matches/{code}/results` | Results from the last 14 days | public |
+| GET | `/api/scorers/{code}` | Top scorers | public |
+| GET | `/api/teams/{id}` | Team detail | public |
+| POST | `/api/auth/register` | Sign up | public |
+| POST | `/api/auth/login` | Log in (returns JWT + role) | public |
+| GET | `/api/favorites` | List favorite teams | logged in |
+| POST | `/api/favorites` | Follow a team | logged in |
+| DELETE | `/api/favorites/{teamId}` | Unfollow a team | logged in |
+| GET | `/api/admin/users` | List all users | **ADMIN** |
+| GET | `/api/predictions/matches/{code}` | Upcoming matches with your current prediction (if logged in) | public |
+| GET | `/api/predictions/leaderboard` | Top predictors leaderboard | public |
+| POST | `/api/predictions` | Submit/update a score prediction (only before kickoff) | logged in |
+| GET | `/api/predictions/mine` | Your prediction history (all leagues) | logged in |
 
-## 🧪 Chay test
+## 🧪 Running tests
 
 ```bash
 mvn -f backend/pom.xml test
 ```
 
-56 test (JUnit 5 + Mockito + MockMvc), **khong can DB hay mang** — tat ca phu thuoc ngoai
-deu duoc mock, nen chay o dau cung duoc:
+56 tests (JUnit 5 + Mockito + MockMvc), **no DB or network required** — every external
+dependency is mocked, so they run anywhere:
 
-| File test | Kiem tra |
-|-----------|----------|
-| `JwtServiceTest` | Sinh/doc token, claim `role`, token het han / bi sua / sai chu ky |
-| `AuthServiceTest` | Trung email → 409, sai mat khau → 401, tra ve dung `role` |
-| `AdminSecurityTest` | USER goi `/api/admin/**` → 403, ADMIN → 200, API cong khai van mo |
-| `StandingsServiceTest` | Map dung cac truong, chi lay block `TOTAL` |
-| `MatchesServiceTest` | Loc `upcoming`/`results`, sap xep, ti so `null` khi chua da |
-| `ScorersServiceTest` | Danh so thu hang, giu `assists = null` |
-| `FavoriteServiceTest` | Theo doi trung → 409, bo theo doi khong co → 404 |
-| `PredictionScoringServiceTest` | Luat cham diem (3/1/0 diem) qua nhieu tinh huong |
-| `PredictionServiceTest` | Tran da bat dau → 409, ti so am → 400, cap nhat thay vi trung lap |
+| Test file | What it checks |
+|-----------|----------------|
+| `JwtServiceTest` | Token generation/parsing, `role` claim, expired/tampered/mis-signed tokens |
+| `AuthServiceTest` | Duplicate email → 409, wrong password → 401, returns correct `role` |
+| `AdminSecurityTest` | USER hitting `/api/admin/**` → 403, ADMIN → 200, public API still open |
+| `StandingsServiceTest` | Correct field mapping, only the `TOTAL` block is used |
+| `MatchesServiceTest` | Filters `upcoming`/`results`, sorting, `null` score before kickoff |
+| `ScorersServiceTest` | Rank numbering, keeps `assists = null` as-is |
+| `FavoriteServiceTest` | Duplicate follow → 409, unfollow non-existent → 404 |
+| `PredictionScoringServiceTest` | Scoring rules (3/1/0 points) across many scenarios |
+| `PredictionServiceTest` | Match already started → 409, negative score → 400, update instead of duplicate |
 
 ## 📚 League codes
 
@@ -153,66 +154,69 @@ deu duoc mock, nen chay o dau cung duoc:
 | FL1 | Ligue 1 |
 | CL | Champions League |
 
-## 👥 Phan quyen (Roles)
+## 👥 Roles
 
-Moi tai khoan co 1 trong 2 vai tro, luu o cot `app_user.role`:
+Every account has one of two roles, stored in `app_user.role`:
 
-| Role | Quyen |
-|------|-------|
-| `USER` | Mac dinh khi dang ky. Xem du lieu, theo doi doi yeu thich. |
-| `ADMIN` | Nhu USER, cong them truy cap `/api/admin/**` va trang quan tri tren web. |
+| Role | Access |
+|------|--------|
+| `USER` | Default on sign-up. Browse data, follow favorite teams, make predictions. |
+| `ADMIN` | Everything USER can do, plus `/api/admin/**` and the Admin dashboard on the web. |
 
-Role duoc nhung vao JWT luc dang nhap. **Tao ADMIN dau tien** bang cach dang ky binh thuong
-roi nang quyen truc tiep trong DB:
+The role is embedded in the JWT at login time. **To create the first ADMIN**, sign up normally,
+then promote the account directly in the DB:
 
 ```sql
-UPDATE app_user SET role = 'ADMIN' WHERE email = 'email_cua_ban@example.com';
+UPDATE app_user SET role = 'ADMIN' WHERE email = 'your_email@example.com';
 ```
 
-> Sau khi doi role, phai **dang xuat va dang nhap lai** de nhan JWT moi. Token cu van mang
-> role cu cho toi khi het han (JWT la stateless, khong tu cap nhat).
+> After changing a role, you must **log out and back in** to get a fresh JWT — the old token
+> keeps the old role until it expires (JWT is stateless and doesn't auto-refresh).
 
-## 🎯 Du doan ket qua
+## 🎯 Score predictions
 
-1. Vao tab **"Du doan"**, chon giai → nhap ti so du doan cho cac tran sap dien ra
-   (co the sua lai nhieu lan, mien tran chua bat dau).
-2. Job `@Scheduled` (`PredictionScoringService`) tu dong cham diem khi tran chuyen
-   sang trang thai `FINISHED`:
-   - **3 diem**: dung chinh xac ti so
-   - **1 diem**: dung ket qua (thang/hoa/thua) nhung sai ti so cu the
-   - **0 diem**: sai hoan toan
-3. Xem **"🏆 BXH du doan"** tren navbar de biet ai dang dan dau — cong khai, khong can dang nhap de xem.
+1. Go to the **"Predict"** tab, pick a league → enter a score prediction for upcoming matches
+   (can be edited any number of times, as long as the match hasn't started).
+2. The `PredictionScoringService` scheduled job automatically scores predictions once a match's
+   status becomes `FINISHED`:
+   - **3 points**: exact score match
+   - **1 point**: correct outcome (win/draw/loss) but wrong exact score
+   - **0 points**: wrong outcome
+3. Check **"🏆 Leaderboard"** in the navbar to see who's on top — public, no login required.
+4. Logged-in users can view **"📜 History"** in the navbar for their full prediction history
+   (scored and pending), with a running point total.
 
-> Du doan chi thuc hien duoc voi tran DA DUOC DONG BO vao bang `match_fixture` (qua `MatchSyncService`),
-> nen trong mua he off-season danh sach co the trong — day la du lieu thuc, khong phai loi.
+> Predictions can only be made for matches already **synced** into the `match_fixture` table
+> (via `MatchSyncService`), so during the off-season the list may be empty — that's expected
+> behavior, not a bug.
 
 ## 🗄️ Database
 
-5 bang (xem chi tiet + comment trong `backend/src/main/resources/db/migration/`):
+5 tables (see full definitions + comments in `backend/src/main/resources/db/migration/`):
 
-| Bang | Vai tro |
-|------|---------|
-| `app_user` | Tai khoan nguoi dung (email, mat khau BCrypt, `role`) |
-| `favorite_team` | Doi bong moi user theo doi (FK → app_user) |
-| `match_fixture` | Tran dau dong bo tu football-data.org |
-| `sent_notification` | Danh dau email da gui (chong trung) |
-| `prediction` | Du doan ti so cua user cho 1 tran (FK → app_user, match_fixture); `points` NULL toi khi cham diem |
+| Table | Purpose |
+|-------|---------|
+| `app_user` | User accounts (email, BCrypt password hash, `role`) |
+| `favorite_team` | Teams each user follows (FK → app_user) |
+| `match_fixture` | Matches synced from football-data.org |
+| `sent_notification` | Tracks sent emails (prevents duplicates) |
+| `prediction` | A user's score prediction for a match (FK → app_user, match_fixture); `points` is NULL until scored |
 
-Flyway tu tao them bang `flyway_schema_history` de theo doi migration da chay.
+Flyway also creates a `flyway_schema_history` table to track which migrations have run.
 
 ## 🗺️ Roadmap
 
-- [x] Bang xep hang 6 giai
-- [x] Lich thi dau & ket qua gan day
-- [x] Trang chi tiet doi bong
-- [x] Dang nhap (JWT) + follow doi yeu thich
-- [x] Luu du lieu vao SQL Server + job `@Scheduled` tu lam moi
-- [x] Email thong bao khi doi yeu thich sap thi dau
-- [x] Swagger/OpenAPI cho tai lieu API
-- [x] Chuyen schema sang Flyway migration
-- [x] Vua pha luoi (top scorers)
-- [x] Phan quyen USER / ADMIN + trang quan tri
-- [x] So sanh 2 doi, tim kiem doi, dark mode
-- [x] Toi uu toc do: cache TTL 30 phut, canh bao quota, lazy-load anh
-- [x] Viet test tu dong (JUnit) — 56 test
-- [x] Du doan ket qua tran dau (gamification) — cham diem tu dong + BXH
+- [x] Standings for 6 leagues
+- [x] Recent fixtures & results
+- [x] Team detail page
+- [x] JWT login + follow favorite teams
+- [x] Persist data to SQL Server + scheduled `@Scheduled` refresh job
+- [x] Email reminders for upcoming favorite-team matches
+- [x] Swagger/OpenAPI documentation
+- [x] Migrated schema management to Flyway
+- [x] Top scorers
+- [x] USER / ADMIN roles + admin dashboard
+- [x] Team comparison, team search, dark mode
+- [x] Performance: 30-min cache TTL, quota warnings, lazy-loaded images
+- [x] Automated tests (JUnit) — 56 tests
+- [x] Score predictions (gamification) — auto-scoring + leaderboard + personal history

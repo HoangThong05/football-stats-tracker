@@ -75,6 +75,7 @@ export default function App() {
   const [selectedTeamId, setSelectedTeamId] = useState(null)
   const [showFavorites, setShowFavorites] = useState(false)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [showMyPredictions, setShowMyPredictions] = useState(false)
 
   const [token, setToken] = useState(() => localStorage.getItem('ft_token'))
   const [userEmail, setUserEmail] = useState(() => localStorage.getItem('ft_email'))
@@ -151,12 +152,14 @@ export default function App() {
     setShowFavorites(false)
     setShowAdmin(false)
     setShowLeaderboard(false)
+    setShowMyPredictions(false)
     setSelectedTeamId(null)
   }
 
   const goToTeam = (teamId) => {
     setShowFavorites(false)
     setShowLeaderboard(false)
+    setShowMyPredictions(false)
     setSelectedTeamId(teamId)
   }
 
@@ -191,6 +194,7 @@ export default function App() {
                   setSelectedTeamId(null)
                   setShowFavorites(false)
                   setShowAdmin(false)
+                  setShowMyPredictions(false)
                   setShowLeaderboard(true)
                 }}
               >
@@ -205,10 +209,23 @@ export default function App() {
                       setSelectedTeamId(null)
                       setShowAdmin(false)
                       setShowLeaderboard(false)
+                      setShowMyPredictions(false)
                       setShowFavorites(true)
                     }}
                   >
                     ★ Yêu thích ({favorites.length})
+                  </button>
+                  <button
+                    className="btn btn-nav btn-sm"
+                    onClick={() => {
+                      setSelectedTeamId(null)
+                      setShowAdmin(false)
+                      setShowLeaderboard(false)
+                      setShowFavorites(false)
+                      setShowMyPredictions(true)
+                    }}
+                  >
+                    📜 Lịch sử
                   </button>
                   {userRole === 'ADMIN' && (
                     <button
@@ -217,6 +234,7 @@ export default function App() {
                         setSelectedTeamId(null)
                         setShowFavorites(false)
                         setShowLeaderboard(false)
+                        setShowMyPredictions(false)
                         setShowAdmin(true)
                       }}
                     >
@@ -262,6 +280,8 @@ export default function App() {
           <AdminUsers token={token} onBack={() => setShowAdmin(false)} />
         ) : showLeaderboard ? (
           <LeaderboardView token={token} userEmail={userEmail} onBack={() => setShowLeaderboard(false)} />
+        ) : showMyPredictions ? (
+          <MyPredictionsHistory token={token} onBack={() => setShowMyPredictions(false)} />
         ) : (
           <>
             <div className="ft-league-tabs mb-3">
@@ -660,6 +680,110 @@ function LeaderboardView({ token, userEmail, onBack }) {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MyPredictionsHistory({ token, onBack }) {
+  const [history, setHistory] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+
+    fetch(`${API_BASE}/predictions/mine`, { headers: authHeaders(token) })
+      .then((res) => {
+        if (!res.ok) throw new Error(`Loi ${res.status}`)
+        return res.json()
+      })
+      .then((data) => setHistory(data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [token])
+
+  const scored = history.filter((h) => h.points != null)
+  const totalPoints = scored.reduce((sum, h) => sum + h.points, 0)
+
+  const pointsBadgeClass = (points) => {
+    if (points === 3) return 'badge text-bg-success'
+    if (points === 1) return 'badge text-bg-warning'
+    return 'badge text-bg-secondary'
+  }
+
+  return (
+    <div className="ft-fade">
+      <button className="btn btn-link ps-0 mb-3" onClick={onBack}>
+        ← Quay lại
+      </button>
+
+      <h3 className="h5 mb-1">📜 Lịch sử dự đoán của tôi</h3>
+      {scored.length > 0 && (
+        <p className="text-secondary small mb-3">
+          Đã chấm điểm <strong>{scored.length}</strong> lượt · Tổng{' '}
+          <strong className="text-success">{totalPoints} điểm</strong>
+        </p>
+      )}
+
+      {loading && <Loading />}
+      {error && <div className="alert alert-danger">Không tải được: {error}</div>}
+
+      {!loading && !error && history.length === 0 && (
+        <div className="alert alert-secondary">
+          Bạn chưa dự đoán trận nào. Vào tab "Dự đoán" trên bảng xếp hạng để bắt đầu.
+        </div>
+      )}
+
+      {!loading && !error && history.length > 0 && (
+        <div className="ft-card">
+          <ul className="list-group list-group-flush ft-stagger">
+            {history.map((h) => (
+              <li key={h.matchId} className="list-group-item py-3">
+                <div className="d-flex align-items-center flex-wrap gap-3">
+                  <small className="text-secondary" style={{ minWidth: 132 }}>
+                    {formatKickoff(h.utcDate)}
+                    <div className="text-body-tertiary">{h.competition}</div>
+                  </small>
+
+                  <div
+                    className="d-flex align-items-center justify-content-end gap-2 flex-grow-1"
+                    style={{ minWidth: 0 }}
+                  >
+                    <span className="text-truncate fw-medium">{h.homeTeam}</span>
+                    {h.homeCrest && <img src={h.homeCrest} alt="" width="20" height="20" loading="lazy" />}
+                  </div>
+
+                  <div className="text-center" style={{ minWidth: 90 }}>
+                    <div className="small text-secondary">Bạn đoán</div>
+                    <div className="fw-bold">
+                      {h.predictedHomeScore} - {h.predictedAwayScore}
+                    </div>
+                  </div>
+
+                  <div className="d-flex align-items-center gap-2 flex-grow-1" style={{ minWidth: 0 }}>
+                    {h.awayCrest && <img src={h.awayCrest} alt="" width="20" height="20" loading="lazy" />}
+                    <span className="text-truncate fw-medium">{h.awayTeam}</span>
+                  </div>
+
+                  <div style={{ minWidth: 96 }} className="text-center">
+                    {h.points != null ? (
+                      <>
+                        <div className="small text-secondary">
+                          Kết quả {h.actualHomeScore}-{h.actualAwayScore}
+                        </div>
+                        <span className={pointsBadgeClass(h.points)}>+{h.points} điểm</span>
+                      </>
+                    ) : (
+                      <span className="badge text-bg-light text-muted border">Chưa diễn ra</span>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
