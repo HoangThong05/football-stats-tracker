@@ -15,6 +15,7 @@ user accounts (JWT + roles), favorite teams, scheduled data sync, and email remi
 - **Head-to-head comparison** — put two teams side by side, best metric highlighted
 - **Team search** right on the standings table (accent-insensitive: typing "munchen" matches "München")
 - **Dark mode** — toggle between light/dark theme, remembered across visits
+- **Vietnamese / English UI** — toggle language from the navbar, remembered across visits
 - **Team detail page** (venue, coach, founding year, squad)
 - **Sign up / log in** with JWT (passwords hashed with BCrypt)
 - **USER / ADMIN roles** — admins get a dashboard listing all registered users
@@ -220,3 +221,4 @@ Flyway also creates a `flyway_schema_history` table to track which migrations ha
 - [x] Performance: 30-min cache TTL, quota warnings, lazy-loaded images
 - [x] Automated tests (JUnit) — 56 tests
 - [x] Score predictions (gamification) — auto-scoring + leaderboard + personal history
+- [x] Vietnamese / English UI toggle
