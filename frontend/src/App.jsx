@@ -282,6 +282,8 @@ export default function App() {
             <LeaderboardView token={token} userEmail={userEmail} onBack={() => setShowLeaderboard(false)} />
           ) : showMyPredictions ? (
             <MyPredictionsHistory token={token} onBack={() => setShowMyPredictions(false)} />
+            ) : showMiniLeague ? (
+            <MiniLeague token={token} />
           ) : (
             <>
               <div className="ft-league-tabs mb-3">
