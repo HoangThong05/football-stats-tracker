@@ -1,8 +1,10 @@
 package com.hoangthong.footballtracker.service;
 
 import com.hoangthong.footballtracker.client.FootballDataClient;
+import com.hoangthong.footballtracker.client.dto.MatchDetailApiResponse;
 import com.hoangthong.footballtracker.client.dto.MatchesApiResponse;
 import com.hoangthong.footballtracker.config.CacheConfig;
+import com.hoangthong.footballtracker.dto.MatchDetailDto;
 import com.hoangthong.footballtracker.dto.MatchDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +61,53 @@ public class MatchesService {
                 .sorted(Comparator.comparing(MatchesApiResponse.Match::utcDate).reversed())
                 .map(MatchesService::toDto)
                 .toList();
+    }
+
+    /** Chi tiet 1 tran: gio da/hiep 1, san van dong, trong tai, ten giai day du. */
+    @Cacheable(value = CacheConfig.MATCHES_CACHE, key = "'DETAIL:' + #matchId")
+    public MatchDetailDto getMatchDetail(long matchId) {
+        log.info("CACHE MISS -> goi football-data.org lay chi tiet tran: {}", matchId);
+
+        MatchDetailApiResponse r = client.getMatchDetail(matchId);
+
+        Integer homeScore = null;
+        Integer awayScore = null;
+        Integer homeHalfScore = null;
+        Integer awayHalfScore = null;
+        if (r.score() != null) {
+            if (r.score().fullTime() != null) {
+                homeScore = r.score().fullTime().home();
+                awayScore = r.score().fullTime().away();
+            }
+            if (r.score().halfTime() != null) {
+                homeHalfScore = r.score().halfTime().home();
+                awayHalfScore = r.score().halfTime().away();
+            }
+        }
+
+        List<String> referees = r.referees() == null
+                ? List.of()
+                : r.referees().stream().map(MatchDetailApiResponse.Referee::name).toList();
+
+        return new MatchDetailDto(
+                r.id(),
+                r.utcDate(),
+                r.status(),
+                r.matchday(),
+                r.stage(),
+                r.competition() != null ? r.competition().name() : null,
+                r.competition() != null ? r.competition().emblem() : null,
+                r.venue(),
+                r.homeTeam().name(),
+                r.homeTeam().crest(),
+                r.awayTeam().name(),
+                r.awayTeam().crest(),
+                homeScore,
+                awayScore,
+                homeHalfScore,
+                awayHalfScore,
+                referees
+        );
     }
 
     private static MatchDto toDto(MatchesApiResponse.Match m) {

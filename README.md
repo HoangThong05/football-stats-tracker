@@ -8,7 +8,8 @@ user accounts (JWT + roles), favorite teams, scheduled data sync, and email remi
 ## ✨ Features
 
 - **Standings** for 6 top leagues (PL, La Liga, Bundesliga, Serie A, Ligue 1, Champions League)
-- **Fixtures & results** for the last/next 14 days per league
+- **Fixtures & results** for the last/next 14 days per league — click any match for a detail view
+  (half-time score, venue, referees)
 - **Top scorers** — goal-scoring leaderboard for each league
 - **Score predictions** — predict upcoming match scores, auto-scored once the match finishes,
   with a public leaderboard of the best predictors and a personal prediction history
@@ -110,6 +111,7 @@ log in to follow favorite teams and join **score predictions** (ADMIN accounts g
 | GET | `/api/standings/{code}` | League standings | public |
 | GET | `/api/matches/{code}/upcoming` | Fixtures for the next 14 days | public |
 | GET | `/api/matches/{code}/results` | Results from the last 14 days | public |
+| GET | `/api/matches/{id}` | Single match detail (half-time score, venue, referees) | public |
 | GET | `/api/scorers/{code}` | Top scorers | public |
 | GET | `/api/teams/{id}` | Team detail | public |
 | POST | `/api/auth/register` | Sign up | public |
@@ -222,3 +224,4 @@ Flyway also creates a `flyway_schema_history` table to track which migrations ha
 - [x] Automated tests (JUnit) — 56 tests
 - [x] Score predictions (gamification) — auto-scoring + leaderboard + personal history
 - [x] Vietnamese / English UI toggle
+- [x] Match detail page (half-time score, venue, referees)

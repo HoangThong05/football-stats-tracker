@@ -1,7 +1,7 @@
 import { formatKickoff } from '../utils'
 import { useTranslation } from '../i18n'
 
-export default function MatchList({ matches, showScore }) {
+export default function MatchList({ matches, showScore, onSelectMatch }) {
   const { t, lang } = useTranslation()
 
   if (matches.length === 0) {
@@ -17,7 +17,12 @@ export default function MatchList({ matches, showScore }) {
     <div className="ft-card">
       <ul className="list-group list-group-flush ft-stagger">
         {matches.map((m) => (
-          <li key={m.id} className="list-group-item d-flex align-items-center flex-wrap gap-2 py-3">
+          <li
+            key={m.id}
+            className="list-group-item d-flex align-items-center flex-wrap gap-2 py-3"
+            role="button"
+            onClick={() => onSelectMatch(m.id)}
+          >
             <small className="text-secondary" style={{ minWidth: 132 }}>
               {formatKickoff(m.utcDate, lang)}
               {m.matchday != null && (

@@ -1,5 +1,6 @@
 package com.hoangthong.footballtracker.client;
 
+import com.hoangthong.footballtracker.client.dto.MatchDetailApiResponse;
 import com.hoangthong.footballtracker.client.dto.MatchesApiResponse;
 import com.hoangthong.footballtracker.client.dto.ScorersApiResponse;
 import com.hoangthong.footballtracker.client.dto.StandingsApiResponse;
@@ -58,6 +59,13 @@ public class FootballDataClient {
                         .build(competitionCode))
                 .retrieve()
                 .toEntity(MatchesApiResponse.class));
+    }
+
+    public MatchDetailApiResponse getMatchDetail(long matchId) {
+        return exchange(restClient.get()
+                .uri("/matches/{id}", matchId)
+                .retrieve()
+                .toEntity(MatchDetailApiResponse.class));
     }
 
     public TeamApiResponse getTeam(long teamId) {

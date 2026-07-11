@@ -35,7 +35,7 @@ class MatchesServiceTest {
     }
 
     private static Match match(long id, String utcDate, String status, Integer home, Integer away) {
-        Score score = new Score(null, new ScorePart(home, away));
+        Score score = new Score(null, new ScorePart(home, away), null);
         return new Match(id, utcDate, status, 1, "REGULAR_SEASON", team(1, "Chu nha"), team(2, "Khach"), score);
     }
 

@@ -25,7 +25,7 @@ public record MatchesApiResponse(List<Match> matches) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Score(String winner, ScorePart fullTime) {
+    public record Score(String winner, ScorePart fullTime, ScorePart halfTime) {
     }
 
     // Dung Integer (khong phai int) vi tran chua da thi home/away la null.

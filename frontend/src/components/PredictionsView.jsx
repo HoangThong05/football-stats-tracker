@@ -3,7 +3,7 @@ import { API_BASE, authHeaders } from '../api'
 import { formatKickoff } from '../utils'
 import { useTranslation } from '../i18n'
 
-export default function PredictionsView({ matches, token, onRefresh }) {
+export default function PredictionsView({ matches, token, onRefresh, onSelectMatch }) {
   const { t, lang } = useTranslation()
   // Luu ti so dang nhap cho tung tran: { [matchId]: { home: '2', away: '1' } }
   const [drafts, setDrafts] = useState({})
@@ -77,7 +77,12 @@ export default function PredictionsView({ matches, token, onRefresh }) {
             return (
               <li key={m.matchId} className="list-group-item py-3">
                 <div className="d-flex align-items-center flex-wrap gap-3">
-                  <small className="text-secondary" style={{ minWidth: 132 }}>
+                  <small
+                    className="text-secondary"
+                    style={{ minWidth: 132 }}
+                    role="button"
+                    onClick={() => onSelectMatch(m.matchId)}
+                  >
                     {formatKickoff(m.utcDate, lang)}
                     {m.matchday != null && (
                       <span className="text-body-tertiary"> {t('matches_matchday_prefix')} {m.matchday}</span>

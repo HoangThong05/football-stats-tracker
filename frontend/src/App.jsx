@@ -12,6 +12,7 @@ import StandingsTable from './components/StandingsTable'
 import CompareTeams from './components/CompareTeams'
 import ScorersTable from './components/ScorersTable'
 import TeamDetail from './components/TeamDetail'
+import MatchDetail from './components/MatchDetail'
 import MatchList from './components/MatchList'
 import PredictionsView from './components/PredictionsView'
 
@@ -22,6 +23,7 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [selectedTeamId, setSelectedTeamId] = useState(null)
+  const [selectedMatchId, setSelectedMatchId] = useState(null)
   const [showFavorites, setShowFavorites] = useState(false)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [showMyPredictions, setShowMyPredictions] = useState(false)
@@ -111,13 +113,23 @@ export default function App() {
     setShowLeaderboard(false)
     setShowMyPredictions(false)
     setSelectedTeamId(null)
+    setSelectedMatchId(null)
   }
 
   const goToTeam = (teamId) => {
     setShowFavorites(false)
     setShowLeaderboard(false)
     setShowMyPredictions(false)
+    setSelectedMatchId(null)
     setSelectedTeamId(teamId)
+  }
+
+  const goToMatch = (matchId) => {
+    setShowFavorites(false)
+    setShowLeaderboard(false)
+    setShowMyPredictions(false)
+    setSelectedTeamId(null)
+    setSelectedMatchId(matchId)
   }
 
   const currentLeague = LEAGUES.find((l) => l.code === league)
@@ -173,6 +185,7 @@ export default function App() {
                       className="btn btn-nav btn-sm"
                       onClick={() => {
                         setSelectedTeamId(null)
+                        setSelectedMatchId(null)
                         setShowAdmin(false)
                         setShowLeaderboard(false)
                         setShowMyPredictions(false)
@@ -185,6 +198,7 @@ export default function App() {
                       className="btn btn-nav btn-sm"
                       onClick={() => {
                         setSelectedTeamId(null)
+                        setSelectedMatchId(null)
                         setShowAdmin(false)
                         setShowLeaderboard(false)
                         setShowFavorites(false)
@@ -198,6 +212,7 @@ export default function App() {
                         className="btn btn-nav btn-sm"
                         onClick={() => {
                           setSelectedTeamId(null)
+                        setSelectedMatchId(null)
                           setShowFavorites(false)
                           setShowLeaderboard(false)
                           setShowMyPredictions(false)
@@ -240,6 +255,8 @@ export default function App() {
               favorites={favorites}
               onFavoritesChange={() => refreshFavorites(token)}
             />
+          ) : selectedMatchId != null ? (
+            <MatchDetail matchId={selectedMatchId} onBack={() => setSelectedMatchId(null)} />
           ) : showFavorites ? (
             <FavoritesList favorites={favorites} onSelectTeam={goToTeam} onBack={() => setShowFavorites(false)} />
           ) : showAdmin ? (
@@ -289,10 +306,10 @@ export default function App() {
                   {view === 'scorers' && <ScorersTable scorers={data} onSelectTeam={setSelectedTeamId} />}
                   {view === 'compare' && <CompareTeams rows={data} onSelectTeam={setSelectedTeamId} />}
                   {view === 'predict' && (
-                    <PredictionsView matches={data} token={token} onRefresh={loadViewData} />
+                    <PredictionsView matches={data} token={token} onRefresh={loadViewData} onSelectMatch={goToMatch} />
                   )}
                   {(view === 'upcoming' || view === 'results') && (
-                    <MatchList matches={data} showScore={view === 'results'} />
+                    <MatchList matches={data} showScore={view === 'results'} onSelectMatch={goToMatch} />
                   )}
                 </div>
               )}

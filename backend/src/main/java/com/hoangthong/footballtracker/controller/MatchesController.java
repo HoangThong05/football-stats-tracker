@@ -1,5 +1,6 @@
 package com.hoangthong.footballtracker.controller;
 
+import com.hoangthong.footballtracker.dto.MatchDetailDto;
 import com.hoangthong.footballtracker.dto.MatchDto;
 import com.hoangthong.footballtracker.service.MatchesService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,5 +35,11 @@ public class MatchesController {
     @GetMapping("/{code}/results")
     public List<MatchDto> getResults(@PathVariable String code) {
         return service.getResults(code.toUpperCase());
+    }
+
+    /** Chi tiet 1 tran theo id (football-data.org matchId), vi du /api/matches/12345. */
+    @GetMapping("/{id:\\d+}")
+    public MatchDetailDto getMatch(@PathVariable long id) {
+        return service.getMatchDetail(id);
     }
 }
