@@ -18,7 +18,8 @@ export default function MiniLeague({ token }) {
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState(null)
 
-  useEffect(() => { if (token) fetchMyLeagues() }, [token])
+ useEffect(() => { if (token) fetchMyLeagues() }, [token])
+useEffect(() => { if (token) fetchMyLeagues() }, [])
   useEffect(() => { if (selected) fetchLeaderboard(selected.id) }, [selected])
 
   async function fetchMyLeagues() {
