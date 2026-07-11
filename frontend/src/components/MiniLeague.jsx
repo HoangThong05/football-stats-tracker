@@ -93,80 +93,73 @@ export default function MiniLeague({ token }) {
 
   if (!token) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
-        <p style={{ fontSize: '1.1rem' }}>🏆 Vui lòng <strong>đăng nhập</strong> để dùng tính năng Mini League</p>
+      <div className="text-center text-secondary py-5">
+        <p className="fs-5">🏆 Vui lòng <strong>đăng nhập</strong> để dùng tính năng Mini League</p>
       </div>
     )
   }
 
   return (
-    <div style={{ maxWidth: 760, margin: '0 auto', padding: '0 16px 40px' }}>
-
-      {/* Thông báo */}
+    <div>
       {msg && (
-        <div onClick={() => setMsg(null)} style={{
-          margin: '12px 0', padding: '10px 16px', borderRadius: 8, cursor: 'pointer',
-          background: msg.type === 'ok' ? '#dcfce7' : '#fee2e2',
-          color: msg.type === 'ok' ? '#15803d' : '#dc2626', fontSize: '0.9rem'
-        }}>
-          {msg.text} <span style={{ float: 'right', opacity: 0.6 }}>✕</span>
+        <div
+          className={`alert py-2 ${msg.type === 'ok' ? 'alert-success' : 'alert-danger'}`}
+          role="button"
+          onClick={() => setMsg(null)}
+        >
+          {msg.text} <span className="float-end opacity-50">✕</span>
         </div>
       )}
 
       {/* Tạo & tham gia */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, margin: '20px 0' }}>
-        {/* Tạo phòng */}
-        <div style={{ background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-          <h3 style={{ margin: '0 0 12px', fontSize: '1rem' }}>➕ Tạo phòng mới</h3>
-          <input
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && createLeague()}
-            placeholder="Tên phòng..."
-            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #d1d5db', marginBottom: 10, boxSizing: 'border-box' }}
-          />
-          <button onClick={createLeague} disabled={loading || !newName.trim()} style={{
-            width: '100%', padding: '9px', borderRadius: 8, border: 'none',
-            background: '#6366f1', color: '#fff', cursor: 'pointer', fontWeight: 600
-          }}>
-            Tạo phòng
-          </button>
+      <div className="row g-3 mb-4">
+        <div className="col-12 col-md-6">
+          <div className="ft-card p-4 h-100">
+            <h6 className="fw-bold mb-3">➕ Tạo phòng mới</h6>
+            <input
+              className="form-control mb-2"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && createLeague()}
+              placeholder="Tên phòng..."
+            />
+            <button className="btn btn-primary w-100 fw-semibold"
+              onClick={createLeague} disabled={loading || !newName.trim()}>
+              Tạo phòng
+            </button>
+          </div>
         </div>
 
-        {/* Tham gia */}
-        <div style={{ background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-          <h3 style={{ margin: '0 0 12px', fontSize: '1rem' }}>🔑 Tham gia bằng mã</h3>
-          <input
-            value={joinCode}
-            onChange={e => setJoinCode(e.target.value.toUpperCase())}
-            onKeyDown={e => e.key === 'Enter' && joinLeague()}
-            placeholder="Nhập mã 6 ký tự..."
-            maxLength={6}
-            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #d1d5db', marginBottom: 10, boxSizing: 'border-box', letterSpacing: 4, fontWeight: 700 }}
-          />
-          <button onClick={joinLeague} disabled={loading || joinCode.length !== 6} style={{
-            width: '100%', padding: '9px', borderRadius: 8, border: 'none',
-            background: '#10b981', color: '#fff', cursor: 'pointer', fontWeight: 600
-          }}>
-            Tham gia
-          </button>
+        <div className="col-12 col-md-6">
+          <div className="ft-card p-4 h-100">
+            <h6 className="fw-bold mb-3">🔑 Tham gia bằng mã</h6>
+            <input
+              className="form-control mb-2 text-center fw-bold"
+              style={{ letterSpacing: '4px' }}
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              onKeyDown={(e) => e.key === 'Enter' && joinLeague()}
+              placeholder="Nhập mã 6 ký tự..."
+              maxLength={6}
+            />
+            <button className="btn btn-success w-100 fw-semibold"
+              onClick={joinLeague} disabled={loading || joinCode.length !== 6}>
+              Tham gia
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Danh sách phòng */}
       {leagues.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <h3 style={{ fontSize: '1rem', margin: '0 0 10px' }}>🏠 Phòng của tôi</h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-            {leagues.map(l => (
-              <button key={l.id} onClick={() => setSelected(l)} style={{
-                padding: '8px 16px', borderRadius: 999,
-                border: selected?.id === l.id ? '2px solid #6366f1' : '1px solid #d1d5db',
-                background: selected?.id === l.id ? '#eef2ff' : '#fff',
-                color: selected?.id === l.id ? '#6366f1' : '#374151',
-                cursor: 'pointer', fontWeight: selected?.id === l.id ? 700 : 400
-              }}>
-                {l.name} <span style={{ opacity: 0.5, fontSize: '0.8rem' }}>({l.memberCount} người)</span>
+        <div className="mb-4">
+          <h6 className="fw-bold mb-2">🏠 Phòng của tôi</h6>
+          <div className="ft-league-tabs">
+            {leagues.map((l) => (
+              <button key={l.id}
+                className={l.id === selected?.id ? 'btn btn-sm active' : 'btn btn-sm'}
+                onClick={() => setSelected(l)}>
+                {l.name} <span className="opacity-50">({l.memberCount})</span>
               </button>
             ))}
           </div>
@@ -175,73 +168,69 @@ export default function MiniLeague({ token }) {
 
       {/* BXH phòng được chọn */}
       {selected && (
-        <div style={{ background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+        <div className="ft-card p-4">
+          <div className="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.1rem' }}>🏆 {selected.name}</h3>
-              <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: '0.85rem', color: '#6b7280' }}>Mã mời:</span>
-                <span style={{
-                  background: '#f3f4f6', padding: '3px 12px', borderRadius: 6,
-                  fontWeight: 700, letterSpacing: 3, fontSize: '1rem', color: '#1f2937'
-                }}>
+              <h5 className="fw-bold mb-2">🏆 {selected.name}</h5>
+              <div className="d-flex align-items-center gap-2 flex-wrap">
+                <span className="small text-secondary">Mã mời:</span>
+                <span className="badge text-bg-secondary fs-6" style={{ letterSpacing: '3px' }}>
                   {selected.inviteCode}
                 </span>
-                <button onClick={() => { navigator.clipboard.writeText(selected.inviteCode); setMsg({ type: 'ok', text: 'Đã copy mã mời!' }) }}
-                  style={{ padding: '3px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', fontSize: '0.8rem' }}>
+                <button className="btn btn-sm btn-outline-secondary"
+                  onClick={() => { navigator.clipboard.writeText(selected.inviteCode); setMsg({ type: 'ok', text: 'Đã copy mã mời!' }) }}>
                   Copy
                 </button>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div>
               {selected.isOwner ? (
-                <button onClick={() => deleteLeague(selected.id)} style={{
-                  padding: '6px 14px', borderRadius: 8, border: '1px solid #fca5a5',
-                  background: '#fff', color: '#dc2626', cursor: 'pointer', fontSize: '0.85rem'
-                }}>Xóa phòng</button>
+                <button className="btn btn-sm btn-outline-danger" onClick={() => deleteLeague(selected.id)}>
+                  Xóa phòng
+                </button>
               ) : (
-                <button onClick={() => leaveLeague(selected.id)} style={{
-                  padding: '6px 14px', borderRadius: 8, border: '1px solid #d1d5db',
-                  background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '0.85rem'
-                }}>Rời phòng</button>
+                <button className="btn btn-sm btn-outline-secondary" onClick={() => leaveLeague(selected.id)}>
+                  Rời phòng
+                </button>
               )}
             </div>
           </div>
 
-          {/* Bảng xếp hạng */}
           {!leaderboard ? (
-            <p style={{ color: '#6b7280', textAlign: 'center' }}>Đang tải...</p>
+            <p className="text-secondary text-center mb-0">Đang tải...</p>
           ) : leaderboard.entries.length === 0 ? (
-            <p style={{ color: '#6b7280', textAlign: 'center' }}>Chưa có thành viên nào dự đoán</p>
+            <p className="text-secondary text-center mb-0">Chưa có thành viên nào dự đoán</p>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: '#1a1a2e', color: '#fff' }}>
-                  <th style={{ padding: '10px 12px', textAlign: 'center', width: 50 }}>#</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left' }}>Thành viên</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'center' }}>Điểm</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboard.entries.map((e, i) => (
-                  <tr key={e.email} style={{ background: i % 2 === 0 ? '#f9fafb' : '#fff' }}>
-                    <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 700 }}>
-                      {e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : e.rank}
-                    </td>
-                    <td style={{ padding: '10px 12px' }}>{e.email}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 700, color: '#6366f1' }}>
-                      {e.totalPoints} đ
-                    </td>
+            <div className="table-responsive">
+              <table className="table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th className="text-center" style={{ width: 60 }}>#</th>
+                    <th>Thành viên</th>
+                    <th className="text-center">Điểm</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {leaderboard.entries.map((e) => (
+                    <tr key={e.email}>
+                      <td className="text-center fw-bold">
+                        {e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : e.rank}
+                      </td>
+                      <td>{e.email}</td>
+                      <td className="text-center fw-bold" style={{ color: 'var(--ft-accent-strong)' }}>
+                        {e.totalPoints} đ
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
 
       {leagues.length === 0 && (
-        <p style={{ textAlign: 'center', color: '#9ca3af', marginTop: 32 }}>
+        <p className="text-center text-secondary mt-4">
           Bạn chưa tham gia phòng nào. Tạo phòng mới hoặc nhập mã mời từ bạn bè!
         </p>
       )}
