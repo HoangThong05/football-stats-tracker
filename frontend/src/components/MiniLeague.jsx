@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
 import { API_BASE, authHeaders } from '../api'
+import { useTranslation } from '../i18n'
 
 export default function MiniLeague({ token }) {
+  const { t } = useTranslation()
   const [leagues, setLeagues] = useState([])
   const [selected, setSelected] = useState(null)
   const [leaderboard, setLeaderboard] = useState(null)
   const [newName, setNewName] = useState('')
   const [joinCode, setJoinCode] = useState('')
   const [loading, setLoading] = useState(false)
-  const [msg, setMsg] = useState(null) // { type: 'ok'|'err', text }
+  const [msg, setMsg] = useState(null)
 
   useEffect(() => { if (token) fetchMyLeagues() }, [token])
   useEffect(() => { if (selected) fetchLeaderboard(selected.id) }, [selected])
@@ -34,12 +36,12 @@ export default function MiniLeague({ token }) {
     })
     if (res.ok) {
       const league = await res.json()
-      setMsg({ type: 'ok', text: `Tạo phòng thành công! Mã mời: ${league.inviteCode}` })
+      setMsg({ type: 'ok', text: `${t('ml_create_success')} ${league.inviteCode}` })
       setNewName('')
       await fetchMyLeagues()
       setSelected(league)
     } else {
-      setMsg({ type: 'err', text: 'Tạo phòng thất bại' })
+      setMsg({ type: 'err', text: t('ml_create_error') })
     }
     setLoading(false)
   }
@@ -54,24 +56,24 @@ export default function MiniLeague({ token }) {
     })
     if (res.ok) {
       const league = await res.json()
-      setMsg({ type: 'ok', text: `Tham gia phòng "${league.name}" thành công!` })
+      setMsg({ type: 'ok', text: `${t('ml_join_success')} "${league.name}"` })
       setJoinCode('')
       await fetchMyLeagues()
       setSelected(league)
     } else {
       const err = await res.json().catch(() => ({}))
-      setMsg({ type: 'err', text: err.message || 'Mã mời không hợp lệ' })
+      setMsg({ type: 'err', text: err.message || t('ml_join_error') })
     }
     setLoading(false)
   }
 
   async function leaveLeague(id) {
-    if (!confirm('Bạn có chắc muốn rời phòng?')) return
+    if (!confirm(t('ml_confirm_leave'))) return
     const res = await fetch(`${API_BASE}/leagues/${id}/leave`, {
       method: 'DELETE', headers: authHeaders(token)
     })
     if (res.ok) {
-      setMsg({ type: 'ok', text: 'Đã rời phòng' })
+      setMsg({ type: 'ok', text: t('ml_leave_success') })
       setSelected(null)
       setLeaderboard(null)
       await fetchMyLeagues()
@@ -79,12 +81,12 @@ export default function MiniLeague({ token }) {
   }
 
   async function deleteLeague(id) {
-    if (!confirm('Xóa phòng sẽ xóa tất cả thành viên. Bạn có chắc?')) return
+    if (!confirm(t('ml_confirm_delete'))) return
     const res = await fetch(`${API_BASE}/leagues/${id}`, {
       method: 'DELETE', headers: authHeaders(token)
     })
     if (res.ok) {
-      setMsg({ type: 'ok', text: 'Đã xóa phòng' })
+      setMsg({ type: 'ok', text: t('ml_delete_success') })
       setSelected(null)
       setLeaderboard(null)
       await fetchMyLeagues()
@@ -94,7 +96,7 @@ export default function MiniLeague({ token }) {
   if (!token) {
     return (
       <div className="text-center text-secondary py-5">
-        <p className="fs-5">🏆 Vui lòng <strong>đăng nhập</strong> để dùng tính năng Mini League</p>
+        <p className="fs-5">🏆 {t('ml_login_hint')}</p>
       </div>
     )
   }
@@ -102,112 +104,102 @@ export default function MiniLeague({ token }) {
   return (
     <div>
       {msg && (
-        <div
-          className={`alert py-2 ${msg.type === 'ok' ? 'alert-success' : 'alert-danger'}`}
-          role="button"
-          onClick={() => setMsg(null)}
-        >
+        <div className={`alert py-2 ${msg.type === 'ok' ? 'alert-success' : 'alert-danger'}`}
+          role="button" onClick={() => setMsg(null)}>
           {msg.text} <span className="float-end opacity-50">✕</span>
         </div>
       )}
 
-      {/* Tạo & tham gia */}
       <div className="row g-3 mb-4">
         <div className="col-12 col-md-6">
           <div className="ft-card p-4 h-100">
-            <h6 className="fw-bold mb-3">➕ Tạo phòng mới</h6>
-            <input
-              className="form-control mb-2"
-              value={newName}
+            <h6 className="fw-bold mb-3">➕ {t('ml_create_title')}</h6>
+            <input className="form-control mb-2" value={newName}
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && createLeague()}
-              placeholder="Tên phòng..."
-            />
+              placeholder={t('ml_create_placeholder')} />
             <button className="btn btn-primary w-100 fw-semibold"
               onClick={createLeague} disabled={loading || !newName.trim()}>
-              Tạo phòng
+              {t('ml_create_btn')}
             </button>
           </div>
         </div>
 
         <div className="col-12 col-md-6">
           <div className="ft-card p-4 h-100">
-            <h6 className="fw-bold mb-3">🔑 Tham gia bằng mã</h6>
-            <input
-              className="form-control mb-2 text-center fw-bold"
-              style={{ letterSpacing: '4px' }}
-              value={joinCode}
+            <h6 className="fw-bold mb-3">🔑 {t('ml_join_title')}</h6>
+            <input className="form-control mb-2 text-center fw-bold"
+              style={{ letterSpacing: '4px' }} value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
               onKeyDown={(e) => e.key === 'Enter' && joinLeague()}
-              placeholder="Nhập mã 6 ký tự..."
-              maxLength={6}
-            />
+              placeholder={t('ml_join_placeholder')} maxLength={6} />
             <button className="btn btn-success w-100 fw-semibold"
               onClick={joinLeague} disabled={loading || joinCode.length !== 6}>
-              Tham gia
+              {t('ml_join_btn')}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Danh sách phòng */}
       {leagues.length > 0 && (
         <div className="mb-4">
-          <h6 className="fw-bold mb-2">🏠 Phòng của tôi</h6>
+          <h6 className="fw-bold mb-2">🏠 {t('ml_my_rooms')}</h6>
           <div className="ft-league-tabs">
             {leagues.map((l) => (
               <button key={l.id}
                 className={l.id === selected?.id ? 'btn btn-sm active' : 'btn btn-sm'}
                 onClick={() => setSelected(l)}>
-                {l.name} <span className="opacity-50">({l.memberCount})</span>
+                {l.name} <span className="opacity-50">({l.memberCount} {t('ml_members_count')})</span>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* BXH phòng được chọn */}
       {selected && (
         <div className="ft-card p-4">
           <div className="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
             <div>
               <h5 className="fw-bold mb-2">🏆 {selected.name}</h5>
               <div className="d-flex align-items-center gap-2 flex-wrap">
-                <span className="small text-secondary">Mã mời:</span>
+                <span className="small text-secondary">{t('ml_invite_code')}</span>
                 <span className="badge text-bg-secondary fs-6" style={{ letterSpacing: '3px' }}>
                   {selected.inviteCode}
                 </span>
                 <button className="btn btn-sm btn-outline-secondary"
-                  onClick={() => { navigator.clipboard.writeText(selected.inviteCode); setMsg({ type: 'ok', text: 'Đã copy mã mời!' }) }}>
-                  Copy
+                  onClick={() => {
+                    navigator.clipboard.writeText(selected.inviteCode)
+                    setMsg({ type: 'ok', text: t('ml_copy_success') })
+                  }}>
+                  {t('ml_copy_btn')}
                 </button>
               </div>
             </div>
             <div>
               {selected.isOwner ? (
                 <button className="btn btn-sm btn-outline-danger" onClick={() => deleteLeague(selected.id)}>
-                  Xóa phòng
+                  {t('ml_delete_btn')}
                 </button>
               ) : (
                 <button className="btn btn-sm btn-outline-secondary" onClick={() => leaveLeague(selected.id)}>
-                  Rời phòng
+                  {t('ml_leave_btn')}
                 </button>
               )}
             </div>
           </div>
 
           {!leaderboard ? (
-            <p className="text-secondary text-center mb-0">Đang tải...</p>
+            <p className="text-secondary text-center mb-0">{t('ml_loading')}</p>
           ) : leaderboard.entries.length === 0 ? (
-            <p className="text-secondary text-center mb-0">Chưa có thành viên nào dự đoán</p>
+            <p className="text-secondary text-center mb-0">{t('ml_no_predictions')}</p>
           ) : (
             <div className="table-responsive">
               <table className="table align-middle mb-0">
                 <thead>
                   <tr>
-                    <th className="text-center" style={{ width: 60 }}>#</th>
-                    <th>Thành viên</th>
-                    <th className="text-center">Điểm</th>
+                    <th className="text-center" style={{ width: 60 }}>{t('ml_col_rank')}</th>
+                    <th>{t('ml_col_member')}</th>
+                    <th className="text-center">{t('ml_col_points')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -230,9 +222,7 @@ export default function MiniLeague({ token }) {
       )}
 
       {leagues.length === 0 && (
-        <p className="text-center text-secondary mt-4">
-          Bạn chưa tham gia phòng nào. Tạo phòng mới hoặc nhập mã mời từ bạn bè!
-        </p>
+        <p className="text-center text-secondary mt-4">{t('ml_empty')}</p>
       )}
     </div>
   )

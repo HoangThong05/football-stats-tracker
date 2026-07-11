@@ -193,7 +193,7 @@ export default function App() {
     setShowMiniLeague(true)
   }}
 >
-  🏆 Mini League
+  {t('nav_mini_league')}
 </button>
 
                 {userEmail ? (
