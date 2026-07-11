@@ -3,48 +3,58 @@ package com.hoangthong.footballtracker.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+
+import java.util.List;
+import java.util.Map;
 
 /**
- * Gui email don gian qua SMTP.
- * Neu chua cau hinh tai khoan mail (bien MAIL_USERNAME rong) thi CHI ghi log,
- * khong nem loi -> app van chay binh thuong khi dang phat trien.
+ * Gui email qua Resend API (https://resend.com).
+ * Neu chua cau hinh RESEND_API_KEY thi chi ghi log, khong nem loi.
  */
 @Service
 public class EmailService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
-    private final JavaMailSender mailSender;
-    private final String from;
+    private final String apiKey;
+    private final RestClient restClient;
 
-    public EmailService(JavaMailSender mailSender, @Value("${spring.mail.username:}") String from) {
-        this.mailSender = mailSender;
-        this.from = from;
+    public EmailService(@Value("${resend.api-key:}") String apiKey) {
+        this.apiKey = apiKey;
+        this.restClient = RestClient.builder()
+                .baseUrl("https://api.resend.com")
+                .build();
     }
 
     public boolean isConfigured() {
-        return from != null && !from.isBlank();
+        return apiKey != null && !apiKey.isBlank();
     }
 
-    /**
-     * @return true neu da gui thanh cong; false neu chua cau hinh mail hoac gui loi.
-     */
     public boolean send(String to, String subject, String body) {
         if (!isConfigured()) {
-            log.info("[EMAIL BO QUA - chua cau hinh SMTP] To: {} | {}", to, subject);
+            log.info("[EMAIL BO QUA - chua cau hinh RESEND_API_KEY] To: {} | {}", to, subject);
             return false;
         }
 
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(from);
-            message.setTo(to);
-            message.setSubject(subject);
-            message.setText(body);
-            mailSender.send(message);
+            Map<String, Object> payload = Map.of(
+                    "from", "Football Stats Tracker <onboarding@resend.dev>",
+                    "to", List.of(to),
+                    "subject", subject,
+                    "text", body
+            );
+
+            restClient.post()
+                    .uri("/emails")
+                    .header("Authorization", "Bearer " + apiKey)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(payload)
+                    .retrieve()
+                    .toBodilessEntity();
+
             log.info("Da gui email toi {}: {}", to, subject);
             return true;
         } catch (Exception ex) {
