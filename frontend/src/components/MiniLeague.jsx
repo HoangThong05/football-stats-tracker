@@ -18,19 +18,36 @@ export default function MiniLeague({ token }) {
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState(null)
 
- useEffect(() => { if (token) fetchMyLeagues() }, [token])
-useEffect(() => { if (token) fetchMyLeagues() }, [])
+  useEffect(() => { if (token) fetchMyLeagues() }, [token])
+  useEffect(() => { if (token) fetchMyLeagues() }, [])
+
   useEffect(() => { if (selected) fetchLeaderboard(selected.id) }, [selected])
 
   async function fetchMyLeagues() {
     const res = await fetch(`${API_BASE}/leagues/my`, { headers: authHeaders(token) })
-    if (res.ok) setLeagues(await res.json())
+    if (res.ok) {
+      const data = await res.json()
+      setLeagues(data)
+      if (data.length > 0 && !selected) {
+        setSelected(data[0])
+      }
+    }
   }
 
   async function fetchLeaderboard(id) {
     setLeaderboard(null)
     const res = await fetch(`${API_BASE}/leagues/${id}/leaderboard`, { headers: authHeaders(token) })
     if (res.ok) setLeaderboard(await res.json())
+  }
+
+  async function refreshAndSelect(targetId) {
+    const res = await fetch(`${API_BASE}/leagues/my`, { headers: authHeaders(token) })
+    if (res.ok) {
+      const data = await res.json()
+      setLeagues(data)
+      const target = data.find(l => l.id === targetId)
+      if (target) setSelected(target)
+    }
   }
 
   async function createLeague() {
@@ -45,8 +62,7 @@ useEffect(() => { if (token) fetchMyLeagues() }, [])
       const league = await res.json()
       setMsg({ type: 'ok', text: `${t('ml_create_success')} ${league.inviteCode}` })
       setNewName('')
-      await fetchMyLeagues()
-      setSelected(league)
+      await refreshAndSelect(league.id)
     } else {
       const err = await res.json().catch(() => ({}))
       setMsg({ type: 'err', text: translateError(err.message, t) || t('ml_create_error') })
@@ -66,8 +82,7 @@ useEffect(() => { if (token) fetchMyLeagues() }, [])
       const league = await res.json()
       setMsg({ type: 'ok', text: `${t('ml_join_success')} "${league.name}"` })
       setJoinCode('')
-      await fetchMyLeagues()
-      setSelected(league)
+      await refreshAndSelect(league.id)
     } else {
       const err = await res.json().catch(() => ({}))
       setMsg({ type: 'err', text: translateError(err.message, t) || t('ml_join_error') })
@@ -84,7 +99,12 @@ useEffect(() => { if (token) fetchMyLeagues() }, [])
       setMsg({ type: 'ok', text: t('ml_leave_success') })
       setSelected(null)
       setLeaderboard(null)
-      await fetchMyLeagues()
+      const res2 = await fetch(`${API_BASE}/leagues/my`, { headers: authHeaders(token) })
+      if (res2.ok) {
+        const data = await res2.ok()
+        setLeagues(data)
+        if (data.length > 0) setSelected(data[0])
+      }
     } else {
       const err = await res.json().catch(() => ({}))
       setMsg({ type: 'err', text: translateError(err.message, t) })
@@ -100,7 +120,12 @@ useEffect(() => { if (token) fetchMyLeagues() }, [])
       setMsg({ type: 'ok', text: t('ml_delete_success') })
       setSelected(null)
       setLeaderboard(null)
-      await fetchMyLeagues()
+      const res2 = await fetch(`${API_BASE}/leagues/my`, { headers: authHeaders(token) })
+      if (res2.ok) {
+        const data = await res2.json()
+        setLeagues(data)
+        if (data.length > 0) setSelected(data[0])
+      }
     } else {
       const err = await res.json().catch(() => ({}))
       setMsg({ type: 'err', text: translateError(err.message, t) })
