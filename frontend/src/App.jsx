@@ -15,6 +15,7 @@ import TeamDetail from './components/TeamDetail'
 import MatchDetail from './components/MatchDetail'
 import MatchList from './components/MatchList'
 import PredictionsView from './components/PredictionsView'
+import MiniLeague from './components/MiniLeague'
 
 export default function App() {
   const [league, setLeague] = useState('PL')
@@ -27,6 +28,7 @@ export default function App() {
   const [showFavorites, setShowFavorites] = useState(false)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [showMyPredictions, setShowMyPredictions] = useState(false)
+  const [showMiniLeague, setShowMiniLeague] = useState(false)
 
   const [token, setToken] = useState(() => localStorage.getItem('ft_token'))
   const [userEmail, setUserEmail] = useState(() => localStorage.getItem('ft_email'))
@@ -114,6 +116,7 @@ export default function App() {
     setShowMyPredictions(false)
     setSelectedTeamId(null)
     setSelectedMatchId(null)
+    setShowMiniLeague(false)
   }
 
   const goToTeam = (teamId) => {
@@ -178,6 +181,20 @@ export default function App() {
                 >
                   {t('nav_leaderboard')}
                 </button>
+                <button
+  className="btn btn-nav btn-sm"
+  onClick={() => {
+    setSelectedTeamId(null)
+    setSelectedMatchId(null)
+    setShowFavorites(false)
+    setShowAdmin(false)
+    setShowLeaderboard(false)
+    setShowMyPredictions(false)
+    setShowMiniLeague(true)
+  }}
+>
+  🏆 Mini League
+</button>
 
                 {userEmail ? (
                   <>
