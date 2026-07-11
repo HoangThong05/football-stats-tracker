@@ -1,4 +1,4 @@
-export const API_BASE = 'http://localhost:8080/api'
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 
 // view -> đường dẫn API tương ứng.
 // "compare" dùng lại chính dữ liệu bảng xếp hạng, không tốn thêm request.
