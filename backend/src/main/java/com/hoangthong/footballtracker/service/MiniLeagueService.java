@@ -58,6 +58,7 @@ public class MiniLeagueService {
         return toResponse(league, user, count);
     }
 
+    @Transactional(readOnly = true)
     public List<MiniLeagueDto.LeagueResponse> myLeagues(String email) {
         User user = getUser(email);
         return memberRepo.findByUser(user).stream()
@@ -69,6 +70,7 @@ public class MiniLeagueService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public MiniLeagueDto.LeagueLeaderboardResponse leaderboard(String email, Long leagueId) {
         User user = getUser(email);
         MiniLeague league = leagueRepo.findById(leagueId)
