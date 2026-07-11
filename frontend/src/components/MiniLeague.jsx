@@ -101,7 +101,7 @@ export default function MiniLeague({ token }) {
       setLeaderboard(null)
       const res2 = await fetch(`${API_BASE}/leagues/my`, { headers: authHeaders(token) })
       if (res2.ok) {
-        const data = await res2.ok()
+        const data = await res2.json()
         setLeagues(data)
         if (data.length > 0) setSelected(data[0])
       }
