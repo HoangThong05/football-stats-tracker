@@ -65,4 +65,18 @@ public class User {
     public Instant getCreatedAt() {
         return createdAt;
     }
+
+    @Column
+private String resetToken;
+
+@Column
+private Instant resetTokenExpiry;
+
+public String getResetToken() { return resetToken; }
+public Instant getResetTokenExpiry() { return resetTokenExpiry; }
+
+public void setResetToken(String resetToken) { this.resetToken = resetToken; }
+public void setResetTokenExpiry(Instant resetTokenExpiry) { this.resetTokenExpiry = resetTokenExpiry; }
+
+public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 }
