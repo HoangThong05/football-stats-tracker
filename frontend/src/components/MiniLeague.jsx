@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 
+function translateError(code, t) {
+  const key = `ml_err_${code}`
+  const translated = t(key)
+  return translated !== key ? translated : code
+}
+
 export default function MiniLeague({ token }) {
   const { t } = useTranslation()
   const [leagues, setLeagues] = useState([])
@@ -41,7 +47,8 @@ export default function MiniLeague({ token }) {
       await fetchMyLeagues()
       setSelected(league)
     } else {
-      setMsg({ type: 'err', text: t('ml_create_error') })
+      const err = await res.json().catch(() => ({}))
+      setMsg({ type: 'err', text: translateError(err.message, t) || t('ml_create_error') })
     }
     setLoading(false)
   }
@@ -62,7 +69,7 @@ export default function MiniLeague({ token }) {
       setSelected(league)
     } else {
       const err = await res.json().catch(() => ({}))
-      setMsg({ type: 'err', text: err.message || t('ml_join_error') })
+      setMsg({ type: 'err', text: translateError(err.message, t) || t('ml_join_error') })
     }
     setLoading(false)
   }
@@ -77,6 +84,9 @@ export default function MiniLeague({ token }) {
       setSelected(null)
       setLeaderboard(null)
       await fetchMyLeagues()
+    } else {
+      const err = await res.json().catch(() => ({}))
+      setMsg({ type: 'err', text: translateError(err.message, t) })
     }
   }
 
@@ -90,6 +100,9 @@ export default function MiniLeague({ token }) {
       setSelected(null)
       setLeaderboard(null)
       await fetchMyLeagues()
+    } else {
+      const err = await res.json().catch(() => ({}))
+      setMsg({ type: 'err', text: translateError(err.message, t) })
     }
   }
 

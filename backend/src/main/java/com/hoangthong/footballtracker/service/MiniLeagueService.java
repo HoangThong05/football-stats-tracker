@@ -33,11 +33,10 @@ public class MiniLeagueService {
         this.userRepo = userRepo;
     }
 
-    /** Tao phong moi, tu dong them nguoi tao lam thanh vien dau tien. */
     @Transactional
     public MiniLeagueDto.LeagueResponse createLeague(String email, String name) {
         if (name == null || name.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ten phong khong duoc de trong");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "room_name_blank");
         }
         User owner = getUser(email);
         String code = generateUniqueCode();
@@ -46,21 +45,19 @@ public class MiniLeagueService {
         return toResponse(league, owner, 1);
     }
 
-    /** Tham gia phong bang ma moi. */
     @Transactional
     public MiniLeagueDto.LeagueResponse joinLeague(String email, String inviteCode) {
         User user = getUser(email);
         MiniLeague league = leagueRepo.findByInviteCode(inviteCode.toUpperCase())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ma moi khong hop le"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "invite_code_invalid"));
         if (memberRepo.existsByLeagueAndUser(league, user)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ban da tham gia phong nay roi");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "already_joined");
         }
         memberRepo.save(new LeagueMember(league, user));
         int count = memberRepo.findByLeague(league).size();
         return toResponse(league, user, count);
     }
 
-    /** Danh sach phong ma user dang tham gia. */
     public List<MiniLeagueDto.LeagueResponse> myLeagues(String email) {
         User user = getUser(email);
         return memberRepo.findByUser(user).stream()
@@ -72,13 +69,12 @@ public class MiniLeagueService {
                 .toList();
     }
 
-    /** BXH cua 1 phong. */
     public MiniLeagueDto.LeagueLeaderboardResponse leaderboard(String email, Long leagueId) {
         User user = getUser(email);
         MiniLeague league = leagueRepo.findById(leagueId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phong khong ton tai"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "league_not_found"));
         if (!memberRepo.existsByLeagueAndUser(league, user)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ban chua tham gia phong nay");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not_a_member");
         }
         List<Object[]> rows = memberRepo.findLeaderboard(leagueId);
         List<MiniLeagueDto.LeagueLeaderboardEntry> entries = new java.util.ArrayList<>();
@@ -94,39 +90,34 @@ public class MiniLeagueService {
                 league.getId(), league.getName(), league.getInviteCode(), entries);
     }
 
-    /** Roi phong (chu phong khong the roi — phai xoa phong). */
     @Transactional
     public void leaveLeague(String email, Long leagueId) {
         User user = getUser(email);
         MiniLeague league = leagueRepo.findById(leagueId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phong khong ton tai"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "league_not_found"));
         if (league.getOwner().getId().equals(user.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Chu phong khong the roi phong. Hay xoa phong neu muon.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "owner_cannot_leave");
         }
         LeagueMember member = memberRepo.findByLeagueAndUser(league, user)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ban chua tham gia phong nay"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "not_a_member"));
         memberRepo.delete(member);
     }
 
-    /** Xoa phong (chi chu phong). */
     @Transactional
     public void deleteLeague(String email, Long leagueId) {
         User user = getUser(email);
         MiniLeague league = leagueRepo.findById(leagueId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phong khong ton tai"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "league_not_found"));
         if (!league.getOwner().getId().equals(user.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chi chu phong moi co the xoa phong");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not_owner");
         }
         memberRepo.deleteAll(memberRepo.findByLeague(league));
         leagueRepo.delete(league);
     }
 
-    // ---- helpers ----
-
     private User getUser(String email) {
         return userRepo.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Khong tim thay user"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "user_not_found"));
     }
 
     private String generateUniqueCode() {

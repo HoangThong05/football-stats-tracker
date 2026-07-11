@@ -191,6 +191,15 @@ ml_join_error: 'Mã mời không hợp lệ',
 ml_confirm_leave: 'Bạn có chắc muốn rời phòng?',
 ml_confirm_delete: 'Xóa phòng sẽ xóa tất cả thành viên. Bạn có chắc?',
 ml_members_count: 'người',
+
+ml_err_already_joined: 'Bạn đã tham gia phòng này rồi',
+ml_err_invite_code_invalid: 'Mã mời không hợp lệ',
+ml_err_league_not_found: 'Không tìm thấy phòng',
+ml_err_owner_cannot_leave: 'Chủ phòng không thể rời phòng',
+ml_err_not_a_member: 'Bạn chưa tham gia phòng này',
+ml_err_not_owner: 'Chỉ chủ phòng mới có thể xóa phòng',
+ml_err_room_name_blank: 'Tên phòng không được để trống',
+ml_err_user_not_found: 'Không tìm thấy người dùng',
   },
 
   en: {
@@ -380,6 +389,15 @@ ml_join_error: 'Invalid invite code',
 ml_confirm_leave: 'Are you sure you want to leave this room?',
 ml_confirm_delete: 'Deleting the room will remove all members. Are you sure?',
 ml_members_count: 'members',
+
+ml_err_already_joined: 'You have already joined this room',
+ml_err_invite_code_invalid: 'Invalid invite code',
+ml_err_league_not_found: 'Room not found',
+ml_err_owner_cannot_leave: 'Owner cannot leave the room',
+ml_err_not_a_member: 'You are not a member of this room',
+ml_err_not_owner: 'Only the owner can delete this room',
+ml_err_room_name_blank: 'Room name cannot be blank',
+ml_err_user_not_found: 'User not found',
   },
 }
 
