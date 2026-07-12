@@ -59,17 +59,9 @@ export default function AuthPanel({ onSuccess }) {
         const data = await res.json()
         onSuccess(data.token, data.email, data.role)
 
-      } else if (mode === 'forgot') {
-        const res = await fetch(`${API_BASE}/auth/forgot-password`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
-        })
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}))
-          throw new Error(body.message || 'Email khong ton tai')
-        }
-        setSuccess('Đã gửi email đặt lại mật khẩu! Kiểm tra hộp thư của bạn.')
+} else if (mode === 'forgot') {
+  // Khong gui email, chi hien huong dan lien he admin
+  setSuccess(`Để đặt lại mật khẩu, vui lòng gửi email đến:\n📧 thong1582005@gmail.com\n\nTiêu đề: [Football Tracker] Yêu cầu đặt lại mật khẩu\nNội dung: Email tài khoản của bạn (${email})\n\nAdmin sẽ xử lý trong vòng 24 giờ.`)
 
       } else if (mode === 'reset') {
         const res = await fetch(`${API_BASE}/auth/reset-password`, {
@@ -173,7 +165,7 @@ export default function AuthPanel({ onSuccess }) {
           {submitting ? t('auth_submitting') : {
             login: t('auth_login_btn'),
             register: t('auth_register_btn'),
-            forgot: 'Gửi email đặt lại mật khẩu',
+            forgot: 'Xem hướng dẫn',
             reset: 'Đặt lại mật khẩu'
           }[mode]}
         </button>
