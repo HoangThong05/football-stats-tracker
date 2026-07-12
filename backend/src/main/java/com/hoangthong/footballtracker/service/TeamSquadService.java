@@ -57,9 +57,9 @@ public class TeamSquadService {
     private TeamSquad syncSquad(Long teamId, String teamName, TeamSquad existing) {
         TeamSquad squad = existing != null ? existing : new TeamSquad(teamId);
 
-        String apiFootballTeamId = squad.getSportsDbTeamId(); // tai su dung field cu, xem ghi chu ben duoi
+        String apiFootballTeamId = squad.getSportsDbTeamId();
         if (apiFootballTeamId == null) {
-            Optional<Long> found = client.searchTeamId(teamName);
+            Optional<Long> found = client.searchTeamId(normalizeTeamName(teamName));
             if (found.isEmpty()) {
                 log.warn("Khong map duoc doi '{}' (id={}) sang API-Football", teamName, teamId);
                 squad.setLastSyncedAt(Instant.now());
@@ -86,6 +86,17 @@ public class TeamSquadService {
 
         log.info("Da sync {} cau thu cho doi '{}' (id={}) tu API-Football", mapped.size(), teamName, teamId);
         return repository.save(squad);
+    }
+
+    /**
+     * football-data.org tra ten dang "Real Madrid CF", nhung API-Football
+     * luu ten ngan gon hon "Real Madrid" -> bo hau to FC/CF de tang ty le khop.
+     */
+    private String normalizeTeamName(String name) {
+        return name
+                .replaceAll("(?i)\\bFC\\b", "")
+                .replaceAll("(?i)\\bCF\\b", "")
+                .trim();
     }
 
     private long parseIdSafely(String externalId) {
