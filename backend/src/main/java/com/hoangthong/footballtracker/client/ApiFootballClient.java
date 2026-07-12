@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 import java.util.List;
@@ -50,6 +51,9 @@ public class ApiFootballClient {
                 return Optional.empty();
             }
             return Optional.of(response.response().get(0).team().id());
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            log.warn("API-Football: bi rate limit (429) khi tim doi '{}', se thu lai o lan sync sau", teamName);
+            return Optional.empty();
         } catch (Exception e) {
             log.error("Loi khi tim team '{}' tren API-Football: {}", teamName, e.getMessage());
             return Optional.empty();
@@ -67,6 +71,9 @@ public class ApiFootballClient {
                 return List.of();
             }
             return response.response().get(0).players();
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            log.warn("API-Football: bi rate limit (429) khi lay squad cho teamId={}, se thu lai o lan sync sau", teamId);
+            return List.of();
         } catch (Exception e) {
             log.error("Loi khi lay squad cho teamId={}: {}", teamId, e.getMessage());
             return List.of();
