@@ -5,28 +5,25 @@ import jakarta.persistence.Embeddable;
 @Embeddable
 public class SquadPlayer {
 
-    private String externalId; // idPlayer tu TheSportsDB
+    private String externalId; // id cau thu tren API-Football
     private String name;
     private String position;
-    private String nationality;
-    private String dateOfBirth;
+    private Integer jerseyNumber;
     private String photoUrl;
 
     protected SquadPlayer() {}
 
-    public SquadPlayer(String externalId, String name, String position, String nationality, String dateOfBirth, String photoUrl) {
+    public SquadPlayer(String externalId, String name, String position, Integer jerseyNumber, String photoUrl) {
         this.externalId = externalId;
         this.name = name;
         this.position = position;
-        this.nationality = nationality;
-        this.dateOfBirth = dateOfBirth;
+        this.jerseyNumber = jerseyNumber;
         this.photoUrl = photoUrl;
     }
 
     public String getExternalId() { return externalId; }
     public String getName() { return name; }
     public String getPosition() { return position; }
-    public String getNationality() { return nationality; }
-    public String getDateOfBirth() { return dateOfBirth; }
+    public Integer getJerseyNumber() { return jerseyNumber; }
     public String getPhotoUrl() { return photoUrl; }
 }

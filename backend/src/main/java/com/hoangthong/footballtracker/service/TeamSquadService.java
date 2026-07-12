@@ -1,7 +1,7 @@
 package com.hoangthong.footballtracker.service;
 
-import com.hoangthong.footballtracker.client.SportsDbClient;
-import com.hoangthong.footballtracker.client.dto.SportsDbPlayersResponse.SportsDbPlayer;
+import com.hoangthong.footballtracker.client.ApiFootballClient;
+import com.hoangthong.footballtracker.client.dto.ApiFootballSquadResponse.PlayerInfo;
 import com.hoangthong.footballtracker.dto.TeamDetailDto;
 import com.hoangthong.footballtracker.entity.SquadPlayer;
 import com.hoangthong.footballtracker.entity.TeamSquad;
@@ -20,16 +20,14 @@ public class TeamSquadService {
 
     private static final Logger log = LoggerFactory.getLogger(TeamSquadService.class);
     private static final int SYNC_INTERVAL_DAYS = 7;
-    private static final int RETRY_INTERVAL_DAYS_ON_FAIL = 1; // map that bai -> thu lai som hon
+    private static final int RETRY_INTERVAL_DAYS_ON_FAIL = 1;
 
     private final TeamSquadRepository repository;
-    private final SportsDbClient client;
-    private final SportsDbTeamMappingService mappingService;
+    private final ApiFootballClient client;
 
-    public TeamSquadService(TeamSquadRepository repository, SportsDbClient client, SportsDbTeamMappingService mappingService) {
+    public TeamSquadService(TeamSquadRepository repository, ApiFootballClient client) {
         this.repository = repository;
         this.client = client;
-        this.mappingService = mappingService;
     }
 
     public List<TeamDetailDto.PlayerDto> getSquad(Long teamId, String teamName) {
@@ -46,7 +44,7 @@ public class TeamSquadService {
                         parseIdSafely(p.getExternalId()),
                         p.getName(),
                         p.getPosition(),
-                        p.getNationality()
+                        null // API-Football khong tra nationality o endpoint squads
                 ))
                 .toList();
     }
@@ -59,36 +57,34 @@ public class TeamSquadService {
     private TeamSquad syncSquad(Long teamId, String teamName, TeamSquad existing) {
         TeamSquad squad = existing != null ? existing : new TeamSquad(teamId);
 
-        String sportsDbTeamId = squad.getSportsDbTeamId();
-        if (sportsDbTeamId == null) {
-            Optional<String> found = mappingService.findTeamId(teamName);
+        String apiFootballTeamId = squad.getSportsDbTeamId(); // tai su dung field cu, xem ghi chu ben duoi
+        if (apiFootballTeamId == null) {
+            Optional<Long> found = client.searchTeamId(teamName);
             if (found.isEmpty()) {
-                log.warn("Khong map duoc doi '{}' (id={}) sang TheSportsDB", teamName, teamId);
+                log.warn("Khong map duoc doi '{}' (id={}) sang API-Football", teamName, teamId);
                 squad.setLastSyncedAt(Instant.now());
                 return repository.save(squad);
             }
-            sportsDbTeamId = found.get();
-            squad.setSportsDbTeamId(sportsDbTeamId);
+            apiFootballTeamId = String.valueOf(found.get());
+            squad.setSportsDbTeamId(apiFootballTeamId);
         }
 
-        List<SportsDbPlayer> players = client.getPlayers(sportsDbTeamId);
+        List<PlayerInfo> players = client.getSquad(Long.parseLong(apiFootballTeamId));
 
         List<SquadPlayer> mapped = players.stream()
-                .filter(p -> p.strPosition() != null && !p.strPosition().toLowerCase().contains("coach"))
                 .map(p -> new SquadPlayer(
-                        p.idPlayer(),
-                        p.strPlayer(),
-                        p.strPosition(),
-                        p.strNationality(),
-                        p.dateBorn(),
-                        p.strThumb()
+                        String.valueOf(p.id()),
+                        p.name(),
+                        p.position(),
+                        p.number(),
+                        p.photo()
                 ))
                 .toList();
 
         squad.setPlayers(mapped);
         squad.setLastSyncedAt(Instant.now());
 
-        log.info("Da sync {} cau thu cho doi '{}' (id={}) tu TheSportsDB", mapped.size(), teamName, teamId);
+        log.info("Da sync {} cau thu cho doi '{}' (id={}) tu API-Football", mapped.size(), teamName, teamId);
         return repository.save(squad);
     }
 
