@@ -17,9 +17,11 @@ public class TeamService {
     private static final Logger log = LoggerFactory.getLogger(TeamService.class);
 
     private final FootballDataClient client;
+    private final TeamSquadService squadService; // THEM MOI
 
-    public TeamService(FootballDataClient client) {
+    public TeamService(FootballDataClient client, TeamSquadService squadService) {
         this.client = client;
+        this.squadService = squadService; // THEM MOI
     }
 
     @Cacheable(value = CacheConfig.TEAMS_CACHE, key = "#teamId")
@@ -27,14 +29,10 @@ public class TeamService {
         log.info("CACHE MISS -> goi football-data.org cho doi bong id: {}", teamId);
 
         TeamApiResponse response = client.getTeam(teamId);
-
         String coachName = response.coach() != null ? response.coach().name() : null;
 
-        List<TeamDetailDto.PlayerDto> squad = response.squad() == null
-                ? List.of()
-                : response.squad().stream()
-                        .map(p -> new TeamDetailDto.PlayerDto(p.id(), p.name(), p.position(), p.nationality()))
-                        .toList();
+        // football-data.org free tier khong tra squad -> fallback sang TheSportsDB
+        List<TeamDetailDto.PlayerDto> squad = squadService.getSquad(teamId, response.name());
 
         return new TeamDetailDto(
                 response.id(),
