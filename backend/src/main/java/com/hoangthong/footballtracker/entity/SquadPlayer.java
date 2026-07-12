@@ -5,6 +5,7 @@ import jakarta.persistence.Embeddable;
 @Embeddable
 public class SquadPlayer {
 
+    private String externalId; // idPlayer tu TheSportsDB
     private String name;
     private String position;
     private String nationality;
@@ -13,7 +14,8 @@ public class SquadPlayer {
 
     protected SquadPlayer() {}
 
-    public SquadPlayer(String name, String position, String nationality, String dateOfBirth, String photoUrl) {
+    public SquadPlayer(String externalId, String name, String position, String nationality, String dateOfBirth, String photoUrl) {
+        this.externalId = externalId;
         this.name = name;
         this.position = position;
         this.nationality = nationality;
@@ -21,6 +23,7 @@ public class SquadPlayer {
         this.photoUrl = photoUrl;
     }
 
+    public String getExternalId() { return externalId; }
     public String getName() { return name; }
     public String getPosition() { return position; }
     public String getNationality() { return nationality; }

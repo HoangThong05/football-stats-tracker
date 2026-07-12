@@ -29,21 +29,26 @@ public class TeamSquadService {
         this.client = client;
     }
 
-  public List<TeamDetailDto.PlayerDto> getSquad(Long teamId, String teamName) {
-    TeamSquad cached = repository.findById(teamId).orElse(null);
+    public List<TeamDetailDto.PlayerDto> getSquad(Long teamId, String teamName) {
+        TeamSquad cached = repository.findById(teamId).orElse(null);
 
-    boolean needsSync = cached == null
-            || cached.getLastSyncedAt() == null
-            || cached.getLastSyncedAt().isBefore(Instant.now().minus(SYNC_INTERVAL_DAYS, ChronoUnit.DAYS));
+        boolean needsSync = cached == null
+                || cached.getLastSyncedAt() == null
+                || cached.getLastSyncedAt().isBefore(Instant.now().minus(SYNC_INTERVAL_DAYS, ChronoUnit.DAYS));
 
-    if (needsSync) {
-        cached = syncSquad(teamId, teamName, cached);
+        if (needsSync) {
+            cached = syncSquad(teamId, teamName, cached);
+        }
+
+        return cached.getPlayers().stream()
+                .map(p -> new TeamDetailDto.PlayerDto(
+                        parseIdSafely(p.getExternalId()),
+                        p.getName(),
+                        p.getPosition(),
+                        p.getNationality()
+                ))
+                .toList();
     }
-
-    return cached.getPlayers().stream()
-            .map(p -> new TeamDetailDto.PlayerDto(0L, p.getName(), p.getPosition(), p.getNationality()))
-            .toList();
-}
 
     private TeamSquad syncSquad(Long teamId, String teamName, TeamSquad existing) {
         TeamSquad squad = existing != null ? existing : new TeamSquad(teamId);
@@ -61,8 +66,12 @@ public class TeamSquadService {
         }
 
         List<SportsDbPlayer> players = client.getPlayers(sportsDbTeamId);
+
         List<SquadPlayer> mapped = players.stream()
+                // TheSportsDB gop ca HLV/tro ly HLV chung voi cau thu -> loc bo
+                .filter(p -> p.strPosition() != null && !p.strPosition().toLowerCase().contains("coach"))
                 .map(p -> new SquadPlayer(
+                        p.idPlayer(),
                         p.strPlayer(),
                         p.strPosition(),
                         p.strNationality(),
@@ -83,5 +92,17 @@ public class TeamSquadService {
                 .replaceAll("(?i)\\bFC\\b", "")
                 .replaceAll("(?i)\\bCF\\b", "")
                 .trim();
+    }
+
+    /**
+     * idPlayer cua TheSportsDB la chuoi so (vd "34145937"), nhung phong khi
+     * du lieu bat thuong (rong/khong phai so) thi fallback ve 0 thay vi crash.
+     */
+    private long parseIdSafely(String externalId) {
+        try {
+            return externalId == null ? 0L : Long.parseLong(externalId);
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
     }
 }
