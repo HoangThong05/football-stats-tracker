@@ -32,7 +32,7 @@ public class AuthService {
 
     public AuthResponse register(AuthRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email da duoc su dung");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "email_exists");
         }
         User user = new User(request.email(), passwordEncoder.encode(request.password()));
         userRepository.save(user);
@@ -41,16 +41,16 @@ public class AuthService {
 
     public AuthResponse login(AuthRequest request) {
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sai email hoac mat khau"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials"));
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sai email hoac mat khau");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials");
         }
         return toAuthResponse(user);
     }
 
     public void forgotPassword(String email, String appUrl) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Email khong ton tai"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "email_not_found"));
         String token = UUID.randomUUID().toString();
         user.setResetToken(token);
         user.setResetTokenExpiry(Instant.now().plusSeconds(3600));
@@ -66,9 +66,9 @@ public class AuthService {
 
     public void resetPassword(String token, String newPassword) {
         User user = userRepository.findByResetToken(token)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token khong hop le"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "token_invalid"));
         if (user.getResetTokenExpiry() == null || Instant.now().isAfter(user.getResetTokenExpiry())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token da het han");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "token_expired");
         }
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.setResetToken(null);

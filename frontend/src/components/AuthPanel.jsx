@@ -21,6 +21,14 @@ export default function AuthPanel({ onSuccess }) {
   const [success, setSuccess] = useState(null)
   const [submitting, setSubmitting] = useState(false)
 
+  const errMap = {
+    invalid_credentials: t('auth_invalid_credentials'),
+    email_exists: t('auth_email_exists'),
+    email_not_found: t('auth_email_not_found'),
+    token_invalid: t('auth_token_invalid'),
+    token_expired: t('auth_token_expired'),
+  }
+
   const switchMode = (next) => {
     setMode(next)
     setError(null)
@@ -54,14 +62,14 @@ export default function AuthPanel({ onSuccess }) {
         })
         if (!res.ok) {
           const body = await res.json().catch(() => ({}))
-          throw new Error(body.message || `Loi ${res.status}`)
+          throw new Error(errMap[body.message] || body.message || `Error ${res.status}`)
         }
         const data = await res.json()
         onSuccess(data.token, data.email, data.role)
 
-} else if (mode === 'forgot') {
-  // Khong gui email, chi hien huong dan lien he admin
-  setSuccess(`Để đặt lại mật khẩu, vui lòng gửi email đến:\n📧 thong1582005@gmail.com\n\nTiêu đề: [Football Tracker] Yêu cầu đặt lại mật khẩu\nNội dung: Email tài khoản của bạn (${email})\n\nAdmin sẽ xử lý trong vòng 24 giờ.`)
+      } else if (mode === 'forgot') {
+        // Khong gui email, hien huong dan lien he admin
+        setSuccess(t('auth_forgot_guide_msg').replace('{email}', email))
 
       } else if (mode === 'reset') {
         const res = await fetch(`${API_BASE}/auth/reset-password`, {
@@ -71,9 +79,9 @@ export default function AuthPanel({ onSuccess }) {
         })
         if (!res.ok) {
           const body = await res.json().catch(() => ({}))
-          throw new Error(body.message || 'Token khong hop le hoac da het han')
+          throw new Error(errMap[body.message] || body.message || `Error ${res.status}`)
         }
-        setSuccess('Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay.')
+        setSuccess(t('auth_reset_success'))
         setTimeout(() => switchMode('login'), 2000)
       }
     } catch (err) {
@@ -87,14 +95,14 @@ export default function AuthPanel({ onSuccess }) {
   const title = {
     login: t('auth_login_title'),
     register: t('auth_register_title'),
-    forgot: 'Quên mật khẩu',
-    reset: 'Đặt lại mật khẩu'
+    forgot: t('auth_forgot_title'),
+    reset: t('auth_reset_title'),
   }[mode]
   const subtitle = {
     login: t('auth_login_subtitle'),
     register: t('auth_register_subtitle'),
-    forgot: 'Nhập email để nhận link đặt lại mật khẩu',
-    reset: 'Nhập mật khẩu mới của bạn'
+    forgot: t('auth_forgot_subtitle'),
+    reset: t('auth_reset_subtitle'),
   }[mode]
 
   return (
@@ -121,7 +129,7 @@ export default function AuthPanel({ onSuccess }) {
           <div>
             <div className="d-flex justify-content-between align-items-center">
               <label className="form-label small fw-medium mb-1">
-                {mode === 'reset' ? 'Mật khẩu mới' : t('auth_password_label')}
+                {mode === 'reset' ? t('auth_new_password_label') : t('auth_password_label')}
               </label>
               {mode === 'login' && (
                 <button type="button" className="btn btn-link btn-sm p-0 small mb-1"
@@ -159,14 +167,18 @@ export default function AuthPanel({ onSuccess }) {
         )}
 
         {error && <div className="alert alert-danger py-2 mb-0 small">{error}</div>}
-        {success && <div className="alert alert-success py-2 mb-0 small">{success}</div>}
+        {success && (
+          <div className="alert alert-success py-2 mb-0 small" style={{ whiteSpace: 'pre-line' }}>
+            {success}
+          </div>
+        )}
 
         <button type="submit" className="btn btn-success w-100 fw-semibold py-2" disabled={submitting}>
           {submitting ? t('auth_submitting') : {
             login: t('auth_login_btn'),
             register: t('auth_register_btn'),
-            forgot: 'Xem hướng dẫn',
-            reset: 'Đặt lại mật khẩu'
+            forgot: t('auth_forgot_guide_btn'),
+            reset: t('auth_reset_btn'),
           }[mode]}
         </button>
       </form>
