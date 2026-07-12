@@ -16,7 +16,11 @@ import java.util.Optional;
  * Client goi TheSportsDB (mien phi) de lay du lieu cau thu.
  * Ly do can them client rieng: goi mien phi cua football-data.org
  * KHONG tra ve squad (yeu cau goi Deep Data tra phi 29 EUR/thang).
- * Free test key "3" cua TheSportsDB: https://www.thesportsdb.com/free_starter_api.php
+ *
+ * LUU Y QUAN TRONG: endpoint searchteams.php o goi free BI GIOI HAN
+ * chi tra ket qua dung cho tu khoa "Arsenal" (theo docs chinh thuc cua
+ * TheSportsDB) -- KHONG dung de search ten doi tu do. Vi vay dung
+ * search_all_teams.php (lay theo giai dau) thay the, xem SportsDbTeamMappingService.
  */
 @Component
 public class SportsDbClient {
@@ -27,25 +31,24 @@ public class SportsDbClient {
     private final RestClient restClient = RestClient.create(BASE_URL);
 
     /**
-     * Tim idTeam cua TheSportsDB theo ten doi bong (khac ID voi football-data.org).
-     * Tra ve rong neu khong tim thay hoac ten khong khop.
+     * Lay toan bo doi bong trong 1 giai dau (khong bi gioi han nhu searchteams.php).
      */
-    public Optional<String> searchTeamId(String teamName) {
+    public List<SportsDbTeamSearchResponse.SportsDbTeam> getTeamsInLeague(String leagueName) {
         try {
-            String encoded = URLEncoder.encode(teamName, StandardCharsets.UTF_8);
+            String encoded = URLEncoder.encode(leagueName, StandardCharsets.UTF_8);
             SportsDbTeamSearchResponse response = restClient.get()
-                    .uri("/searchteams.php?t={name}", encoded)
+                    .uri("/search_all_teams.php?l={league}", encoded)
                     .retrieve()
                     .body(SportsDbTeamSearchResponse.class);
 
-            if (response == null || response.teams() == null || response.teams().isEmpty()) {
-                log.warn("TheSportsDB: khong tim thay doi '{}'", teamName);
-                return Optional.empty();
+            if (response == null || response.teams() == null) {
+                log.warn("TheSportsDB: khong lay duoc danh sach doi cho giai '{}'", leagueName);
+                return List.of();
             }
-            return Optional.of(response.teams().get(0).idTeam());
+            return response.teams();
         } catch (Exception e) {
-            log.error("Loi khi tim team '{}' tren TheSportsDB: {}", teamName, e.getMessage());
-            return Optional.empty();
+            log.error("Loi khi lay danh sach doi cua giai '{}' tren TheSportsDB: {}", leagueName, e.getMessage());
+            return List.of();
         }
     }
 
@@ -61,5 +64,11 @@ public class SportsDbClient {
             log.error("Loi khi lay squad cho sportsDbTeamId={}: {}", sportsDbTeamId, e.getMessage());
             return List.of();
         }
+    }
+
+    /** @deprecated Bi gioi han o goi free, chi dung "Arsenal". Dung getTeamsInLeague() thay the. */
+    @Deprecated
+    public Optional<String> searchTeamId(String teamName) {
+        return Optional.empty();
     }
 }

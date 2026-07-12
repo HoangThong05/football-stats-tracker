@@ -20,21 +20,22 @@ public class TeamSquadService {
 
     private static final Logger log = LoggerFactory.getLogger(TeamSquadService.class);
     private static final int SYNC_INTERVAL_DAYS = 7;
+    private static final int RETRY_INTERVAL_DAYS_ON_FAIL = 1; // map that bai -> thu lai som hon
 
     private final TeamSquadRepository repository;
     private final SportsDbClient client;
+    private final SportsDbTeamMappingService mappingService;
 
-    public TeamSquadService(TeamSquadRepository repository, SportsDbClient client) {
+    public TeamSquadService(TeamSquadRepository repository, SportsDbClient client, SportsDbTeamMappingService mappingService) {
         this.repository = repository;
         this.client = client;
+        this.mappingService = mappingService;
     }
 
     public List<TeamDetailDto.PlayerDto> getSquad(Long teamId, String teamName) {
         TeamSquad cached = repository.findById(teamId).orElse(null);
 
-        boolean needsSync = cached == null
-                || cached.getLastSyncedAt() == null
-                || cached.getLastSyncedAt().isBefore(Instant.now().minus(SYNC_INTERVAL_DAYS, ChronoUnit.DAYS));
+        boolean needsSync = cached == null || cached.getLastSyncedAt() == null || isStale(cached);
 
         if (needsSync) {
             cached = syncSquad(teamId, teamName, cached);
@@ -50,12 +51,17 @@ public class TeamSquadService {
                 .toList();
     }
 
+    private boolean isStale(TeamSquad cached) {
+        int intervalDays = cached.getSportsDbTeamId() == null ? RETRY_INTERVAL_DAYS_ON_FAIL : SYNC_INTERVAL_DAYS;
+        return cached.getLastSyncedAt().isBefore(Instant.now().minus(intervalDays, ChronoUnit.DAYS));
+    }
+
     private TeamSquad syncSquad(Long teamId, String teamName, TeamSquad existing) {
         TeamSquad squad = existing != null ? existing : new TeamSquad(teamId);
 
         String sportsDbTeamId = squad.getSportsDbTeamId();
         if (sportsDbTeamId == null) {
-            Optional<String> found = client.searchTeamId(normalizeTeamName(teamName));
+            Optional<String> found = mappingService.findTeamId(teamName);
             if (found.isEmpty()) {
                 log.warn("Khong map duoc doi '{}' (id={}) sang TheSportsDB", teamName, teamId);
                 squad.setLastSyncedAt(Instant.now());
@@ -68,7 +74,6 @@ public class TeamSquadService {
         List<SportsDbPlayer> players = client.getPlayers(sportsDbTeamId);
 
         List<SquadPlayer> mapped = players.stream()
-                // TheSportsDB gop ca HLV/tro ly HLV chung voi cau thu -> loc bo
                 .filter(p -> p.strPosition() != null && !p.strPosition().toLowerCase().contains("coach"))
                 .map(p -> new SquadPlayer(
                         p.idPlayer(),
@@ -87,17 +92,6 @@ public class TeamSquadService {
         return repository.save(squad);
     }
 
-    private String normalizeTeamName(String name) {
-        return name
-                .replaceAll("(?i)\\bFC\\b", "")
-                .replaceAll("(?i)\\bCF\\b", "")
-                .trim();
-    }
-
-    /**
-     * idPlayer cua TheSportsDB la chuoi so (vd "34145937"), nhung phong khi
-     * du lieu bat thuong (rong/khong phai so) thi fallback ve 0 thay vi crash.
-     */
     private long parseIdSafely(String externalId) {
         try {
             return externalId == null ? 0L : Long.parseLong(externalId);
