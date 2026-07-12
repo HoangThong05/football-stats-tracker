@@ -18,9 +18,9 @@ public class TeamSquad {
 
     private String sportsDbTeamId; // cache lai de lan sau khong phai search lai theo ten
 
-    @ElementCollection
-    @CollectionTable(name = "team_squad_players", joinColumns = @JoinColumn(name = "team_id"))
-    private List<SquadPlayer> players = new ArrayList<>();
+@ElementCollection(fetch = jakarta.persistence.FetchType.EAGER)
+@CollectionTable(name = "team_squad_players", joinColumns = @JoinColumn(name = "team_id"))
+private List<SquadPlayer> players = new ArrayList<>();
 
     private Instant lastSyncedAt;
 
