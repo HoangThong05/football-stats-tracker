@@ -6,9 +6,16 @@ import { LEAGUES } from '../constants'
 import Loading from './Loading'
 import BarChart from './BarChart'
 
+// Meta hien thi cho tung ma badge tra ve tu API (BadgeType o backend).
+const BADGE_META = {
+  PROPHET: { icon: '🔮', titleKey: 'badge_prophet_title', descKey: 'badge_prophet_desc' },
+  WIN_STREAK: { icon: '🔥', titleKey: 'badge_streak_title', descKey: 'badge_streak_desc' },
+}
+
 export default function MyPredictionsHistory({ token, onBack }) {
   const { t, lang } = useTranslation()
   const [history, setHistory] = useState([])
+  const [badges, setBadges] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -24,6 +31,12 @@ export default function MyPredictionsHistory({ token, onBack }) {
       .then((data) => setHistory(data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
+
+    // Huy hieu la thong tin phu, khong lam gian doan trang lich su neu loi.
+    fetch(`${API_BASE}/predictions/badges`, { headers: authHeaders(token) })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setBadges(data))
+      .catch(() => setBadges([]))
   }, [token])
 
   const scored = history.filter((h) => h.points != null)
@@ -61,6 +74,32 @@ export default function MyPredictionsHistory({ token, onBack }) {
       </button>
 
       <h3 className="h5 mb-1">{t('myp_title')}</h3>
+
+      {badges.length > 0 && (
+        <div className="ft-badge-row">
+          {badges.map((b) => {
+            const meta = BADGE_META[b.code]
+            if (!meta) return null
+            const pct = Math.round((b.progress / b.target) * 100)
+            return (
+              <div key={b.code} className={`ft-badge${b.earned ? ' earned' : ''}`}>
+                <span className="ft-badge-icon">{meta.icon}</span>
+                <div style={{ minWidth: 0 }}>
+                  <div className="ft-badge-title">{t(meta.titleKey)}</div>
+                  <div className="ft-badge-desc">{t(meta.descKey)}</div>
+                  <div className="ft-badge-progress-track">
+                    <div className="ft-badge-progress-fill" style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="ft-badge-desc">
+                    {b.progress}/{b.target}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       {scored.length > 0 && (
         <p className="text-secondary small mb-3">
           {t('myp_scored_prefix')} <strong>{scored.length}</strong> {t('myp_scored_mid')}{' '}

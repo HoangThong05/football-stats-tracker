@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Job dinh ky: voi moi tran da FINISHED, cham diem cac du doan CHUA cham (points == null).
@@ -27,10 +29,13 @@ public class PredictionScoringService {
 
     private final MatchFixtureRepository matchRepository;
     private final PredictionRepository predictionRepository;
+    private final BadgeService badgeService;
 
-    public PredictionScoringService(MatchFixtureRepository matchRepository, PredictionRepository predictionRepository) {
+    public PredictionScoringService(
+            MatchFixtureRepository matchRepository, PredictionRepository predictionRepository, BadgeService badgeService) {
         this.matchRepository = matchRepository;
         this.predictionRepository = predictionRepository;
+        this.badgeService = badgeService;
     }
 
     @Scheduled(
@@ -39,6 +44,7 @@ public class PredictionScoringService {
     public void scoreFinishedMatches() {
         List<MatchFixture> finished = matchRepository.findByStatus("FINISHED");
         int scoredCount = 0;
+        Set<Long> affectedUserIds = new HashSet<>();
 
         for (MatchFixture match : finished) {
             if (match.getHomeScore() == null || match.getAwayScore() == null) {
@@ -52,6 +58,7 @@ public class PredictionScoringService {
                         match.getHomeScore(), match.getAwayScore());
                 prediction.setPoints(points);
                 predictionRepository.save(prediction);
+                affectedUserIds.add(prediction.getUser().getId());
                 scoredCount++;
             }
         }
@@ -59,6 +66,9 @@ public class PredictionScoringService {
         if (scoredCount > 0) {
             log.info("Da cham diem {} luot du doan.", scoredCount);
         }
+
+        // Cham diem xong moi biet ai vua co the du dieu kien badge -> danh gia lai cho tung nguoi bi anh huong.
+        affectedUserIds.forEach(badgeService::evaluateBadgesForUser);
     }
 
     /** Tach rieng thanh method thuan de test khong can DB. */

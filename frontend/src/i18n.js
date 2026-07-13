@@ -83,6 +83,10 @@ export const translations = {
     myp_chart_points_title: '📈 Điểm dự đoán theo thời gian',
     myp_chart_accuracy_title: '🎯 Tỉ lệ đoán đúng theo giải',
     myp_chart_accuracy_matches: 'trận',
+    badge_prophet_title: 'Nhà tiên tri',
+    badge_prophet_desc: '10 lần đoán đúng chính xác tỉ số',
+    badge_streak_title: 'Chuỗi thắng',
+    badge_streak_desc: '5 lần dự đoán liên tiếp đúng kết quả',
 
     standings_search_placeholder: '🔍 Tìm đội bóng...',
     standings_no_match_prefix: 'Không tìm thấy đội nào khớp',
@@ -303,6 +307,10 @@ export const translations = {
     myp_chart_points_title: '📈 Points over time',
     myp_chart_accuracy_title: '🎯 Accuracy by league',
     myp_chart_accuracy_matches: 'matches',
+    badge_prophet_title: 'The Prophet',
+    badge_prophet_desc: '10 exact-score predictions',
+    badge_streak_title: 'Win Streak',
+    badge_streak_desc: '5 correct predictions in a row',
 
     standings_search_placeholder: '🔍 Search teams...',
     standings_no_match_prefix: 'No team matches',

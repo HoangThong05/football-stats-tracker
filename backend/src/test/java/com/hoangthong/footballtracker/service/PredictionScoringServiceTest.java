@@ -24,13 +24,15 @@ class PredictionScoringServiceTest {
 
     private MatchFixtureRepository matchRepository;
     private PredictionRepository predictionRepository;
+    private BadgeService badgeService;
     private PredictionScoringService service;
 
     @BeforeEach
     void setUp() {
         matchRepository = mock(MatchFixtureRepository.class);
         predictionRepository = mock(PredictionRepository.class);
-        service = new PredictionScoringService(matchRepository, predictionRepository);
+        badgeService = mock(BadgeService.class);
+        service = new PredictionScoringService(matchRepository, predictionRepository, badgeService);
     }
 
     private static MatchFixture finishedMatch(long id, int homeScore, int awayScore) {

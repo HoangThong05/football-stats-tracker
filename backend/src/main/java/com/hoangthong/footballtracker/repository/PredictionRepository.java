@@ -29,6 +29,12 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
             + "ORDER BY m.utcDate ASC")
     List<Prediction> findByUserIdAndCompetition(@Param("userId") Long userId, @Param("competition") String competition);
 
+    /** Du doan da cham diem cua 1 user, tran cu -> moi. Dung de tinh badge thanh tich. */
+    @Query("SELECT p FROM Prediction p JOIN FETCH p.match m "
+            + "WHERE p.user.id = :userId AND p.points IS NOT NULL "
+            + "ORDER BY m.utcDate ASC")
+    List<Prediction> findScoredByUserIdOrderByMatchDateAsc(@Param("userId") Long userId);
+
     /** Bang xep hang: tong diem + so lan du doan cua tung nguoi (chi tinh du doan da cham diem). */
     @Query("SELECT u.email AS email, "
             + "COALESCE(SUM(p.points), 0) AS totalPoints, "

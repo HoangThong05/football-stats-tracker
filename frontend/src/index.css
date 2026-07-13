@@ -611,6 +611,65 @@ tr[role='button']:hover img,
   opacity: 1;
 }
 
+/* ---------- Huy hieu thanh tich du doan ---------- */
+.ft-badge-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.ft-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--ft-radius);
+  border: 1px solid var(--bs-border-color-translucent);
+  background: var(--bs-body-bg);
+  min-width: 220px;
+  opacity: 0.55;
+  filter: grayscale(0.7);
+  transition: opacity 0.2s ease, filter 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ft-badge.earned {
+  opacity: 1;
+  filter: none;
+  border-color: var(--ft-accent);
+  box-shadow: 0 0 0 1px var(--ft-accent-soft), var(--ft-card-shadow);
+}
+
+.ft-badge-icon {
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.ft-badge-title {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.ft-badge-desc {
+  font-size: 0.72rem;
+  color: var(--bs-secondary-color);
+}
+
+.ft-badge-progress-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bs-tertiary-bg);
+  margin-top: 5px;
+  overflow: hidden;
+}
+
+.ft-badge-progress-fill {
+  height: 100%;
+  background: var(--ft-accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
 /* Nguoi dung yeu cau giam chuyen dong: tat toan bo hieu ung */
 @media (prefers-reduced-motion: reduce) {
   *,
