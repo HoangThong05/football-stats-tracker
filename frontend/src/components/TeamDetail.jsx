@@ -28,11 +28,10 @@ function groupSquadByPosition(squad) {
 }
 
 function playerSearchUrl(playerName, teamName) {
-  // Ket hop ten cau thu + ten doi roi tim qua Google, gioi han ve Transfermarkt
-  // -> ket qua dau tien thuong la dung trang chi tiet cau thu, tranh nham
-  // voi nguoi trung ho hoac agent nhu khi search truc tiep tren Transfermarkt.
+  // "&btnI=1" la tinh nang "I'm Feeling Lucky" cua Google -> tu dong nhay
+  // thang vao ket qua dau tien thay vi hien trang danh sach ket qua.
   const query = `${playerName} ${teamName} site:transfermarkt.com`
-  return `https://www.google.com/search?q=${encodeURIComponent(query)}`
+  return `https://www.google.com/search?q=${encodeURIComponent(query)}&btnI=1`
 }
 
 export default function TeamDetail({ teamId, onBack, token, favorites, onFavoritesChange }) {
