@@ -27,8 +27,12 @@ function groupSquadByPosition(squad) {
     )
 }
 
-function transfermarktSearchUrl(playerName) {
-  return `https://www.transfermarkt.com/schnellsuche/ergebnis/schnellsuche?query=${encodeURIComponent(playerName)}`
+function playerSearchUrl(playerName, teamName) {
+  // Ket hop ten cau thu + ten doi roi tim qua Google, gioi han ve Transfermarkt
+  // -> ket qua dau tien thuong la dung trang chi tiet cau thu, tranh nham
+  // voi nguoi trung ho hoac agent nhu khi search truc tiep tren Transfermarkt.
+  const query = `${playerName} ${teamName} site:transfermarkt.com`
+  return `https://www.google.com/search?q=${encodeURIComponent(query)}`
 }
 
 export default function TeamDetail({ teamId, onBack, token, favorites, onFavoritesChange }) {
@@ -150,7 +154,7 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
                   <div className="row g-3">
                     {group.players.map((p) => (
                       <div key={p.id} className="col-6 col-md-3">
-                        <a href={transfermarktSearchUrl(p.name)} target="_blank" rel="noreferrer" className="text-decoration-none">
+                        <a href={playerSearchUrl(p.name, team.name)} target="_blank" rel="noreferrer" className="text-decoration-none">
                           <div className="ft-card p-3 text-center h-100">
                             <img
                               src={p.photoUrl || 'https://via.placeholder.com/80?text=?'}
