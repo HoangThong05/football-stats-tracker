@@ -14,16 +14,18 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Thay vi search tung ten rieng le (de bi truot vi ten viet tat/dau cau khac
- * nhau giua football-data.org va API-Football, vd "Newcastle United FC" vs
- * "Newcastle"), lay toan bo danh sach doi theo TUNG GIAI qua /teams?league=..
- * (ten chuan 100% tu chinh API-Football), roi tu match trong code.
+ * Lay toan bo danh sach doi theo TUNG GIAI qua /teams?league=..&season=..
+ * (ten chuan 100% tu chinh API-Football), roi tu match trong code -- thay vi
+ * search tung ten rieng le (de truot vi ten viet tat/dau cau khac nhau).
+ *
+ * Goi free chi cho xem season 2022-2024 (khong cho 2025) -> dung 2024 + 2023
+ * de tang do phu (doi moi thang hang co the chua co trong 2024).
  */
 @Service
 public class ApiFootballTeamMappingService {
 
     private static final Logger log = LoggerFactory.getLogger(ApiFootballTeamMappingService.class);
-    private static final int SEASON = 2025;
+    private static final List<Integer> SEASONS = List.of(2024, 2023);
     private static final long REFRESH_INTERVAL_HOURS = 24;
 
     // id giai cua API-Football (khac voi football-data.org)
@@ -65,13 +67,15 @@ public class ApiFootballTeamMappingService {
 
         Map<String, Long> map = new HashMap<>();
         for (Integer leagueId : LEAGUE_IDS) {
-            List<TeamWrapper> teams = client.getTeamsInLeague(leagueId, SEASON);
-            for (TeamWrapper t : teams) {
-                if (t.team() != null && t.team().name() != null) {
-                    map.put(normalize(t.team().name()), t.team().id());
+            for (Integer season : SEASONS) {
+                List<TeamWrapper> teams = client.getTeamsInLeague(leagueId, season);
+                for (TeamWrapper t : teams) {
+                    if (t.team() != null && t.team().name() != null) {
+                        map.putIfAbsent(normalize(t.team().name()), t.team().id());
+                    }
                 }
+                log.info("Da lay {} doi tu giai id={} season={} tren API-Football", teams.size(), leagueId, season);
             }
-            log.info("Da lay {} doi tu giai id={} tren API-Football", teams.size(), leagueId);
         }
 
         if (!map.isEmpty()) {
@@ -90,4 +94,4 @@ public class ApiFootballTeamMappingService {
                 .replaceAll("[^a-z0-9]", "")
                 .trim();
     }
-} 
+}

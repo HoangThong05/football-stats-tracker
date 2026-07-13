@@ -16,10 +16,12 @@ import java.util.Optional;
 
 /**
  * Client goi API-Football (api-sports.io) de lay du lieu cau thu.
- * Ly do dung API nay thay vi TheSportsDB: TheSportsDB gioi han goi free
- * chi hoat dong dung voi du lieu demo co dinh (khong search duoc theo ten
- * that), con API-Football gioi han theo SO LUONG REQUEST/NGAY (100/ngay)
- * nhung moi endpoint hoat dong that 100%.
+ *
+ * LUU Y QUAN TRONG:
+ * - Goi free KHONG duoc xem /teams?league=..&season=.. cho mua giai hien tai
+ *   (2025), chi duoc phep voi mua 2022-2024. Vi vay dung mua cu de lay
+ *   TEN + ID doi (thong tin nay it doi qua cac mua), squad thuc te van luon
+ *   lay tu endpoint players/squads (khong can season, luon la doi hinh hien tai).
  */
 @Component
 public class ApiFootballClient {
@@ -36,10 +38,10 @@ public class ApiFootballClient {
                 .build();
     }
 
-    /**
-     * Tim id doi bong tren API-Football theo ten (search that, khong bi
-     * gioi han demo nhu TheSportsDB).
-     */
+    /** @deprecated Ten day du/ngan tu football-data.org khong luon khop voi ten
+     * luu tren API-Football (vd "Newcastle United FC" vs "Newcastle") -> dung
+     * getTeamsInLeague() de lay ten chuan truc tiep tu API-Football thay the. */
+    @Deprecated
     public Optional<Long> searchTeamId(String teamName) {
         try {
             ApiFootballTeamSearchResponse response = restClient.get()
@@ -61,6 +63,23 @@ public class ApiFootballClient {
         }
     }
 
+    public List<ApiFootballTeamListResponse.TeamWrapper> getTeamsInLeague(int leagueId, int season) {
+        try {
+            ApiFootballTeamListResponse response = restClient.get()
+                    .uri("/teams?league={league}&season={season}", leagueId, season)
+                    .retrieve()
+                    .body(ApiFootballTeamListResponse.class);
+
+            return response == null || response.response() == null ? List.of() : response.response();
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            log.warn("API-Football: bi rate limit (429) khi lay doi cua giai id={} season={}", leagueId, season);
+            return List.of();
+        } catch (Exception e) {
+            log.error("Loi khi lay danh sach doi cua giai id={} season={} tren API-Football: {}", leagueId, season, e.getMessage());
+            return List.of();
+        }
+    }
+
     public List<PlayerInfo> getSquad(long teamId) {
         try {
             ApiFootballSquadResponse response = restClient.get()
@@ -73,24 +92,11 @@ public class ApiFootballClient {
             }
             return response.response().get(0).players();
         } catch (HttpClientErrorException.TooManyRequests e) {
-            log.warn("API-Football: bi rate limit (429) khi lay squad cho teamId={}, se thu lai o lan sync sau", teamId);
+            log.warn("API-Football: bi rate limit (429) khi lay squad cho teamId={}", teamId);
             return List.of();
         } catch (Exception e) {
             log.error("Loi khi lay squad cho teamId={}: {}", teamId, e.getMessage());
             return List.of();
         }
     }
-public List<ApiFootballTeamListResponse.TeamWrapper> getTeamsInLeague(int leagueId, int season) {
-    try {
-        ApiFootballTeamListResponse response = restClient.get()
-                .uri("/teams?league={league}&season={season}", leagueId, season)
-                .retrieve()
-                .body(ApiFootballTeamListResponse.class);
-
-        return response == null || response.response() == null ? List.of() : response.response();
-    } catch (Exception e) {
-        log.error("Loi khi lay danh sach doi cua giai id={} tren API-Football: {}", leagueId, e.getMessage());
-        return List.of();
-    }
-}
 }
