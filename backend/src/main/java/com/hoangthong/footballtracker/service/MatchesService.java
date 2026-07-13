@@ -122,7 +122,10 @@ public class MatchesService {
     public List<MatchDto> getHeadToHead(long teamAId, long teamBId) {
         log.info("CACHE MISS -> goi football-data.org lay lich su doi dau: {} vs {}", teamAId, teamBId);
 
-        MatchesApiResponse response = client.getTeamMatches(teamAId);
+        // football-data.org khong cong khai gioi han khoang ngay toi da cho endpoint nay;
+        // dung 1 nam (~1 mua giai) de vua bat duoc it nhat 1 lan doi dau, vua tranh bi tu choi vi khoang qua rong.
+        LocalDate today = LocalDate.now();
+        MatchesApiResponse response = client.getTeamMatches(teamAId, today.minusYears(1), today);
 
         return response.matches().stream()
                 .filter(m -> "FINISHED".equals(m.status()))

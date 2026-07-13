@@ -76,15 +76,19 @@ public class FootballDataClient {
     }
 
     /**
-     * Lich su tran da dien ra cua 1 doi (moi giai dau), moi nhat truoc.
+     * Lich su tran da dien ra cua 1 doi trong khoang [dateFrom, dateTo], moi nhat truoc.
      * Dung de tinh lich su doi dau giua 2 doi (loc theo doi thu o phia service).
+     * PHAI truyen dateFrom/dateTo: khong truyen thi football-data.org tra ve rong
+     * (da kiem chung thuc te), khong nhu tai lieu chinh thuc gợi y.
      */
-    public MatchesApiResponse getTeamMatches(long teamId) {
+    public MatchesApiResponse getTeamMatches(long teamId, LocalDate dateFrom, LocalDate dateTo) {
         return exchange(restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/teams/{id}/matches")
                         .queryParam("status", "FINISHED")
-                        .queryParam("limit", 100)
+                        .queryParam("dateFrom", dateFrom.toString())
+                        .queryParam("dateTo", dateTo.toString())
+                        .queryParam("limit", 500)
                         .build(teamId))
                 .retrieve()
                 .toEntity(MatchesApiResponse.class));
