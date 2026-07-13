@@ -6,6 +6,7 @@ import com.hoangthong.footballtracker.service.MatchesService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -41,5 +42,11 @@ public class MatchesController {
     @GetMapping("/{id:\\d+}")
     public MatchDetailDto getMatch(@PathVariable long id) {
         return service.getMatchDetail(id);
+    }
+
+    /** 5 tran gan nhat giua 2 doi, vi du /api/matches/head-to-head?teamA=57&teamB=61. */
+    @GetMapping("/head-to-head")
+    public List<MatchDto> getHeadToHead(@RequestParam long teamA, @RequestParam long teamB) {
+        return service.getHeadToHead(teamA, teamB);
     }
 }

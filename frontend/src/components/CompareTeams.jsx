@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { COMPARE_METRICS } from '../constants'
 import { useTranslation } from '../i18n'
+import HeadToHead from './HeadToHead'
 
 export default function CompareTeams({ rows, onSelectTeam }) {
   const { t } = useTranslation()
@@ -98,6 +99,8 @@ export default function CompareTeams({ rows, onSelectTeam }) {
         {t('compare_legend_prefix')} <span className="fw-bold text-success">{t('compare_legend_highlight')}</span>
         {t('compare_legend_suffix')}
       </p>
+
+      <HeadToHead teamAId={idA} teamBId={idB} perspectiveTeamId={idA} />
     </div>
   )
 }

@@ -75,6 +75,21 @@ public class FootballDataClient {
                 .toEntity(TeamApiResponse.class));
     }
 
+    /**
+     * Lich su tran da dien ra cua 1 doi (moi giai dau), moi nhat truoc.
+     * Dung de tinh lich su doi dau giua 2 doi (loc theo doi thu o phia service).
+     */
+    public MatchesApiResponse getTeamMatches(long teamId) {
+        return exchange(restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/teams/{id}/matches")
+                        .queryParam("status", "FINISHED")
+                        .queryParam("limit", 100)
+                        .build(teamId))
+                .retrieve()
+                .toEntity(MatchesApiResponse.class));
+    }
+
     public ScorersApiResponse getScorers(String competitionCode) {
         return exchange(restClient.get()
                 .uri("/competitions/{code}/scorers", competitionCode)

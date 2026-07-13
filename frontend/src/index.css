@@ -508,6 +508,109 @@ tr[role='button']:hover img,
   animation: ft-icon-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ---------- Bieu do cot don gian (HTML/CSS, khong dung thu vien) ---------- */
+.ft-barchart-plot {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  position: relative;
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+
+.ft-barchart-gridline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--bs-border-color-translucent);
+  opacity: 0.6;
+}
+
+.ft-barchart-gridline span {
+  position: absolute;
+  left: -1.6em;
+  top: -0.6em;
+  font-size: 0.68rem;
+  color: var(--bs-secondary-color);
+}
+
+.ft-bar-col {
+  flex: 1 1 0;
+  max-width: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  position: relative;
+  outline: none;
+}
+
+.ft-bar {
+  width: 100%;
+  max-width: 22px;
+  min-height: 1px;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.3s ease, opacity 0.15s ease;
+}
+
+.ft-bar-col:hover .ft-bar,
+.ft-bar-col:focus-visible .ft-bar {
+  opacity: 0.82;
+}
+
+.ft-bar-col:focus-visible {
+  box-shadow: 0 0 0 2px var(--ft-accent-soft);
+  border-radius: 4px;
+}
+
+.ft-bar-value-cap {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--bs-secondary-color);
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.ft-bar-axis-label {
+  font-size: 0.68rem;
+  color: var(--bs-secondary-color);
+  margin-top: 6px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.ft-bar-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  box-shadow: var(--ft-card-shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+  z-index: 5;
+}
+
+.ft-bar-tooltip strong {
+  display: block;
+  color: var(--ft-accent-strong);
+}
+
+.ft-bar-tooltip span {
+  color: var(--bs-secondary-color);
+}
+
+.ft-bar-col:hover .ft-bar-tooltip,
+.ft-bar-col:focus-visible .ft-bar-tooltip {
+  opacity: 1;
+}
+
 /* Nguoi dung yeu cau giam chuyen dong: tat toan bo hieu ung */
 @media (prefers-reduced-motion: reduce) {
   *,

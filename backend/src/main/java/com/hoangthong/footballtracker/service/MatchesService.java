@@ -98,8 +98,10 @@ public class MatchesService {
                 r.competition() != null ? r.competition().name() : null,
                 r.competition() != null ? r.competition().emblem() : null,
                 r.venue(),
+                r.homeTeam().id(),
                 r.homeTeam().name(),
                 r.homeTeam().crest(),
+                r.awayTeam().id(),
                 r.awayTeam().name(),
                 r.awayTeam().crest(),
                 homeScore,
@@ -108,6 +110,27 @@ public class MatchesService {
                 awayHalfScore,
                 referees
         );
+    }
+
+    /**
+     * 5 tran gan nhat da dien ra giua 2 doi (bat ke giai dau).
+     * Lay tu lich su tran cua doi A, loc ra nhung tran co doi thu la doi B.
+     * Key cache sap xep theo id de A-vs-B va B-vs-A dung chung 1 cache entry.
+     */
+    @Cacheable(value = CacheConfig.MATCHES_CACHE,
+            key = "'H2H:' + T(Math).min(#teamAId, #teamBId) + ':' + T(Math).max(#teamAId, #teamBId)")
+    public List<MatchDto> getHeadToHead(long teamAId, long teamBId) {
+        log.info("CACHE MISS -> goi football-data.org lay lich su doi dau: {} vs {}", teamAId, teamBId);
+
+        MatchesApiResponse response = client.getTeamMatches(teamAId);
+
+        return response.matches().stream()
+                .filter(m -> "FINISHED".equals(m.status()))
+                .filter(m -> m.homeTeam().id() == teamBId || m.awayTeam().id() == teamBId)
+                .sorted(Comparator.comparing(MatchesApiResponse.Match::utcDate).reversed())
+                .limit(5)
+                .map(MatchesService::toDto)
+                .toList();
     }
 
     private static MatchDto toDto(MatchesApiResponse.Match m) {
@@ -123,8 +146,10 @@ public class MatchesService {
                 m.status(),
                 m.matchday(),
                 m.stage(),
+                m.homeTeam().id(),
                 m.homeTeam().name(),
                 m.homeTeam().crest(),
+                m.awayTeam().id(),
                 m.awayTeam().name(),
                 m.awayTeam().crest(),
                 homeScore,

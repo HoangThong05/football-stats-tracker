@@ -113,6 +113,7 @@ public class PredictionService {
                     return new PredictionHistoryDto(
                             m.getId(),
                             m.getCompetition(),
+                            m.getMatchday(),
                             m.getUtcDate().toString(),
                             m.getStatus(),
                             m.getHomeTeam(),

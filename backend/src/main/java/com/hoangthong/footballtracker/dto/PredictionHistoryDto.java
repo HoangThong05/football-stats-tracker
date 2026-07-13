@@ -6,6 +6,7 @@ package com.hoangthong.footballtracker.dto;
 public record PredictionHistoryDto(
         long matchId,
         String competition,
+        Integer matchday,
         String utcDate,
         String status,
         String homeTeam,

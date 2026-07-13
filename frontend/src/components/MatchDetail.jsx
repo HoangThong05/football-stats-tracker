@@ -3,6 +3,7 @@ import { API_BASE } from '../api'
 import { formatKickoff } from '../utils'
 import { useTranslation } from '../i18n'
 import Loading from './Loading'
+import HeadToHead from './HeadToHead'
 
 export default function MatchDetail({ matchId, onBack }) {
   const { t, lang } = useTranslation()
@@ -91,6 +92,8 @@ export default function MatchDetail({ matchId, onBack }) {
               )}
             </div>
           )}
+
+          <HeadToHead teamAId={match.homeTeamId} teamBId={match.awayTeamId} perspectiveTeamId={match.homeTeamId} />
         </div>
       )}
     </div>

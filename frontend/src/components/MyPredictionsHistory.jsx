@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { formatKickoff } from '../utils'
 import { useTranslation } from '../i18n'
+import { LEAGUES } from '../constants'
 import Loading from './Loading'
+import BarChart from './BarChart'
 
 export default function MyPredictionsHistory({ token, onBack }) {
   const { t, lang } = useTranslation()
@@ -26,6 +28,25 @@ export default function MyPredictionsHistory({ token, onBack }) {
 
   const scored = history.filter((h) => h.points != null)
   const totalPoints = scored.reduce((sum, h) => sum + h.points, 0)
+
+  // Bieu do 1: diem tung du doan theo thoi gian (cu -> moi), toi da 20 tran gan nhat cho de nhin.
+  const pointsOverTime = [...scored]
+    .sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate))
+    .slice(-20)
+    .map((h) => ({
+      label: formatKickoff(h.utcDate, lang),
+      value: h.points,
+      homeTeam: h.homeTeam,
+      awayTeam: h.awayTeam,
+    }))
+
+  // Bieu do 2: ty le doan dung (diem > 0) theo tung giai da co du doan cham diem.
+  const accuracyByLeague = LEAGUES.map((l) => {
+    const rows = scored.filter((h) => h.competition === l.code)
+    if (rows.length === 0) return null
+    const correct = rows.filter((h) => h.points > 0).length
+    return { code: l.code, name: l.name, count: rows.length, value: Math.round((correct / rows.length) * 100) }
+  }).filter(Boolean)
 
   const pointsBadgeClass = (points) => {
     if (points === 3) return 'badge text-bg-success'
@@ -56,6 +77,36 @@ export default function MyPredictionsHistory({ token, onBack }) {
 
       {!loading && !error && history.length === 0 && (
         <div className="alert alert-secondary">{t('myp_empty')}</div>
+      )}
+
+      {!loading && !error && pointsOverTime.length >= 3 && (
+        <div className="ft-card p-3 mb-3">
+          <div className="fw-semibold mb-1">{t('myp_chart_points_title')}</div>
+          <BarChart
+            data={pointsOverTime}
+            max={3}
+            gridLines={[1, 3]}
+            showXLabels={false}
+            valueFormatter={(v) => `${v} ${t('myp_points_suffix')}`}
+            tooltipLabel={(d) => `${d.homeTeam} - ${d.awayTeam} · ${d.label}`}
+            ariaLabel={t('myp_chart_points_title')}
+          />
+        </div>
+      )}
+
+      {!loading && !error && accuracyByLeague.length >= 2 && (
+        <div className="ft-card p-3 mb-3">
+          <div className="fw-semibold mb-1">{t('myp_chart_accuracy_title')}</div>
+          <BarChart
+            data={accuracyByLeague.map((l) => ({ label: l.code, fullName: l.name, count: l.count, value: l.value }))}
+            max={100}
+            gridLines={[50, 100]}
+            showValueCap
+            valueFormatter={(v) => `${v}%`}
+            tooltipLabel={(d) => `${d.fullName} · ${d.count} ${t('myp_chart_accuracy_matches')}`}
+            ariaLabel={t('myp_chart_accuracy_title')}
+          />
+        </div>
       )}
 
       {!loading && !error && history.length > 0 && (

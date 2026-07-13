@@ -80,6 +80,9 @@ export const translations = {
     myp_result_prefix: 'Kết quả',
     myp_points_suffix: 'điểm',
     myp_not_played: 'Chưa diễn ra',
+    myp_chart_points_title: '📈 Điểm dự đoán theo thời gian',
+    myp_chart_accuracy_title: '🎯 Tỉ lệ đoán đúng theo giải',
+    myp_chart_accuracy_matches: 'trận',
 
     standings_search_placeholder: '🔍 Tìm đội bóng...',
     standings_no_match_prefix: 'Không tìm thấy đội nào khớp',
@@ -113,6 +116,10 @@ export const translations = {
     compare_legend_prefix: 'Chỉ số tốt hơn được',
     compare_legend_highlight: 'tô xanh',
     compare_legend_suffix: '. Bấm vào tên đội để xem chi tiết.',
+
+    h2h_title: '⚔ Lịch sử đối đầu',
+    h2h_empty: 'Chưa có dữ liệu đối đầu giữa 2 đội này.',
+    h2h_loading: 'Đang tải lịch sử đối đầu...',
 
     scorers_empty: 'Chưa có dữ liệu vua phá lưới cho giải này.',
     scorers_col_rank: '#',
@@ -293,6 +300,9 @@ export const translations = {
     myp_result_prefix: 'Result',
     myp_points_suffix: 'points',
     myp_not_played: 'Not played yet',
+    myp_chart_points_title: '📈 Points over time',
+    myp_chart_accuracy_title: '🎯 Accuracy by league',
+    myp_chart_accuracy_matches: 'matches',
 
     standings_search_placeholder: '🔍 Search teams...',
     standings_no_match_prefix: 'No team matches',
@@ -326,6 +336,10 @@ export const translations = {
     compare_legend_prefix: 'The better metric is',
     compare_legend_highlight: 'highlighted in green',
     compare_legend_suffix: '. Click a team name to view its details.',
+
+    h2h_title: '⚔ Head-to-Head',
+    h2h_empty: 'No head-to-head data between these two teams yet.',
+    h2h_loading: 'Loading head-to-head history...',
 
     scorers_empty: 'No top scorer data for this league yet.',
     scorers_col_rank: '#',
