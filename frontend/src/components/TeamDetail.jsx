@@ -108,8 +108,8 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
             </div>
           </div>
 
-          {/* Goi mien phi cua football-data.org khong tra ve doi hinh (squad luon rong).
-              Chi hien muc nay khi that su co du lieu -> tu dong xuat hien neu sau nay nang gop. */}
+          {/* Doi hinh lay tu API-Football (players/squads), cache 7 ngay/lan
+              trong bang team_squad. Chi hien muc nay khi co du lieu. */}
           {team.squad.length > 0 && (
             <>
               <h3 className="h5 mb-3">{t('team_squad')}</h3>
@@ -119,7 +119,7 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
                     <li key={p.id} className="list-group-item d-flex justify-content-between align-items-center">
                       <span className="fw-medium">{p.name}</span>
                       <span className="text-secondary small">
-                        {p.position || '—'} · {p.nationality || '—'}
+                        {[p.position, p.nationality].filter(Boolean).join(' · ') || '—'}
                       </span>
                     </li>
                   ))}
