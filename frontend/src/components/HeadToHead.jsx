@@ -55,8 +55,8 @@ export default function HeadToHead({ teamAId, teamBId, perspectiveTeamId }) {
 
             return (
               <div key={m.id} className="d-flex align-items-center justify-content-between small">
-                <span className="text-secondary" style={{ minWidth: 110 }}>
-                  {formatKickoff(m.utcDate, lang)}
+                <span className="text-secondary" style={{ minWidth: 150 }}>
+                  {formatKickoff(m.utcDate, lang, { includeYear: true })}
                 </span>
                 <span className="flex-grow-1 text-center">
                   {m.homeTeam} <span className={`fw-bold ${outcomeClass}`}>{m.homeScore} - {m.awayScore}</span> {m.awayTeam}
