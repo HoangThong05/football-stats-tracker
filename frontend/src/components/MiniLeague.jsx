@@ -8,7 +8,7 @@ function translateError(code, t) {
   return translated !== key ? translated : code
 }
 
-export default function MiniLeague({ token }) {
+export default function MiniLeague({ token, onBack  }) {
   const { t } = useTranslation()
   const [leagues, setLeagues] = useState([])
   const [selected, setSelected] = useState(null)
@@ -132,16 +132,24 @@ export default function MiniLeague({ token }) {
     }
   }
 
-  if (!token) {
+if (!token) {
     return (
-      <div className="text-center text-secondary py-5">
-        <p className="fs-5">🏆 {t('ml_login_hint')}</p>
+      <div>
+        <button className="btn btn-link ps-0 mb-3" onClick={onBack}>
+          {t('back_standings')}
+        </button>
+        <div className="text-center text-secondary py-5">
+          <p className="fs-5">🏆 {t('ml_login_hint')}</p>
+        </div>
       </div>
     )
   }
 
   return (
     <div>
+      <button className="btn btn-link ps-0 mb-3" onClick={onBack}>
+        {t('back_standings')}
+      </button>
       {msg && (
         <div className={`alert py-2 ${msg.type === 'ok' ? 'alert-success' : 'alert-danger'}`}
           role="button" onClick={() => setMsg(null)}>
