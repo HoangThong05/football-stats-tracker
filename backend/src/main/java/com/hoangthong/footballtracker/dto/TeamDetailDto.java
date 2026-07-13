@@ -2,9 +2,6 @@ package com.hoangthong.footballtracker.dto;
 
 import java.util.List;
 
-/**
- * Du lieu chi tiet 1 doi bong, tra ve cho frontend.
- */
 public record TeamDetailDto(
         long id,
         String name,
@@ -21,7 +18,9 @@ public record TeamDetailDto(
             long id,
             String name,
             String position,
-            String nationality
+            String nationality,
+            String photoUrl,
+            Integer jerseyNumber
     ) {
     }
 }

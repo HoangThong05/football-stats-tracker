@@ -30,25 +30,26 @@ public class TeamSquadService {
         this.client = client;
     }
 
-    public List<TeamDetailDto.PlayerDto> getSquad(Long teamId, String teamName) {
-        TeamSquad cached = repository.findById(teamId).orElse(null);
+   public List<TeamDetailDto.PlayerDto> getSquad(Long teamId, String teamName) {
+    TeamSquad cached = repository.findById(teamId).orElse(null);
 
-        boolean needsSync = cached == null || cached.getLastSyncedAt() == null || isStale(cached);
+    boolean needsSync = cached == null || cached.getLastSyncedAt() == null || isStale(cached);
 
-        if (needsSync) {
-            cached = syncSquad(teamId, teamName, cached);
-        }
-
-        return cached.getPlayers().stream()
-                .map(p -> new TeamDetailDto.PlayerDto(
-                        parseIdSafely(p.getExternalId()),
-                        p.getName(),
-                        p.getPosition(),
-                        null // API-Football khong tra nationality o endpoint squads
-                ))
-                .toList();
+    if (needsSync) {
+        cached = syncSquad(teamId, teamName, cached);
     }
 
+    return cached.getPlayers().stream()
+            .map(p -> new TeamDetailDto.PlayerDto(
+                    parseIdSafely(p.getExternalId()),
+                    p.getName(),
+                    p.getPosition(),
+                    null, // API-Football khong tra nationality o endpoint squads
+                    p.getPhotoUrl(),
+                    p.getJerseyNumber()
+            ))
+            .toList();
+}
     private boolean isStale(TeamSquad cached) {
         int intervalDays = cached.getSportsDbTeamId() == null ? RETRY_INTERVAL_DAYS_ON_FAIL : SYNC_INTERVAL_DAYS;
         return cached.getLastSyncedAt().isBefore(Instant.now().minus(intervalDays, ChronoUnit.DAYS));

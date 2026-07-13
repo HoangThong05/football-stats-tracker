@@ -3,6 +3,30 @@ import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import Loading from './Loading'
 
+const POSITION_LABELS = {
+  Goalkeeper: 'Thủ môn',
+  Defender: 'Hậu vệ',
+  Midfielder: 'Tiền vệ',
+  Attacker: 'Tiền đạo',
+}
+const POSITION_ORDER = ['Goalkeeper', 'Defender', 'Midfielder', 'Attacker']
+
+function groupSquadByPosition(squad) {
+  const groups = {}
+  squad.forEach((p) => {
+    const key = p.position || 'Khác'
+    if (!groups[key]) groups[key] = []
+    groups[key].push(p)
+  })
+  return POSITION_ORDER.filter((pos) => groups[pos])
+    .map((pos) => ({ position: pos, label: POSITION_LABELS[pos] || pos, players: groups[pos] }))
+    .concat(
+      Object.keys(groups)
+        .filter((k) => !POSITION_ORDER.includes(k))
+        .map((k) => ({ position: k, label: k, players: groups[k] }))
+    )
+}
+
 export default function TeamDetail({ teamId, onBack, token, favorites, onFavoritesChange }) {
   const { t } = useTranslation()
   const [team, setTeam] = useState(null)
@@ -16,16 +40,16 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
     setTeam(null)
 
     fetch(`${API_BASE}/teams/${teamId}`)
-  .then((res) => {
-    if (!res.ok) {
-      if (res.status === 404) throw new Error('Đội bóng này chưa có dữ liệu chi tiết')
-      throw new Error(`Loi ${res.status}`)
-    }
-    return res.json()
-  })
-  .then((data) => setTeam(data))
-  .catch((err) => setError(err.message))
-  .finally(() => setLoading(false))
+      .then((res) => {
+        if (!res.ok) {
+          if (res.status === 404) throw new Error('Đội bóng này chưa có dữ liệu chi tiết')
+          throw new Error(`Loi ${res.status}`)
+        }
+        return res.json()
+      })
+      .then((data) => setTeam(data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [teamId])
 
   const isFollowing = favorites.some((f) => f.teamId === teamId)
@@ -116,18 +140,34 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
           {team.squad.length > 0 && (
             <>
               <h3 className="h5 mb-3">{t('team_squad')}</h3>
-              <div className="ft-card">
-                <ul className="list-group list-group-flush ft-stagger">
-                  {team.squad.map((p) => (
-                    <li key={p.id} className="list-group-item d-flex justify-content-between align-items-center">
-                      <span className="fw-medium">{p.name}</span>
-                      <span className="text-secondary small">
-                        {[p.position, p.nationality].filter(Boolean).join(' · ') || '—'}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {groupSquadByPosition(team.squad).map((group) => (
+                <div key={group.position} className="mb-4">
+                  <h6 className="fw-bold text-uppercase small text-secondary mb-3" style={{ letterSpacing: '1px' }}>
+                    {group.label}
+                  </h6>
+                  <div className="row g-3">
+                    {group.players.map((p) => (
+                      <div key={p.id} className="col-6 col-md-3">
+                        <div className="ft-card p-3 text-center h-100">
+                          <img
+                            src={p.photoUrl || 'https://via.placeholder.com/80?text=?'}
+                            alt={p.name}
+                            className="rounded-circle mb-2"
+                            style={{ width: 72, height: 72, objectFit: 'cover', background: 'var(--ft-card-alt, #eee)' }}
+                            onError={(e) => {
+                              e.target.src = 'https://via.placeholder.com/80?text=?'
+                            }}
+                          />
+                          {p.jerseyNumber != null && (
+                            <div className="fw-bold small text-secondary mb-1">#{p.jerseyNumber}</div>
+                          )}
+                          <div className="fw-semibold small">{p.name}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </>
           )}
         </>
