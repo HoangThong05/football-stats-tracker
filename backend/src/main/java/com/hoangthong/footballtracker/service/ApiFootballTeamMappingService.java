@@ -25,7 +25,7 @@ import java.util.Optional;
 public class ApiFootballTeamMappingService {
 
     private static final Logger log = LoggerFactory.getLogger(ApiFootballTeamMappingService.class);
-    private static final List<Integer> SEASONS = List.of(2024, 2023);
+    private static final List<Integer> SEASONS = List.of(2024);
     private static final long REFRESH_INTERVAL_HOURS = 24;
 
     // id giai cua API-Football (khac voi football-data.org)
