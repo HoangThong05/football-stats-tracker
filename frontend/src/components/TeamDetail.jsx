@@ -27,6 +27,10 @@ function groupSquadByPosition(squad) {
     )
 }
 
+function transfermarktSearchUrl(playerName) {
+  return `https://www.transfermarkt.com/schnellsuche/ergebnis/schnellsuche?query=${encodeURIComponent(playerName)}`
+}
+
 export default function TeamDetail({ teamId, onBack, token, favorites, onFavoritesChange }) {
   const { t } = useTranslation()
   const [team, setTeam] = useState(null)
@@ -135,8 +139,6 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
             </div>
           </div>
 
-          {/* Doi hinh lay tu API-Football (players/squads), cache 7 ngay/lan
-              trong bang team_squad. Chi hien muc nay khi co du lieu. */}
           {team.squad.length > 0 && (
             <>
               <h3 className="h5 mb-3">{t('team_squad')}</h3>
@@ -148,21 +150,22 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
                   <div className="row g-3">
                     {group.players.map((p) => (
                       <div key={p.id} className="col-6 col-md-3">
-                        <div className="ft-card p-3 text-center h-100">
-                          <img
-                            src={p.photoUrl || 'https://via.placeholder.com/80?text=?'}
-                            alt={p.name}
-                            className="rounded-circle mb-2"
-                            style={{ width: 72, height: 72, objectFit: 'cover', background: 'var(--ft-card-alt, #eee)' }}
-                            onError={(e) => {
-                              e.target.src = 'https://via.placeholder.com/80?text=?'
-                            }}
-                          />
-                          {p.jerseyNumber != null && (
-                            <div className="fw-bold small text-secondary mb-1">#{p.jerseyNumber}</div>
-                          )}
-                          <div className="fw-semibold small">{p.name}</div>
-                        </div>
+                        <a href={transfermarktSearchUrl(p.name)} target="_blank" rel="noreferrer" className="text-decoration-none">
+                          <div className="ft-card p-3 text-center h-100">
+                            <img
+                              src={p.photoUrl || 'https://via.placeholder.com/80?text=?'}
+                              alt={p.name}
+                              className="rounded-circle mb-2"
+                              style={{ width: 72, height: 72, objectFit: 'cover', background: 'var(--ft-card-alt, #eee)' }}
+                              onError={(e) => { e.target.src = 'https://via.placeholder.com/80?text=?' }}
+                            />
+                            {p.jerseyNumber != null && (
+                              <div className="fw-bold small text-secondary mb-1">#{p.jerseyNumber}</div>
+                            )}
+                            <div className="fw-semibold small text-body">{p.name}</div>
+                            {p.age != null && <div className="text-secondary small">{p.age} tuổi</div>}
+                          </div>
+                        </a>
                       </div>
                     ))}
                   </div>

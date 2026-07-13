@@ -30,7 +30,7 @@ public class TeamSquadService {
         this.client = client;
     }
 
-   public List<TeamDetailDto.PlayerDto> getSquad(Long teamId, String teamName) {
+  public List<TeamDetailDto.PlayerDto> getSquad(Long teamId, String teamName) {
     TeamSquad cached = repository.findById(teamId).orElse(null);
 
     boolean needsSync = cached == null || cached.getLastSyncedAt() == null || isStale(cached);
@@ -44,9 +44,10 @@ public class TeamSquadService {
                     parseIdSafely(p.getExternalId()),
                     p.getName(),
                     p.getPosition(),
-                    null, // API-Football khong tra nationality o endpoint squads
+                    null,
                     p.getPhotoUrl(),
-                    p.getJerseyNumber()
+                    p.getJerseyNumber(),
+                    p.getAge()
             ))
             .toList();
 }
@@ -72,15 +73,16 @@ public class TeamSquadService {
 
         List<PlayerInfo> players = client.getSquad(Long.parseLong(apiFootballTeamId));
 
-        List<SquadPlayer> mapped = players.stream()
-                .map(p -> new SquadPlayer(
-                        String.valueOf(p.id()),
-                        p.name(),
-                        p.position(),
-                        p.number(),
-                        p.photo()
-                ))
-                .toList();
+List<SquadPlayer> mapped = players.stream()
+        .map(p -> new SquadPlayer(
+                String.valueOf(p.id()),
+                p.name(),
+                p.position(),
+                p.number(),
+                p.age(),
+                p.photo()
+        ))
+        .toList();
 
         squad.setPlayers(mapped);
         squad.setLastSyncedAt(Instant.now());

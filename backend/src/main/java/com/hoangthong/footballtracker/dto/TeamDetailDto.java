@@ -20,7 +20,8 @@ public record TeamDetailDto(
             String position,
             String nationality,
             String photoUrl,
-            Integer jerseyNumber
+            Integer jerseyNumber,
+            Integer age
     ) {
     }
 }
