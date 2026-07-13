@@ -24,10 +24,12 @@ public class TeamSquadService {
 
     private final TeamSquadRepository repository;
     private final ApiFootballClient client;
+    private final ApiFootballTeamMappingService mappingService;
 
-    public TeamSquadService(TeamSquadRepository repository, ApiFootballClient client) {
+    public TeamSquadService(TeamSquadRepository repository, ApiFootballClient client, ApiFootballTeamMappingService mappingService) {
         this.repository = repository;
         this.client = client;
+        this.mappingService = mappingService;
     }
 
     public List<TeamDetailDto.PlayerDto> getSquad(Long teamId, String teamName, String shortName) {
@@ -62,13 +64,10 @@ public class TeamSquadService {
 
         String apiFootballTeamId = squad.getSportsDbTeamId();
         if (apiFootballTeamId == null) {
-            Optional<Long> found = client.searchTeamId(normalizeTeamName(teamName));
+            Optional<Long> found = mappingService.findTeamId(teamName);
 
-            // Ten day du khong khop -> thu lai voi shortName (vd "Newcastle United FC"
-            // khong khop nhung "Newcastle" thi co).
             if (found.isEmpty() && shortName != null && !shortName.isBlank()) {
-                log.info("Ten day du '{}' khong khop, thu lai voi shortName '{}'", teamName, shortName);
-                found = client.searchTeamId(normalizeTeamName(shortName));
+                found = mappingService.findTeamId(shortName);
             }
 
             if (found.isEmpty()) {
@@ -98,13 +97,6 @@ public class TeamSquadService {
 
         log.info("Da sync {} cau thu cho doi '{}' (id={}) tu API-Football", mapped.size(), teamName, teamId);
         return repository.save(squad);
-    }
-
-    private String normalizeTeamName(String name) {
-        return name
-                .replaceAll("(?i)\\bFC\\b", "")
-                .replaceAll("(?i)\\bCF\\b", "")
-                .trim();
     }
 
     private long parseIdSafely(String externalId) {

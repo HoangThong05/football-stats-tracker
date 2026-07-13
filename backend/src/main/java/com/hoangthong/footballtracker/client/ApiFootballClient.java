@@ -2,6 +2,7 @@ package com.hoangthong.footballtracker.client;
 
 import com.hoangthong.footballtracker.client.dto.ApiFootballSquadResponse;
 import com.hoangthong.footballtracker.client.dto.ApiFootballSquadResponse.PlayerInfo;
+import com.hoangthong.footballtracker.client.dto.ApiFootballTeamListResponse;
 import com.hoangthong.footballtracker.client.dto.ApiFootballTeamSearchResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,4 +80,17 @@ public class ApiFootballClient {
             return List.of();
         }
     }
+public List<ApiFootballTeamListResponse.TeamWrapper> getTeamsInLeague(int leagueId, int season) {
+    try {
+        ApiFootballTeamListResponse response = restClient.get()
+                .uri("/teams?league={league}&season={season}", leagueId, season)
+                .retrieve()
+                .body(ApiFootballTeamListResponse.class);
+
+        return response == null || response.response() == null ? List.of() : response.response();
+    } catch (Exception e) {
+        log.error("Loi khi lay danh sach doi cua giai id={} tren API-Football: {}", leagueId, e.getMessage());
+        return List.of();
+    }
+}
 }
