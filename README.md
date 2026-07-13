@@ -1,6 +1,6 @@
 # ⚽ Football Stats Tracker
 
-A full-stack football statistics web application built with **Spring Boot** (backend) and **React** (frontend), pulling live data from [football-data.org](https://www.football-data.org).
+A full-stack football statistics web application built with **Spring Boot** (backend) and **React** (frontend), pulling live data from [football-data.org](https://www.football-data.org) and [API-Football](https://www.api-football.com).
 
 🌐 **Live demo:** https://football-stats-tracker-jet.vercel.app
 
@@ -12,14 +12,17 @@ A full-stack football statistics web application built with **Spring Boot** (bac
 - **Standings** — full league table with search (accent-insensitive: type "munchen" → finds "München")
 - **Fixtures & Results** — upcoming and past 14 days, click any match for details (half-time score, venue, referee)
 - **Top Scorers** — goals, assists, nationality per league
-- **Team Detail** — squad, coach, founded year, home stadium
+- **Team Detail** — coach, founded year, home stadium, club colors
+- **Squad / Player Cards** — full roster grouped by position (Goalkeeper / Defender / Midfielder / Attacker), with photo, jersey number, and age; each player links out to a Transfermarkt search for further detail
+- **Head-to-Head** — last meetings between two teams shown on match detail and team comparison views
 - **Compare Teams** — side-by-side stats, better stats highlighted in green
 
 ### 🎯 Predictions (Gamification)
 - Predict the score of upcoming matches
 - Auto-scoring: **3 pts** for exact score · **1 pt** for correct outcome
 - Global leaderboard (public)
-- Personal prediction history
+- Personal prediction history with a **stats chart** (points over time, accuracy rate by league)
+- **Achievement badges** for prediction milestones (e.g. exact-score streaks, total correct predictions)
 
 ### 🏆 Mini League
 - Create a private room with a 6-character invite code
@@ -31,12 +34,12 @@ A full-stack football statistics web application built with **Spring Boot** (bac
 - Role-based access: **USER** and **ADMIN**
 - ADMIN dashboard: view and manage all users
 - Follow favourite teams → personalised fixture feed
-- Email notification when a followed team plays within 24 hours
 - Dark mode / Light mode toggle
 - Vietnamese / English (i18n)
 
 ### ⚙️ Infrastructure & Tech
 - **Caffeine cache** (30-minute TTL) to stay under football-data.org's 10 req/min free-tier limit
+- **Squad data caching**: player rosters fetched from API-Football are cached in PostgreSQL (7-day TTL) to stay within its 100 req/day free-tier quota; team-name-to-ID mapping is refreshed from the league team lists every 24 hours to avoid per-team name-search mismatches
 - **`@Scheduled` job** syncs match fixtures to PostgreSQL every 30 minutes
 - **`@Scheduled` job** auto-scores predictions after matches finish
 - **Swagger UI** available at `/swagger-ui/index.html`
@@ -55,8 +58,8 @@ A full-stack football statistics web application built with **Spring Boot** (bac
 | ORM | Hibernate / JPA |
 | Database | PostgreSQL (Neon — cloud) |
 | Cache | Caffeine |
-| Email | JavaMail (Gmail SMTP) |
-| API source | football-data.org (free tier) |
+| Match & standings data | football-data.org (free tier) |
+| Squad / player data | API-Football (free tier) |
 | Build | Maven + Docker |
 | Frontend | React 18 + Vite |
 | Styling | Bootstrap 5 + custom CSS variables |
@@ -72,17 +75,17 @@ football-stats-tracker/
 │   ├── Dockerfile
 │   ├── pom.xml
 │   └── src/main/java/com/hoangthong/footballtracker/
-│       ├── client/          # football-data.org HTTP client + DTOs
+│       ├── client/          # football-data.org + API-Football HTTP clients + DTOs
 │       ├── config/          # Security, CORS, Cache, Swagger, RestClient
-│       ├── controller/      # REST controllers (14 components)
+│       ├── controller/      # REST controllers
 │       ├── dto/             # Request / Response DTOs
 │       ├── entity/          # JPA entities
 │       ├── repository/      # Spring Data JPA repositories
 │       ├── security/        # JWT filter + service
-│       └── service/         # Business logic + scheduled jobs
+│       └── service/         # Business logic, squad sync, prediction scoring/badges, scheduled jobs
 └── frontend/
     ├── src/
-    │   ├── components/      # 14 React components
+    │   ├── components/      # React components (Team Detail, Head-to-Head, Prediction stats/badges, etc.)
     │   ├── App.jsx
     │   ├── api.js
     │   └── i18n.js          # VI / EN translations
@@ -105,6 +108,7 @@ cd backend
 
 # Set environment variables (PowerShell)
 $env:FOOTBALL_DATA_API_KEY="your_key_here"
+$env:API_FOOTBALL_KEY="your_key_here"
 $env:JWT_SECRET="your_secret_32_chars_min"
 $env:DATABASE_URL="jdbc:postgresql://localhost:5432/football_tracker"
 $env:DATABASE_USERNAME="postgres"
@@ -140,7 +144,8 @@ Frontend starts at `http://localhost:5173`.
 
 | Key | Description |
 |-----|-------------|
-| `FOOTBALL_DATA_API_KEY` | API key from football-data.org |
+| `FOOTBALL_DATA_API_KEY` | API key from football-data.org (standings, fixtures, scorers) |
+| `API_FOOTBALL_KEY` | API key from api-football.com (squad / player data) |
 | `JWT_SECRET` | Random string, 32+ characters |
 | `DATABASE_URL` | `jdbc:postgresql://...` from Neon |
 | `DATABASE_USERNAME` | Neon username |
