@@ -16,13 +16,16 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
     setTeam(null)
 
     fetch(`${API_BASE}/teams/${teamId}`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`Loi ${res.status}`)
-        return res.json()
-      })
-      .then((data) => setTeam(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
+  .then((res) => {
+    if (!res.ok) {
+      if (res.status === 404) throw new Error('Đội bóng này chưa có dữ liệu chi tiết')
+      throw new Error(`Loi ${res.status}`)
+    }
+    return res.json()
+  })
+  .then((data) => setTeam(data))
+  .catch((err) => setError(err.message))
+  .finally(() => setLoading(false))
   }, [teamId])
 
   const isFollowing = favorites.some((f) => f.teamId === teamId)
