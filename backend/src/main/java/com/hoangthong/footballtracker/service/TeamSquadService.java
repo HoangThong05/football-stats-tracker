@@ -30,38 +30,47 @@ public class TeamSquadService {
         this.client = client;
     }
 
-  public List<TeamDetailDto.PlayerDto> getSquad(Long teamId, String teamName) {
-    TeamSquad cached = repository.findById(teamId).orElse(null);
+    public List<TeamDetailDto.PlayerDto> getSquad(Long teamId, String teamName, String shortName) {
+        TeamSquad cached = repository.findById(teamId).orElse(null);
 
-    boolean needsSync = cached == null || cached.getLastSyncedAt() == null || isStale(cached);
+        boolean needsSync = cached == null || cached.getLastSyncedAt() == null || isStale(cached);
 
-    if (needsSync) {
-        cached = syncSquad(teamId, teamName, cached);
+        if (needsSync) {
+            cached = syncSquad(teamId, teamName, shortName, cached);
+        }
+
+        return cached.getPlayers().stream()
+                .map(p -> new TeamDetailDto.PlayerDto(
+                        parseIdSafely(p.getExternalId()),
+                        p.getName(),
+                        p.getPosition(),
+                        null,
+                        p.getPhotoUrl(),
+                        p.getJerseyNumber(),
+                        p.getAge()
+                ))
+                .toList();
     }
 
-    return cached.getPlayers().stream()
-            .map(p -> new TeamDetailDto.PlayerDto(
-                    parseIdSafely(p.getExternalId()),
-                    p.getName(),
-                    p.getPosition(),
-                    null,
-                    p.getPhotoUrl(),
-                    p.getJerseyNumber(),
-                    p.getAge()
-            ))
-            .toList();
-}
     private boolean isStale(TeamSquad cached) {
         int intervalDays = cached.getSportsDbTeamId() == null ? RETRY_INTERVAL_DAYS_ON_FAIL : SYNC_INTERVAL_DAYS;
         return cached.getLastSyncedAt().isBefore(Instant.now().minus(intervalDays, ChronoUnit.DAYS));
     }
 
-    private TeamSquad syncSquad(Long teamId, String teamName, TeamSquad existing) {
+    private TeamSquad syncSquad(Long teamId, String teamName, String shortName, TeamSquad existing) {
         TeamSquad squad = existing != null ? existing : new TeamSquad(teamId);
 
         String apiFootballTeamId = squad.getSportsDbTeamId();
         if (apiFootballTeamId == null) {
             Optional<Long> found = client.searchTeamId(normalizeTeamName(teamName));
+
+            // Ten day du khong khop -> thu lai voi shortName (vd "Newcastle United FC"
+            // khong khop nhung "Newcastle" thi co).
+            if (found.isEmpty() && shortName != null && !shortName.isBlank()) {
+                log.info("Ten day du '{}' khong khop, thu lai voi shortName '{}'", teamName, shortName);
+                found = client.searchTeamId(normalizeTeamName(shortName));
+            }
+
             if (found.isEmpty()) {
                 log.warn("Khong map duoc doi '{}' (id={}) sang API-Football", teamName, teamId);
                 squad.setLastSyncedAt(Instant.now());
@@ -73,16 +82,16 @@ public class TeamSquadService {
 
         List<PlayerInfo> players = client.getSquad(Long.parseLong(apiFootballTeamId));
 
-List<SquadPlayer> mapped = players.stream()
-        .map(p -> new SquadPlayer(
-                String.valueOf(p.id()),
-                p.name(),
-                p.position(),
-                p.number(),
-                p.age(),
-                p.photo()
-        ))
-        .toList();
+        List<SquadPlayer> mapped = players.stream()
+                .map(p -> new SquadPlayer(
+                        String.valueOf(p.id()),
+                        p.name(),
+                        p.position(),
+                        p.number(),
+                        p.age(),
+                        p.photo()
+                ))
+                .toList();
 
         squad.setPlayers(mapped);
         squad.setLastSyncedAt(Instant.now());
@@ -91,10 +100,6 @@ List<SquadPlayer> mapped = players.stream()
         return repository.save(squad);
     }
 
-    /**
-     * football-data.org tra ten dang "Real Madrid CF", nhung API-Football
-     * luu ten ngan gon hon "Real Madrid" -> bo hau to FC/CF de tang ty le khop.
-     */
     private String normalizeTeamName(String name) {
         return name
                 .replaceAll("(?i)\\bFC\\b", "")

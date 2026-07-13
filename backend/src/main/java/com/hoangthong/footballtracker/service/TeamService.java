@@ -17,11 +17,11 @@ public class TeamService {
     private static final Logger log = LoggerFactory.getLogger(TeamService.class);
 
     private final FootballDataClient client;
-    private final TeamSquadService squadService; // THEM MOI
+    private final TeamSquadService squadService;
 
     public TeamService(FootballDataClient client, TeamSquadService squadService) {
         this.client = client;
-        this.squadService = squadService; // THEM MOI
+        this.squadService = squadService;
     }
 
     @Cacheable(value = CacheConfig.TEAMS_CACHE, key = "#teamId")
@@ -31,8 +31,10 @@ public class TeamService {
         TeamApiResponse response = client.getTeam(teamId);
         String coachName = response.coach() != null ? response.coach().name() : null;
 
-        // football-data.org free tier khong tra squad -> fallback sang TheSportsDB
-        List<TeamDetailDto.PlayerDto> squad = squadService.getSquad(teamId, response.name());
+        // football-data.org free tier khong tra squad -> fallback sang API-Football.
+        // Truyen them shortName vi mot so doi (Newcastle, PSG, Atletico Madrid...)
+        // chi khop duoc voi ten ngan gon, khong khop voi ten day du.
+        List<TeamDetailDto.PlayerDto> squad = squadService.getSquad(teamId, response.name(), response.shortName());
 
         return new TeamDetailDto(
                 response.id(),
