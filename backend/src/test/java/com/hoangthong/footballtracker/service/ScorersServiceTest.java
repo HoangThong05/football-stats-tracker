@@ -47,7 +47,7 @@ class ScorersServiceTest {
                 scorer(2, "Kane", 14, 2),
                 scorer(3, "Haaland", 8, null)), null));
 
-        List<ScorerDto> result = service.getScorers("CL").scorers();
+        List<ScorerDto> result = service.getScorers("CL", null).scorers();
 
         assertThat(result).extracting(ScorerDto::rank).containsExactly(1, 2, 3);
         assertThat(result).extracting(ScorerDto::playerName).containsExactly("Mbappe", "Kane", "Haaland");
@@ -58,7 +58,7 @@ class ScorersServiceTest {
         when(client.getScorers("CL", null)).thenReturn(new ScorersApiResponse(List.of(
                 scorer(3, "Haaland", 8, null)), null));
 
-        ScorerDto dto = service.getScorers("CL").scorers().get(0);
+        ScorerDto dto = service.getScorers("CL", null).scorers().get(0);
 
         assertThat(dto.goals()).isEqualTo(8);
         assertThat(dto.assists()).isNull();
@@ -68,7 +68,7 @@ class ScorersServiceTest {
     void map_dung_thong_tin_doi_bong() {
         when(client.getScorers("CL", null)).thenReturn(new ScorersApiResponse(List.of(scorer(1, "Mbappe", 15, 1)), null));
 
-        ScorerDto dto = service.getScorers("CL").scorers().get(0);
+        ScorerDto dto = service.getScorers("CL", null).scorers().get(0);
 
         assertThat(dto.playerId()).isEqualTo(1);
         assertThat(dto.teamId()).isEqualTo(5);
@@ -82,21 +82,21 @@ class ScorersServiceTest {
     void giai_chua_co_vua_pha_luoi_thi_tra_danh_sach_rong() {
         when(client.getScorers("PL", null)).thenReturn(new ScorersApiResponse(List.of(), null));
 
-        assertThat(service.getScorers("PL").scorers()).isEmpty();
+        assertThat(service.getScorers("PL", null).scorers()).isEmpty();
     }
 
     @Test
     void API_tra_ve_null_thi_khong_nem_NullPointerException() {
         when(client.getScorers("PL", null)).thenReturn(null);
 
-        assertThat(service.getScorers("PL").scorers()).isEmpty();
+        assertThat(service.getScorers("PL", null).scorers()).isEmpty();
     }
 
     @Test
     void danh_sach_scorers_null_thi_tra_danh_sach_rong() {
         when(client.getScorers("PL", null)).thenReturn(new ScorersApiResponse(null, null));
 
-        assertThat(service.getScorers("PL").scorers()).isEmpty();
+        assertThat(service.getScorers("PL", null).scorers()).isEmpty();
     }
 
     @Test
@@ -104,7 +104,7 @@ class ScorersServiceTest {
         when(client.getScorers(eq("CL"), isNull())).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
         when(client.getScorers(eq("CL"), anyInt())).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 
-        assertThat(service.getScorers("CL").scorers()).isEmpty();
+        assertThat(service.getScorers("CL", null).scorers()).isEmpty();
     }
 
     @Test
@@ -112,7 +112,7 @@ class ScorersServiceTest {
         StandingsApiResponse.Season season = new StandingsApiResponse.Season("2025-09-01", "2026-05-30", 8);
         when(client.getScorers("CL", null)).thenReturn(new ScorersApiResponse(List.of(scorer(1, "Mbappe", 15, 1)), season));
 
-        assertThat(service.getScorers("CL").seasonLabel()).isEqualTo("2025/26");
+        assertThat(service.getScorers("CL", null).seasonLabel()).isEqualTo("2025/26");
     }
 
     /**
@@ -128,9 +128,31 @@ class ScorersServiceTest {
         when(client.getScorers(eq("PD"), eq(expectedYear)))
                 .thenReturn(new ScorersApiResponse(List.of(scorer(1, "Mbappe", 15, 1)), null));
 
-        ScorersService.Result result = service.getScorers("PD");
+        ScorersService.Result result = service.getScorers("PD", null);
 
         assertThat(result.scorers()).hasSize(1);
         assertThat(result.seasonLabel()).isEqualTo(SeasonLabel.ofStartYear(expectedYear));
+    }
+
+    @Test
+    void chon_mua_tuong_minh_thi_truyen_dung_toi_client_khong_can_thu_lai() {
+        when(client.getScorers("CL", 2023))
+                .thenReturn(new ScorersApiResponse(List.of(scorer(1, "Mbappe", 15, 1)), null));
+
+        ScorersService.Result result = service.getScorers("CL", 2023);
+
+        assertThat(result.scorers()).hasSize(1);
+        assertThat(result.seasonLabel()).isEqualTo("2023/24");
+    }
+
+    @Test
+    void chon_mua_tuong_minh_ma_loi_thi_tra_rong_khong_thu_lai_mua_khac() {
+        when(client.getScorers("CL", 1990))
+                .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
+
+        ScorersService.Result result = service.getScorers("CL", 1990);
+
+        assertThat(result.scorers()).isEmpty();
+        assertThat(result.seasonLabel()).isEqualTo("1990/91");
     }
 }

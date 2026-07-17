@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 
@@ -23,15 +24,25 @@ public class StandingsService {
     }
 
     /**
+     * @param season nam bat dau mua giai (vd 2025 = mua 2025/26) - null = "mua hien tai"
+     *               (tu chon boi football-data.org, xem SeasonLabel).
      * @Cacheable: lan dau goi se chay ham nay va luu ket qua vao cache "standings"
-     * theo key la ma giai dau. Cac lan sau (trong 5 phut) se lay tu cache,
+     * theo key la ma giai dau + mua. Cac lan sau (trong 30 phut) se lay tu cache,
      * KHONG goi lai football-data.org.
      */
-    @Cacheable(value = CacheConfig.STANDINGS_CACHE, key = "#competitionCode")
-    public Result getStandings(String competitionCode) {
-        log.info("CACHE MISS -> goi football-data.org cho giai: {}", competitionCode);
+    @Cacheable(value = CacheConfig.STANDINGS_CACHE, key = "#competitionCode + ':' + #season")
+    public Result getStandings(String competitionCode, Integer season) {
+        log.info("CACHE MISS -> goi football-data.org cho giai: {} (season={})", competitionCode, season);
 
-        StandingsApiResponse response = client.getStandings(competitionCode);
+        StandingsApiResponse response;
+        try {
+            response = client.getStandings(competitionCode, season);
+        } catch (RestClientException ex) {
+            // Vd chon mua qua cu ma football-data.org khong co du lieu -> coi nhu rong,
+            // khong de loi 500 lan ra frontend.
+            log.warn("Khong lay duoc bang xep hang giai {} (season={}): {}", competitionCode, season, ex.getMessage());
+            return new Result(List.of(), season != null ? SeasonLabel.ofStartYear(season) : null);
+        }
 
         // football-data.org tra ve nhieu block (TOTAL / HOME / AWAY). Ta chi lay TOTAL.
         StandingsApiResponse.StandingBlock total = response.standings().stream()
@@ -57,8 +68,15 @@ public class StandingsService {
                 ))
                 .toList();
 
-        boolean anyDataPlayed = rows.stream().anyMatch(r -> r.playedGames() > 0);
-        return new Result(rows, SeasonLabel.of(response.season(), anyDataPlayed));
+        String seasonLabel;
+        if (season != null) {
+            // Nguoi dung da chon mua tuong minh -> biet chac chan, khong can doan.
+            seasonLabel = SeasonLabel.ofStartYear(season);
+        } else {
+            boolean anyDataPlayed = rows.stream().anyMatch(r -> r.playedGames() > 0);
+            seasonLabel = SeasonLabel.of(response.season(), anyDataPlayed);
+        }
+        return new Result(rows, seasonLabel);
     }
 
     /** rows: du lieu tra ve nguyen JSON body; seasonLabel: gan vao header X-Season-Label (xem StandingsController). */

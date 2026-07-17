@@ -39,9 +39,16 @@ public class FootballDataClient {
         this.restClient = footballDataRestClient;
     }
 
-    public StandingsApiResponse getStandings(String competitionCode) {
+    /** @param season nam bat dau mua giai (vd 2025 = mua 2025/26), null = "mua hien tai" theo football-data.org. */
+    public StandingsApiResponse getStandings(String competitionCode, Integer season) {
         return exchange(restClient.get()
-                .uri("/competitions/{code}/standings", competitionCode)
+                .uri(uriBuilder -> {
+                    uriBuilder.path("/competitions/{code}/standings");
+                    if (season != null) {
+                        uriBuilder.queryParam("season", season);
+                    }
+                    return uriBuilder.build(competitionCode);
+                })
                 .retrieve()
                 .toEntity(StandingsApiResponse.class));
     }

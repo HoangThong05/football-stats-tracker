@@ -22,7 +22,10 @@ export default function App() {
   const [league, setLeague] = useState("PL");
   const [view, setView] = useState("standings");
   const [data, setData] = useState([]);
-  const [seasonLabel, setSeasonLabel] = useState(null);
+  // season = null -> "mua hien tai" (tu dong). autoSeasonYear = nam bat dau mua hien tai
+  // (suy tu seasonLabel cua lan fetch tu dong gan nhat), dung de dung danh sach 2 mua truoc do.
+  const [season, setSeason] = useState(null);
+  const [autoSeasonYear, setAutoSeasonYear] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
@@ -75,17 +78,20 @@ export default function App() {
   const loadViewData = () => {
     setLoading(true);
     setError(null);
-    setSeasonLabel(null);
 
     // Gan them token (neu co) cho moi request: cac endpoint cong khai bo qua header nay,
     // rieng "predict" dung no de biet du doan hien tai cua nguoi dung.
-    fetch(endpointFor(view, league), { headers: authHeaders(token) })
+    fetch(endpointFor(view, league, season), { headers: authHeaders(token) })
       .then((res) => {
         if (!res.ok) throw new Error(`Loi ${res.status}`);
         // Standings/Scorers kem header nay: football-data.org tu chon "mua hien tai"
-        // theo tung giai (khong nhan tham so season), nen hien ro mua nao de tranh
-        // nham lan (vd 1 giai da sang mua moi nhung giai khac con hien mua vua xong).
-        setSeasonLabel(res.headers.get("X-Season-Label") || null);
+        // theo tung giai (khong nhan tham so season). Chi cap nhat moc "mua hien tai"
+        // khi dang o che do tu dong (season=null) - dung de dung 2 lua chon mua truoc do.
+        if (season === null) {
+          const label = res.headers.get("X-Season-Label") || null;
+          const year = label ? parseInt(label.split("/")[0], 10) : NaN;
+          if (!Number.isNaN(year)) setAutoSeasonYear(year);
+        }
         return res.json();
       })
       .then((data) => setData(data))
@@ -93,7 +99,14 @@ export default function App() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(loadViewData, [league, view, token]);
+  useEffect(loadViewData, [league, view, token, season]);
+
+  // Doi giai -> quay ve mua hien tai (mua "gan nhat" co the khac giua cac giai)
+  const changeLeague = (code) => {
+    setSeason(null);
+    setAutoSeasonYear(null);
+    setLeague(code);
+  };
 
   const refreshFavorites = (currentToken) => {
     fetch(`${API_BASE}/favorites`, { headers: authHeaders(currentToken) })
@@ -157,6 +170,8 @@ export default function App() {
   };
 
   const currentLeague = LEAGUES.find((l) => l.code === league);
+  // Vd 2025 -> "2025/26"
+  const formatSeasonRange = (startYear) => `${startYear}/${String(startYear + 1).slice(2)}`;
 
   return (
     <LanguageContext.Provider value={{ lang, t, setLang }}>
@@ -402,7 +417,7 @@ export default function App() {
                     className={
                       l.code === league ? "btn btn-sm active" : "btn btn-sm"
                     }
-                    onClick={() => setLeague(l.code)}
+                    onClick={() => changeLeague(l.code)}
                   >
                     {l.name}
                   </button>
@@ -423,10 +438,22 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-                {seasonLabel && (
-                  <span className="ft-season-badge">
-                    🗓 {t("season_label_prefix")} {seasonLabel}
-                  </span>
+                {autoSeasonYear != null &&
+                  (view === "standings" || view === "scorers" || view === "compare") && (
+                  <select
+                    className="ft-season-badge"
+                    value={season ?? ""}
+                    onChange={(e) =>
+                      setSeason(e.target.value ? Number(e.target.value) : null)
+                    }
+                    title={t("season_label_prefix")}
+                  >
+                    <option value="">
+                      🗓 {formatSeasonRange(autoSeasonYear)} ({t("season_current_suffix")})
+                    </option>
+                    <option value={autoSeasonYear - 1}>{formatSeasonRange(autoSeasonYear - 1)}</option>
+                    <option value={autoSeasonYear - 2}>{formatSeasonRange(autoSeasonYear - 2)}</option>
+                  </select>
                 )}
               </div>
 

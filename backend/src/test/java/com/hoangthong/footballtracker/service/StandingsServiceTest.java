@@ -40,9 +40,9 @@ class StandingsServiceTest {
     void map_dung_cac_truong_tu_API_sang_StandingRow() {
         Team arsenal = team(57, "Arsenal FC");
         StandingBlock total = new StandingBlock("LEAGUE", "TOTAL", List.of(entry(1, arsenal, 24)));
-        when(client.getStandings("PL")).thenReturn(new StandingsApiResponse(null, List.of(total), null));
+        when(client.getStandings("PL", null)).thenReturn(new StandingsApiResponse(null, List.of(total), null));
 
-        List<StandingRow> rows = service.getStandings("PL").rows();
+        List<StandingRow> rows = service.getStandings("PL", null).rows();
 
         assertThat(rows).hasSize(1);
         StandingRow row = rows.get(0);
@@ -68,9 +68,9 @@ class StandingsServiceTest {
         StandingBlock total = new StandingBlock("LEAGUE", "TOTAL", List.of(entry(1, a, 24)));
         StandingBlock away = new StandingBlock("LEAGUE", "AWAY", List.of(entry(1, b, 88)));
 
-        when(client.getStandings("CL")).thenReturn(new StandingsApiResponse(null, List.of(home, total, away), null));
+        when(client.getStandings("CL", null)).thenReturn(new StandingsApiResponse(null, List.of(home, total, away), null));
 
-        List<StandingRow> rows = service.getStandings("CL").rows();
+        List<StandingRow> rows = service.getStandings("CL", null).rows();
 
         assertThat(rows).hasSize(1);
         assertThat(rows.get(0).teamName()).isEqualTo("Doi A");
@@ -80,9 +80,9 @@ class StandingsServiceTest {
     @Test
     void khong_co_block_TOTAL_thi_nem_ngoai_le() {
         StandingBlock home = new StandingBlock("LEAGUE", "HOME", List.of(entry(1, team(1, "X"), 10)));
-        when(client.getStandings("XX")).thenReturn(new StandingsApiResponse(null, List.of(home), null));
+        when(client.getStandings("XX", null)).thenReturn(new StandingsApiResponse(null, List.of(home), null));
 
-        assertThatThrownBy(() -> service.getStandings("XX"))
+        assertThatThrownBy(() -> service.getStandings("XX", null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("TOTAL");
     }
@@ -90,26 +90,26 @@ class StandingsServiceTest {
     @Test
     void bang_xep_hang_rong_thi_tra_danh_sach_rong() {
         StandingBlock total = new StandingBlock("LEAGUE", "TOTAL", List.of());
-        when(client.getStandings("PL")).thenReturn(new StandingsApiResponse(null, List.of(total), null));
+        when(client.getStandings("PL", null)).thenReturn(new StandingsApiResponse(null, List.of(total), null));
 
-        assertThat(service.getStandings("PL").rows()).isEmpty();
+        assertThat(service.getStandings("PL", null).rows()).isEmpty();
     }
 
     @Test
     void tinh_dung_nhan_mua_giai_khi_bat_dau_ket_thuc_khac_nam() {
         StandingBlock total = new StandingBlock("LEAGUE", "TOTAL", List.of());
         StandingsApiResponse.Season season = new StandingsApiResponse.Season("2025-08-15", "2026-05-24", 30);
-        when(client.getStandings("PL")).thenReturn(new StandingsApiResponse(null, List.of(total), season));
+        when(client.getStandings("PL", null)).thenReturn(new StandingsApiResponse(null, List.of(total), season));
 
-        assertThat(service.getStandings("PL").seasonLabel()).isEqualTo("2025/26");
+        assertThat(service.getStandings("PL", null).seasonLabel()).isEqualTo("2025/26");
     }
 
     @Test
     void khong_co_season_thi_nhan_mua_giai_la_null() {
         StandingBlock total = new StandingBlock("LEAGUE", "TOTAL", List.of());
-        when(client.getStandings("PL")).thenReturn(new StandingsApiResponse(null, List.of(total), null));
+        when(client.getStandings("PL", null)).thenReturn(new StandingsApiResponse(null, List.of(total), null));
 
-        assertThat(service.getStandings("PL").seasonLabel()).isNull();
+        assertThat(service.getStandings("PL", null).seasonLabel()).isNull();
     }
 
     /**
@@ -123,8 +123,32 @@ class StandingsServiceTest {
         StandingBlock total = new StandingBlock("LEAGUE", "TOTAL", List.of(entry(1, barca, 94)));
         StandingsApiResponse.Season futureSeason =
                 new StandingsApiResponse.Season("2026-08-16", "2027-05-24", 1);
-        when(client.getStandings("PD")).thenReturn(new StandingsApiResponse(null, List.of(total), futureSeason));
+        when(client.getStandings("PD", null)).thenReturn(new StandingsApiResponse(null, List.of(total), futureSeason));
 
-        assertThat(service.getStandings("PD").seasonLabel()).isEqualTo("2025/26");
+        assertThat(service.getStandings("PD", null).seasonLabel()).isEqualTo("2025/26");
+    }
+
+    @Test
+    void chon_mua_tuong_minh_thi_truyen_dung_season_toi_client_va_gan_nhan_chac_chan() {
+        Team barca = team(81, "FC Barcelona");
+        StandingBlock total = new StandingBlock("LEAGUE", "TOTAL", List.of(entry(1, barca, 94)));
+        when(client.getStandings("PD", 2024)).thenReturn(new StandingsApiResponse(null, List.of(total), null));
+
+        StandingsService.Result result = service.getStandings("PD", 2024);
+
+        assertThat(result.rows()).hasSize(1);
+        assertThat(result.seasonLabel()).isEqualTo("2024/25");
+    }
+
+    @Test
+    void chon_mua_tuong_minh_ma_loi_thi_tra_danh_sach_rong_khong_nem_500() {
+        when(client.getStandings("PD", 1990))
+                .thenThrow(new org.springframework.web.client.HttpClientErrorException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST));
+
+        StandingsService.Result result = service.getStandings("PD", 1990);
+
+        assertThat(result.rows()).isEmpty();
+        assertThat(result.seasonLabel()).isEqualTo("1990/91");
     }
 }
