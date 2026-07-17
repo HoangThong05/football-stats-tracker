@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,15 @@ public class ScorersService {
     public List<ScorerDto> getScorers(String competitionCode) {
         log.info("CACHE MISS -> goi football-data.org lay vua pha luoi giai: {}", competitionCode);
 
-        ScorersApiResponse response = client.getScorers(competitionCode);
+        ScorersApiResponse response;
+        try {
+            response = client.getScorers(competitionCode);
+        } catch (RestClientException ex) {
+            // Mua giai chua bat dau / chua co du lieu vua pha luoi (thuong gap voi CL dau mua)
+            // -> football-data.org tra loi (khong phai 200 rong), coi nhu chua co du lieu.
+            log.warn("Khong lay duoc vua pha luoi giai {}: {}", competitionCode, ex.getMessage());
+            return List.of();
+        }
         if (response == null || response.scorers() == null) {
             return List.of();
         }
