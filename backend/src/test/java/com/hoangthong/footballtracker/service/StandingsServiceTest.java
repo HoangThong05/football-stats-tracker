@@ -111,4 +111,20 @@ class StandingsServiceTest {
 
         assertThat(service.getStandings("PL").seasonLabel()).isNull();
     }
+
+    /**
+     * Bug thuc te tu football-data.org: object "season" da tro toi mua MOI (startDate
+     * o tuong lai, vd nam sau) nhung bang xep hang van la so lieu THAT cua mua VUA XONG
+     * (playedGames > 0, du 38 tran). Phai tu phat hien va lui lai 1 nam cho dung.
+     */
+    @Test
+    void season_tro_toi_tuong_lai_nhung_bang_co_du_lieu_that_thi_lui_lai_1_nam() {
+        Team barca = team(81, "FC Barcelona");
+        StandingBlock total = new StandingBlock("LEAGUE", "TOTAL", List.of(entry(1, barca, 94)));
+        StandingsApiResponse.Season futureSeason =
+                new StandingsApiResponse.Season("2026-08-16", "2027-05-24", 1);
+        when(client.getStandings("PD")).thenReturn(new StandingsApiResponse(null, List.of(total), futureSeason));
+
+        assertThat(service.getStandings("PD").seasonLabel()).isEqualTo("2025/26");
+    }
 }

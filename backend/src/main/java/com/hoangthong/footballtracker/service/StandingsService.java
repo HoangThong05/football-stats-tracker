@@ -57,7 +57,8 @@ public class StandingsService {
                 ))
                 .toList();
 
-        return new Result(rows, SeasonLabel.of(response.season()));
+        boolean anyDataPlayed = rows.stream().anyMatch(r -> r.playedGames() > 0);
+        return new Result(rows, SeasonLabel.of(response.season(), anyDataPlayed));
     }
 
     /** rows: du lieu tra ve nguyen JSON body; seasonLabel: gan vao header X-Season-Label (xem StandingsController). */

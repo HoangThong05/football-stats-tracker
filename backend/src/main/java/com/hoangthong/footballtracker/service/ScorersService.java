@@ -57,7 +57,8 @@ public class ScorersService {
                     s.assists()
             ));
         }
-        return new Result(result, SeasonLabel.of(response.season()));
+        boolean anyDataPlayed = result.stream().anyMatch(s -> s.playedMatches() != null && s.playedMatches() > 0);
+        return new Result(result, SeasonLabel.of(response.season(), anyDataPlayed));
     }
 
     /** scorers: du lieu tra ve nguyen JSON body; seasonLabel: gan vao header X-Season-Label (xem ScorersController). */
