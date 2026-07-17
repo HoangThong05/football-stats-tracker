@@ -94,9 +94,20 @@ public class FootballDataClient {
                 .toEntity(MatchesApiResponse.class));
     }
 
-    public ScorersApiResponse getScorers(String competitionCode) {
+    /**
+     * @param season nam bat dau mua giai (vd 2025 = mua 2025/26), null = de football-data.org
+     *               tu chon "mua hien tai" (co the tra loi neu mua do chua co du lieu vua pha luoi -
+     *               xem ScorersService, noi se goi lai co chi dinh season khi lan dau that bai).
+     */
+    public ScorersApiResponse getScorers(String competitionCode, Integer season) {
         return exchange(restClient.get()
-                .uri("/competitions/{code}/scorers", competitionCode)
+                .uri(uriBuilder -> {
+                    uriBuilder.path("/competitions/{code}/scorers");
+                    if (season != null) {
+                        uriBuilder.queryParam("season", season);
+                    }
+                    return uriBuilder.build(competitionCode);
+                })
                 .retrieve()
                 .toEntity(ScorersApiResponse.class));
     }

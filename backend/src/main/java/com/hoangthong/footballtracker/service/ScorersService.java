@@ -10,6 +10,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,13 +30,24 @@ public class ScorersService {
         log.info("CACHE MISS -> goi football-data.org lay vua pha luoi giai: {}", competitionCode);
 
         ScorersApiResponse response;
+        Integer explicitSeasonYear = null;
         try {
-            response = client.getScorers(competitionCode);
+            response = client.getScorers(competitionCode, null);
         } catch (RestClientException ex) {
-            // Mua giai chua bat dau / chua co du lieu vua pha luoi (thuong gap voi CL dau mua)
-            // -> football-data.org tra loi (khong phai 200 rong), coi nhu chua co du lieu.
-            log.warn("Khong lay duoc vua pha luoi giai {}: {}", competitionCode, ex.getMessage());
-            return new Result(List.of(), null);
+            // "Mua hien tai" tu dong cua football-data.org dang tro toi mua chua co du lieu
+            // vua pha luoi (thuong gap dau/cuoi mua, vd sau khi ho da chuyen sang mua moi
+            // nhung Bang xep hang van con giu du lieu mua cu - xem SeasonLabel).
+            // Thu lai 1 lan, chi dinh tuong minh mua "gan nhat" theo lich chau Au.
+            explicitSeasonYear = SeasonLabel.likelyCurrentSeasonStartYear(LocalDate.now());
+            log.warn("Khong lay duoc vua pha luoi giai {} (mua tu dong): {} -> thu lai voi season={}",
+                    competitionCode, ex.getMessage(), explicitSeasonYear);
+            try {
+                response = client.getScorers(competitionCode, explicitSeasonYear);
+            } catch (RestClientException ex2) {
+                log.warn("Van khong lay duoc vua pha luoi giai {} du da chi dinh season={}: {}",
+                        competitionCode, explicitSeasonYear, ex2.getMessage());
+                return new Result(List.of(), null);
+            }
         }
         if (response == null || response.scorers() == null) {
             return new Result(List.of(), null);
@@ -57,8 +69,15 @@ public class ScorersService {
                     s.assists()
             ));
         }
-        boolean anyDataPlayed = result.stream().anyMatch(s -> s.playedMatches() != null && s.playedMatches() > 0);
-        return new Result(result, SeasonLabel.of(response.season(), anyDataPlayed));
+
+        String seasonLabel;
+        if (explicitSeasonYear != null) {
+            seasonLabel = SeasonLabel.ofStartYear(explicitSeasonYear);
+        } else {
+            boolean anyDataPlayed = result.stream().anyMatch(s -> s.playedMatches() != null && s.playedMatches() > 0);
+            seasonLabel = SeasonLabel.of(response.season(), anyDataPlayed);
+        }
+        return new Result(result, seasonLabel);
     }
 
     /** scorers: du lieu tra ve nguyen JSON body; seasonLabel: gan vao header X-Season-Label (xem ScorersController). */

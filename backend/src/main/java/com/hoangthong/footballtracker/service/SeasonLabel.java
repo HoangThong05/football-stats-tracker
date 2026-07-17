@@ -47,4 +47,18 @@ final class SeasonLabel {
             return null;
         }
     }
+
+    /** Nhan mua giai tu nam bat dau tuong minh (vd 2025 -> "2025/26"). */
+    static String ofStartYear(int startYear) {
+        return startYear + "/" + String.valueOf(startYear + 1).substring(2);
+    }
+
+    /**
+     * Doan nam bat dau mua giai "gan nhat" theo lich chau Au (thang 8 nam X -> thang 5 nam X+1).
+     * Dung khi phai chi dinh tuong minh tham so "season" cho football-data.org (vd khi goi
+     * khong tham so bi loi vi ho da tro toi mua chua co du lieu - xem ScorersService).
+     */
+    static int likelyCurrentSeasonStartYear(LocalDate today) {
+        return today.getMonthValue() < 8 ? today.getYear() - 1 : today.getYear();
+    }
 }
