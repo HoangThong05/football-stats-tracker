@@ -144,6 +144,71 @@ body,
   font-size: 0.85rem;
 }
 
+/* ---------- Menu tai khoan (gop Ho so/Yeu thich/Lich su/Quan tri/Dang xuat) ---------- */
+.ft-user-menu {
+  position: relative;
+  outline: none;
+}
+
+.ft-user-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 0.78rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ft-user-menu-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: var(--ft-radius);
+  box-shadow: var(--ft-card-shadow);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 1040;
+}
+
+.ft-user-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--bs-body-color);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.ft-user-menu-item:hover {
+  background: var(--ft-accent-soft);
+  color: var(--ft-accent-strong);
+}
+
+.ft-user-menu-item-danger:hover {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+}
+
+.ft-user-menu-divider {
+  height: 1px;
+  background: var(--bs-border-color-translucent);
+  margin: 4px 2px;
+}
+
 /* ---------- Tab chon giai dau ---------- */
 .ft-league-tabs {
   display: flex;

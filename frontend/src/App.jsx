@@ -31,6 +31,7 @@ export default function App() {
   const [showMyPredictions, setShowMyPredictions] = useState(false);
   const [showMiniLeague, setShowMiniLeague] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const [token, setToken] = useState(() => localStorage.getItem("ft_token"));
   const [userEmail, setUserEmail] = useState(() =>
@@ -128,6 +129,7 @@ export default function App() {
     setSelectedMatchId(null);
     setShowMiniLeague(false);
     setShowProfile(false);
+    setShowUserMenu(false);
   };
 
   const goToTeam = (teamId) => {
@@ -218,79 +220,107 @@ export default function App() {
                 </button>
 
                 {userEmail ? (
-                  <>
+                  <div
+                    className="ft-user-menu"
+                    tabIndex={-1}
+                    onBlur={(e) => {
+                      if (!e.currentTarget.contains(e.relatedTarget)) {
+                        setShowUserMenu(false);
+                      }
+                    }}
+                  >
                     <button
-                      className="btn btn-nav btn-sm"
-                      onClick={() => {
-                        setSelectedTeamId(null);
-                        setSelectedMatchId(null);
-                        setShowAdmin(false);
-                        setShowLeaderboard(false);
-                        setShowMyPredictions(false);
-                        setShowFavorites(false);
-                        setShowMiniLeague(false);
-                        setShowProfile(true);
-                      }}
+                      className="btn btn-nav btn-sm d-flex align-items-center gap-2"
+                      onClick={() => setShowUserMenu((v) => !v)}
                     >
-                      {t("nav_profile")}
-                    </button>
-                    <button
-                      className="btn btn-nav btn-sm"
-                      onClick={() => {
-                        setSelectedTeamId(null);
-                        setSelectedMatchId(null);
-                        setShowAdmin(false);
-                        setShowLeaderboard(false);
-                        setShowMyPredictions(false);
-                        setShowProfile(false);
-                        setShowFavorites(true);
-                      }}
-                    >
-                      {t("nav_favorites")} ({favorites.length})
-                    </button>
-                    <button
-                      className="btn btn-nav btn-sm"
-                      onClick={() => {
-                        setSelectedTeamId(null);
-                        setSelectedMatchId(null);
-                        setShowAdmin(false);
-                        setShowLeaderboard(false);
-                        setShowFavorites(false);
-                        setShowProfile(false);
-                        setShowMyPredictions(true);
-                      }}
-                    >
-                      {t("nav_history")}
-                    </button>
-                    {userRole === "ADMIN" && (
-                      <button
-                        className="btn btn-nav btn-sm"
-                        onClick={() => {
-                          setSelectedTeamId(null);
-                          setSelectedMatchId(null);
-                          setShowFavorites(false);
-                          setShowLeaderboard(false);
-                          setShowMyPredictions(false);
-                          setShowProfile(false);
-                          setShowAdmin(true);
-                        }}
-                      >
-                        {t("nav_admin")}
-                      </button>
-                    )}
-                    <span className="ft-user-email d-none d-md-inline">
-                      {userEmail}
+                      <span className="ft-user-avatar">
+                        {userEmail.charAt(0).toUpperCase()}
+                      </span>
+                      <span className="d-none d-md-inline">{userEmail}</span>
                       {userRole === "ADMIN" && (
-                        <span className="badge text-bg-danger ms-1">ADMIN</span>
+                        <span className="badge text-bg-danger">ADMIN</span>
                       )}
-                    </span>
-                    <button
-                      className="btn btn-nav btn-sm"
-                      onClick={handleLogout}
-                    >
-                      {t("nav_logout")}
+                      <span className="opacity-75">▾</span>
                     </button>
-                  </>
+
+                    {showUserMenu && (
+                      <div className="ft-user-menu-panel ft-fade">
+                        <button
+                          className="ft-user-menu-item"
+                          onClick={() => {
+                            setSelectedTeamId(null);
+                            setSelectedMatchId(null);
+                            setShowAdmin(false);
+                            setShowLeaderboard(false);
+                            setShowMyPredictions(false);
+                            setShowFavorites(false);
+                            setShowMiniLeague(false);
+                            setShowProfile(true);
+                            setShowUserMenu(false);
+                          }}
+                        >
+                          {t("nav_profile")}
+                        </button>
+                        <button
+                          className="ft-user-menu-item"
+                          onClick={() => {
+                            setSelectedTeamId(null);
+                            setSelectedMatchId(null);
+                            setShowAdmin(false);
+                            setShowLeaderboard(false);
+                            setShowMyPredictions(false);
+                            setShowProfile(false);
+                            setShowFavorites(true);
+                            setShowUserMenu(false);
+                          }}
+                        >
+                          {t("nav_favorites")} ({favorites.length})
+                        </button>
+                        <button
+                          className="ft-user-menu-item"
+                          onClick={() => {
+                            setSelectedTeamId(null);
+                            setSelectedMatchId(null);
+                            setShowAdmin(false);
+                            setShowLeaderboard(false);
+                            setShowFavorites(false);
+                            setShowProfile(false);
+                            setShowMyPredictions(true);
+                            setShowUserMenu(false);
+                          }}
+                        >
+                          {t("nav_history")}
+                        </button>
+                        {userRole === "ADMIN" && (
+                          <button
+                            className="ft-user-menu-item"
+                            onClick={() => {
+                              setSelectedTeamId(null);
+                              setSelectedMatchId(null);
+                              setShowFavorites(false);
+                              setShowLeaderboard(false);
+                              setShowMyPredictions(false);
+                              setShowProfile(false);
+                              setShowAdmin(true);
+                              setShowUserMenu(false);
+                            }}
+                          >
+                            {t("nav_admin")}
+                          </button>
+                        )}
+                        <div className="ft-user-menu-divider" />
+                        <button
+                          className="ft-user-menu-item ft-user-menu-item-danger"
+                          onClick={() => {
+                            setShowUserMenu(false);
+                            handleLogout();
+                          }}
+                        >
+                          {t("nav_logout")}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <button
                     className="btn btn-nav-solid btn-sm"
