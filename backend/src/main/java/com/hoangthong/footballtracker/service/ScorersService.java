@@ -25,7 +25,7 @@ public class ScorersService {
     }
 
     @Cacheable(value = CacheConfig.SCORERS_CACHE, key = "#competitionCode")
-    public List<ScorerDto> getScorers(String competitionCode) {
+    public Result getScorers(String competitionCode) {
         log.info("CACHE MISS -> goi football-data.org lay vua pha luoi giai: {}", competitionCode);
 
         ScorersApiResponse response;
@@ -35,10 +35,10 @@ public class ScorersService {
             // Mua giai chua bat dau / chua co du lieu vua pha luoi (thuong gap voi CL dau mua)
             // -> football-data.org tra loi (khong phai 200 rong), coi nhu chua co du lieu.
             log.warn("Khong lay duoc vua pha luoi giai {}: {}", competitionCode, ex.getMessage());
-            return List.of();
+            return new Result(List.of(), null);
         }
         if (response == null || response.scorers() == null) {
-            return List.of();
+            return new Result(List.of(), null);
         }
 
         List<ScorerDto> result = new ArrayList<>();
@@ -57,6 +57,10 @@ public class ScorersService {
                     s.assists()
             ));
         }
-        return result;
+        return new Result(result, SeasonLabel.of(response.season()));
+    }
+
+    /** scorers: du lieu tra ve nguyen JSON body; seasonLabel: gan vao header X-Season-Label (xem ScorersController). */
+    public record Result(List<ScorerDto> scorers, String seasonLabel) {
     }
 }

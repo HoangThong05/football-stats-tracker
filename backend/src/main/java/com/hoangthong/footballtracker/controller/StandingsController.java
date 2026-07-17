@@ -2,6 +2,7 @@ package com.hoangthong.footballtracker.controller;
 
 import com.hoangthong.footballtracker.dto.StandingRow;
 import com.hoangthong.footballtracker.service.StandingsService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +29,10 @@ public class StandingsController {
     }
 
     @GetMapping("/{code}")
-    public List<StandingRow> getStandings(@PathVariable String code) {
-        return service.getStandings(code.toUpperCase());
+    public ResponseEntity<List<StandingRow>> getStandings(@PathVariable String code) {
+        StandingsService.Result result = service.getStandings(code.toUpperCase());
+        return ResponseEntity.ok()
+                .header("X-Season-Label", result.seasonLabel() != null ? result.seasonLabel() : "")
+                .body(result.rows());
     }
 }

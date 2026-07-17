@@ -22,6 +22,7 @@ export default function App() {
   const [league, setLeague] = useState("PL");
   const [view, setView] = useState("standings");
   const [data, setData] = useState([]);
+  const [seasonLabel, setSeasonLabel] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
@@ -74,12 +75,17 @@ export default function App() {
   const loadViewData = () => {
     setLoading(true);
     setError(null);
+    setSeasonLabel(null);
 
     // Gan them token (neu co) cho moi request: cac endpoint cong khai bo qua header nay,
     // rieng "predict" dung no de biet du doan hien tai cua nguoi dung.
     fetch(endpointFor(view, league), { headers: authHeaders(token) })
       .then((res) => {
         if (!res.ok) throw new Error(`Loi ${res.status}`);
+        // Standings/Scorers kem header nay: football-data.org tu chon "mua hien tai"
+        // theo tung giai (khong nhan tham so season), nen hien ro mua nao de tranh
+        // nham lan (vd 1 giai da sang mua moi nhung giai khac con hien mua vua xong).
+        setSeasonLabel(res.headers.get("X-Season-Label") || null);
         return res.json();
       })
       .then((data) => setData(data))
@@ -403,18 +409,25 @@ export default function App() {
                 ))}
               </div>
 
-              <div className="ft-view-tabs mb-4">
-                {VIEWS.map((v) => (
-                  <button
-                    key={v.key}
-                    className={
-                      v.key === view ? "btn btn-sm active" : "btn btn-sm"
-                    }
-                    onClick={() => setView(v.key)}
-                  >
-                    {t(v.nameKey)}
-                  </button>
-                ))}
+              <div className="d-flex align-items-center flex-wrap gap-2 mb-4">
+                <div className="ft-view-tabs">
+                  {VIEWS.map((v) => (
+                    <button
+                      key={v.key}
+                      className={
+                        v.key === view ? "btn btn-sm active" : "btn btn-sm"
+                      }
+                      onClick={() => setView(v.key)}
+                    >
+                      {t(v.nameKey)}
+                    </button>
+                  ))}
+                </div>
+                {seasonLabel && (
+                  <span className="ft-season-badge">
+                    🗓 {t("season_label_prefix")} {seasonLabel}
+                  </span>
+                )}
               </div>
 
               {loading && <Loading />}

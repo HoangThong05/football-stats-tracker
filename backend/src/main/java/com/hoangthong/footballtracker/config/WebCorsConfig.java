@@ -26,6 +26,9 @@ public class WebCorsConfig {
         config.setAllowedOriginPatterns(List.of(allowedOrigin, "https://*.vercel.app"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        // Cho phep frontend doc header tuy chinh nay qua fetch (mac dinh trinh duyet chi
+        // cho JS doc mot so header "don gian", header tu dat phai khai bao rieng o day).
+        config.setExposedHeaders(List.of("X-Season-Label"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", config);

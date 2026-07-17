@@ -12,11 +12,17 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record StandingsApiResponse(
         Competition competition,
-        List<StandingBlock> standings
+        List<StandingBlock> standings,
+        Season season
 ) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Competition(String name, String emblem) {
+    }
+
+    /** Mua giai ma bang xep hang nay thuoc ve (football-data.org tu chon "mua hien tai" theo giai). */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Season(String startDate, String endDate, Integer currentMatchday) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

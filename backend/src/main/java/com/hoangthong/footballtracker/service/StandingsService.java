@@ -28,7 +28,7 @@ public class StandingsService {
      * KHONG goi lai football-data.org.
      */
     @Cacheable(value = CacheConfig.STANDINGS_CACHE, key = "#competitionCode")
-    public List<StandingRow> getStandings(String competitionCode) {
+    public Result getStandings(String competitionCode) {
         log.info("CACHE MISS -> goi football-data.org cho giai: {}", competitionCode);
 
         StandingsApiResponse response = client.getStandings(competitionCode);
@@ -40,7 +40,7 @@ public class StandingsService {
                 .orElseThrow(() -> new IllegalStateException(
                         "Khong tim thay bang xep hang TOTAL cho giai " + competitionCode));
 
-        return total.table().stream()
+        List<StandingRow> rows = total.table().stream()
                 .map(e -> new StandingRow(
                         e.position(),
                         e.team().id(),
@@ -56,5 +56,11 @@ public class StandingsService {
                         e.points()
                 ))
                 .toList();
+
+        return new Result(rows, SeasonLabel.of(response.season()));
+    }
+
+    /** rows: du lieu tra ve nguyen JSON body; seasonLabel: gan vao header X-Season-Label (xem StandingsController). */
+    public record Result(List<StandingRow> rows, String seasonLabel) {
     }
 }

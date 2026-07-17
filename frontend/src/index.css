@@ -313,6 +313,18 @@ body,
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
 }
 
+/* ---------- Nhan mua giai (canh tab chon view) ---------- */
+.ft-season-badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 999px;
+  padding: 5px 12px;
+  white-space: nowrap;
+}
+
 /* ---------- Khung noi dung dang card ---------- */
 .ft-card {
   background: var(--bs-body-bg);

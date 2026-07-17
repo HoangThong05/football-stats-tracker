@@ -8,7 +8,7 @@ import java.util.List;
  * Map theo JSON tra ve tu GET /v4/competitions/{code}/scorers cua football-data.org.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record ScorersApiResponse(List<Scorer> scorers) {
+public record ScorersApiResponse(List<Scorer> scorers, StandingsApiResponse.Season season) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Scorer(

@@ -2,6 +2,7 @@ package com.hoangthong.footballtracker.controller;
 
 import com.hoangthong.footballtracker.dto.ScorerDto;
 import com.hoangthong.footballtracker.service.ScorersService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,7 +25,10 @@ public class ScorersController {
     }
 
     @GetMapping("/{code}")
-    public List<ScorerDto> getScorers(@PathVariable String code) {
-        return service.getScorers(code.toUpperCase());
+    public ResponseEntity<List<ScorerDto>> getScorers(@PathVariable String code) {
+        ScorersService.Result result = service.getScorers(code.toUpperCase());
+        return ResponseEntity.ok()
+                .header("X-Season-Label", result.seasonLabel() != null ? result.seasonLabel() : "")
+                .body(result.scorers());
     }
 }

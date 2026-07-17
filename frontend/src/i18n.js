@@ -147,6 +147,8 @@ export const translations = {
     team_login_to_follow: 'Đăng nhập để theo dõi đội này',
     team_squad: 'Đội hình',
 
+    season_label_prefix: 'Mùa',
+
     matches_empty: 'Không có trận nào trong 14 ngày. Các giải châu Âu thường nghỉ hè từ tháng 6 đến giữa tháng 8.',
     matches_matchday_prefix: '· Vòng',
     matches_vs: 'VS',
@@ -375,6 +377,8 @@ export const translations = {
     team_follow: '☆ Follow',
     team_login_to_follow: 'Log in to follow this team',
     team_squad: 'Squad',
+
+    season_label_prefix: 'Season',
 
     matches_empty: 'No matches in the next 14 days. European leagues are usually on summer break from June to mid-August.',
     matches_matchday_prefix: '· Matchday',
