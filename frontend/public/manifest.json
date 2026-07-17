@@ -4,8 +4,8 @@
   "description": "Theo dõi bảng xếp hạng, lịch thi đấu và dự đoán kết quả bóng đá",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#16a34a",
+  "background_color": "#0B1410",
+  "theme_color": "#0F3D26",
   "orientation": "portrait-primary",
   "icons": [
     {
