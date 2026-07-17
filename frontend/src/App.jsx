@@ -16,6 +16,7 @@ import MatchDetail from "./components/MatchDetail";
 import MatchList from "./components/MatchList";
 import PredictionsView from "./components/PredictionsView";
 import MiniLeague from "./components/MiniLeague";
+import Profile from "./components/Profile";
 
 export default function App() {
   const [league, setLeague] = useState("PL");
@@ -29,6 +30,7 @@ export default function App() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showMyPredictions, setShowMyPredictions] = useState(false);
   const [showMiniLeague, setShowMiniLeague] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   const [token, setToken] = useState(() => localStorage.getItem("ft_token"));
   const [userEmail, setUserEmail] = useState(() =>
@@ -125,12 +127,14 @@ export default function App() {
     setSelectedTeamId(null);
     setSelectedMatchId(null);
     setShowMiniLeague(false);
+    setShowProfile(false);
   };
 
   const goToTeam = (teamId) => {
     setShowFavorites(false);
     setShowLeaderboard(false);
     setShowMyPredictions(false);
+    setShowProfile(false);
     setSelectedMatchId(null);
     setSelectedTeamId(teamId);
   };
@@ -139,6 +143,7 @@ export default function App() {
     setShowFavorites(false);
     setShowLeaderboard(false);
     setShowMyPredictions(false);
+    setShowProfile(false);
     setSelectedTeamId(null);
     setSelectedMatchId(matchId);
   };
@@ -190,6 +195,7 @@ export default function App() {
                     setShowFavorites(false);
                     setShowAdmin(false);
                     setShowMyPredictions(false);
+                    setShowProfile(false);
                     setShowLeaderboard(true);
                   }}
                 >
@@ -204,6 +210,7 @@ export default function App() {
                     setShowAdmin(false);
                     setShowLeaderboard(false);
                     setShowMyPredictions(false);
+                    setShowProfile(false);
                     setShowMiniLeague(true);
                   }}
                 >
@@ -220,6 +227,22 @@ export default function App() {
                         setShowAdmin(false);
                         setShowLeaderboard(false);
                         setShowMyPredictions(false);
+                        setShowFavorites(false);
+                        setShowMiniLeague(false);
+                        setShowProfile(true);
+                      }}
+                    >
+                      {t("nav_profile")}
+                    </button>
+                    <button
+                      className="btn btn-nav btn-sm"
+                      onClick={() => {
+                        setSelectedTeamId(null);
+                        setSelectedMatchId(null);
+                        setShowAdmin(false);
+                        setShowLeaderboard(false);
+                        setShowMyPredictions(false);
+                        setShowProfile(false);
                         setShowFavorites(true);
                       }}
                     >
@@ -233,6 +256,7 @@ export default function App() {
                         setShowAdmin(false);
                         setShowLeaderboard(false);
                         setShowFavorites(false);
+                        setShowProfile(false);
                         setShowMyPredictions(true);
                       }}
                     >
@@ -247,6 +271,7 @@ export default function App() {
                           setShowFavorites(false);
                           setShowLeaderboard(false);
                           setShowMyPredictions(false);
+                          setShowProfile(false);
                           setShowAdmin(true);
                         }}
                       >
@@ -320,6 +345,18 @@ export default function App() {
             />
           ) : showMiniLeague ? (
             <MiniLeague token={token} onBack={() => setShowMiniLeague(false)} />
+          ) : showProfile ? (
+            <Profile
+              token={token}
+              userEmail={userEmail}
+              favorites={favorites}
+              onBack={() => setShowProfile(false)}
+              onSelectTeam={goToTeam}
+              onGoToMiniLeague={() => {
+                setShowProfile(false);
+                setShowMiniLeague(true);
+              }}
+            />
           ) : (
             <>
               <div className="ft-league-tabs mb-3">

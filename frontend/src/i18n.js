@@ -8,6 +8,7 @@ export const translations = {
     theme_toggle_title: 'Chuyển giao diện sáng/tối',
     lang_toggle_title: 'Chuyển ngôn ngữ',
     nav_leaderboard: '🏆 BXH dự đoán',
+    nav_profile: '👤 Hồ sơ',
     nav_favorites: '★ Yêu thích',
     nav_history: '📜 Lịch sử',
     nav_admin: '🛡 Quản trị',
@@ -87,6 +88,10 @@ export const translations = {
     badge_prophet_desc: '10 lần đoán đúng chính xác tỉ số',
     badge_streak_title: 'Chuỗi thắng',
     badge_streak_desc: '5 lần dự đoán liên tiếp đúng kết quả',
+
+    profile_title: '👤 Hồ sơ của bạn',
+    profile_favorites_title: '★ Đội yêu thích',
+    profile_mini_league_title: '🏆 Phòng Mini League',
 
     standings_search_placeholder: '🔍 Tìm đội bóng...',
     standings_no_match_prefix: 'Không tìm thấy đội nào khớp',
@@ -232,6 +237,7 @@ export const translations = {
     theme_toggle_title: 'Toggle light/dark theme',
     lang_toggle_title: 'Switch language',
     nav_leaderboard: '🏆 Leaderboard',
+    nav_profile: '👤 Profile',
     nav_favorites: '★ Favorites',
     nav_history: '📜 History',
     nav_admin: '🛡 Admin',
@@ -311,6 +317,10 @@ export const translations = {
     badge_prophet_desc: '10 exact-score predictions',
     badge_streak_title: 'Win Streak',
     badge_streak_desc: '5 correct predictions in a row',
+
+    profile_title: '👤 Your Profile',
+    profile_favorites_title: '★ Favorite Teams',
+    profile_mini_league_title: '🏆 Mini League Rooms',
 
     standings_search_placeholder: '🔍 Search teams...',
     standings_no_match_prefix: 'No team matches',

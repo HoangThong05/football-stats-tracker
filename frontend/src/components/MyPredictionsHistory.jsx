@@ -5,17 +5,12 @@ import { useTranslation } from '../i18n'
 import { LEAGUES } from '../constants'
 import Loading from './Loading'
 import BarChart from './BarChart'
-
-// Meta hien thi cho tung ma badge tra ve tu API (BadgeType o backend).
-const BADGE_META = {
-  PROPHET: { icon: '🔮', titleKey: 'badge_prophet_title', descKey: 'badge_prophet_desc' },
-  WIN_STREAK: { icon: '🔥', titleKey: 'badge_streak_title', descKey: 'badge_streak_desc' },
-}
+import Badges from './Badges'
+import PredictionPointsChart from './PredictionPointsChart'
 
 export default function MyPredictionsHistory({ token, onBack }) {
   const { t, lang } = useTranslation()
   const [history, setHistory] = useState([])
-  const [badges, setBadges] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -31,29 +26,12 @@ export default function MyPredictionsHistory({ token, onBack }) {
       .then((data) => setHistory(data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
-
-    // Huy hieu la thong tin phu, khong lam gian doan trang lich su neu loi.
-    fetch(`${API_BASE}/predictions/badges`, { headers: authHeaders(token) })
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => setBadges(data))
-      .catch(() => setBadges([]))
   }, [token])
 
   const scored = history.filter((h) => h.points != null)
   const totalPoints = scored.reduce((sum, h) => sum + h.points, 0)
 
-  // Bieu do 1: diem tung du doan theo thoi gian (cu -> moi), toi da 20 tran gan nhat cho de nhin.
-  const pointsOverTime = [...scored]
-    .sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate))
-    .slice(-20)
-    .map((h) => ({
-      label: formatKickoff(h.utcDate, lang),
-      value: h.points,
-      homeTeam: h.homeTeam,
-      awayTeam: h.awayTeam,
-    }))
-
-  // Bieu do 2: ty le doan dung (diem > 0) theo tung giai da co du doan cham diem.
+  // Ty le doan dung (diem > 0) theo tung giai da co du doan cham diem.
   const accuracyByLeague = LEAGUES.map((l) => {
     const rows = scored.filter((h) => h.competition === l.code)
     if (rows.length === 0) return null
@@ -75,30 +53,7 @@ export default function MyPredictionsHistory({ token, onBack }) {
 
       <h3 className="h5 mb-1">{t('myp_title')}</h3>
 
-      {badges.length > 0 && (
-        <div className="ft-badge-row">
-          {badges.map((b) => {
-            const meta = BADGE_META[b.code]
-            if (!meta) return null
-            const pct = Math.round((b.progress / b.target) * 100)
-            return (
-              <div key={b.code} className={`ft-badge${b.earned ? ' earned' : ''}`}>
-                <span className="ft-badge-icon">{meta.icon}</span>
-                <div style={{ minWidth: 0 }}>
-                  <div className="ft-badge-title">{t(meta.titleKey)}</div>
-                  <div className="ft-badge-desc">{t(meta.descKey)}</div>
-                  <div className="ft-badge-progress-track">
-                    <div className="ft-badge-progress-fill" style={{ width: `${pct}%` }} />
-                  </div>
-                  <div className="ft-badge-desc">
-                    {b.progress}/{b.target}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
+      <Badges token={token} />
 
       {scored.length > 0 && (
         <p className="text-secondary small mb-3">
@@ -118,20 +73,7 @@ export default function MyPredictionsHistory({ token, onBack }) {
         <div className="alert alert-secondary">{t('myp_empty')}</div>
       )}
 
-      {!loading && !error && pointsOverTime.length >= 3 && (
-        <div className="ft-card p-3 mb-3">
-          <div className="fw-semibold mb-1">{t('myp_chart_points_title')}</div>
-          <BarChart
-            data={pointsOverTime}
-            max={3}
-            gridLines={[1, 3]}
-            showXLabels={false}
-            valueFormatter={(v) => `${v} ${t('myp_points_suffix')}`}
-            tooltipLabel={(d) => `${d.homeTeam} - ${d.awayTeam} · ${d.label}`}
-            ariaLabel={t('myp_chart_points_title')}
-          />
-        </div>
-      )}
+      {!loading && !error && <PredictionPointsChart token={token} />}
 
       {!loading && !error && accuracyByLeague.length >= 2 && (
         <div className="ft-card p-3 mb-3">
