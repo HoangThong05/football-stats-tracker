@@ -14,3 +14,7 @@ frontend/dist/
 # API keys / secrets - KHONG BAO GIO commit
 .env
 *.env
+
+# File tam luc debug
+commits.json
+*.tmp.json
