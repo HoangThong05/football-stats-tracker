@@ -40,7 +40,9 @@ public record StandingsApiResponse(
             int points,
             int goalsFor,
             int goalsAgainst,
-            int goalDifference
+            int goalDifference,
+            /** Phong do 5 tran gan nhat, dinh dang "W,D,L,W,W". Null neu giai chua da du tran. */
+            String form
     ) {
     }
 

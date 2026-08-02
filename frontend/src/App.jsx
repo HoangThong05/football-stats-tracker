@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   API_BASE,
   endpointFor,
@@ -61,6 +61,7 @@ export default function App() {
     () => localStorage.getItem("ft_theme") || "light",
   );
   const [scrolled, setScrolled] = useState(false);
+  const navbarRef = useRef(null);
   const [lang, setLang] = useState(
     () => localStorage.getItem("ft_lang") || "vi",
   );
@@ -83,6 +84,28 @@ export default function App() {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  /**
+   * Do chieu cao that cua navbar -> bien --ft-navbar-h.
+   * Tieu de bang xep hang dinh (sticky) dua vao bien nay de dung ngay duoi navbar,
+   * thay vi bi navbar de len. Navbar cao thap khac nhau tuy so nut / co xuong dong.
+   */
+  useEffect(() => {
+    const nav = navbarRef.current;
+    if (!nav) return undefined;
+
+    const apply = () => {
+      document.documentElement.style.setProperty(
+        "--ft-navbar-h",
+        `${Math.round(nav.getBoundingClientRect().height)}px`,
+      );
+    };
+    apply();
+
+    const observer = new ResizeObserver(apply);
+    observer.observe(nav);
+    return () => observer.disconnect();
   }, []);
 
   const loadViewData = () => {
@@ -209,6 +232,7 @@ export default function App() {
       <>
         {/* ===== Thanh dieu huong ===== */}
         <nav
+          ref={navbarRef}
           className={
             scrolled ? "ft-navbar py-3 mb-4 scrolled" : "ft-navbar py-3 mb-4"
           }

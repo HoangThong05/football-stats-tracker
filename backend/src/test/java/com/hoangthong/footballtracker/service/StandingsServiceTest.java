@@ -33,7 +33,7 @@ class StandingsServiceTest {
 
     private static TableEntry entry(int position, Team team, int points) {
         // Thu tu: position, team, playedGames, won, draw, lost, points, goalsFor, goalsAgainst, goalDifference
-        return new TableEntry(position, team, 10, 6, 2, 2, points, 20, 8, 12);
+        return new TableEntry(position, team, 10, 6, 2, 2, points, 20, 8, 12, "W,D,L,W,W");
     }
 
     @Test
@@ -58,6 +58,8 @@ class StandingsServiceTest {
         assertThat(row.goalsAgainst()).isEqualTo(8);
         assertThat(row.goalDifference()).isEqualTo(12);
         assertThat(row.points()).isEqualTo(24);
+        // form la du lieu co san tu football-data.org, khong phai tu tinh
+        assertThat(row.form()).isEqualTo("W,D,L,W,W");
     }
 
     @Test

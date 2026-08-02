@@ -64,7 +64,8 @@ public class StandingsService {
                         e.goalsFor(),
                         e.goalsAgainst(),
                         e.goalDifference(),
-                        e.points()
+                        e.points(),
+                        e.form()
                 ))
                 .toList();
 

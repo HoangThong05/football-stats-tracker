@@ -563,6 +563,97 @@ tr[role='button']:hover img,
   filter: drop-shadow(0 4px 8px rgba(18, 38, 27, 0.35));
 }
 
+/* ---------- Bang xep hang: tieu de dinh + ranh gioi vung + phong do ---------- */
+
+/**
+ * Tieu de cot DINH lai khi cuon giua bang, de luon biet cot nao la BT/BB/HS.
+ *
+ * LUU Y: position:sticky chi an theo "khoi cuon gan nhat". Ma .ft-card co
+ * overflow:hidden va .table-responsive co overflow-x:auto - CA HAI deu tao khoi cuon
+ * rieng, lam sticky dinh trong the bang thay vi theo trang. Vi vay o man hinh rong
+ * (khong can cuon ngang) ta tra overflow ve visible de sticky an theo TRANG.
+ */
+@media (min-width: 992px) {
+  .ft-sticky-head {
+    overflow: visible;
+  }
+
+  .ft-standings thead th {
+    position: sticky;
+    /* Navbar cung sticky o tren -> chua cho no, neu khong tieu de se chui xuong duoi navbar */
+    top: var(--ft-navbar-h, 0px);
+    z-index: 2;
+  }
+
+  /* overflow:visible lam mat bo goc cua card -> bo goc lai trực tiep tren o dau/cuoi */
+  .ft-sticky-head .ft-standings thead th:first-child {
+    border-top-left-radius: var(--ft-radius);
+  }
+
+  .ft-sticky-head .ft-standings thead th:last-child {
+    border-top-right-radius: var(--ft-radius);
+  }
+}
+
+/* Duong ke day danh dau ranh gioi vung (suat cup / xuong hang) */
+.ft-standings tbody tr.ft-zone-edge-top > td {
+  border-bottom: 2px solid var(--ft-accent);
+}
+
+.ft-standings tbody tr.ft-zone-edge-bottom > td {
+  border-bottom: 2px solid rgba(220, 38, 38, 0.75);
+}
+
+/* Doi trong vung nguy hiem: nen do rat mo, du de nhan ra ma khong lam kho doc so */
+.ft-standings tbody tr.ft-zone-danger > td {
+  background: rgba(220, 38, 38, 0.045);
+}
+
+[data-bs-theme='dark'] .ft-standings tbody tr.ft-zone-danger > td {
+  background: rgba(220, 38, 38, 0.1);
+}
+
+/* --- Phong do 5 tran gan nhat --- */
+.ft-form {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.ft-form-dot {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  font-family: var(--ft-num-font);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #fff;
+  /* Xuat hien nay nhe khi bang duoc ve */
+  animation: ft-pop-in var(--ft-base) var(--ft-spring) both;
+}
+
+/* Mau chi la kenh phu: chu cai ben trong moi la thong tin chinh (an toan cho nguoi mu mau) */
+.ft-form-w {
+  background: #0f7a3d;
+}
+
+.ft-form-d {
+  background: #8a8f8b;
+}
+
+.ft-form-l {
+  background: #c0392b;
+}
+
+[data-bs-theme='dark'] .ft-form-w {
+  background: #23a35c;
+}
+
+[data-bs-theme='dark'] .ft-form-d {
+  background: #6b716d;
+}
+
 /* ---------- Huy hieu vi tri tren BXH ---------- */
 .ft-pos {
   display: inline-grid;
