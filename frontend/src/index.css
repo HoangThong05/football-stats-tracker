@@ -35,6 +35,25 @@
   --ft-radius: 12px;
   --ft-num-font: 'Oswald', 'Be Vietnam Pro', system-ui, sans-serif;
 
+  /* --- He thong chuyen dong: dung chung 1 bo easing/thoi luong cho ca app --- */
+  /* Vao nhanh - ra cham, cam giac "co da" thay vi tuyen tinh may moc */
+  --ft-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Nhun qua muc roi tra ve - dung cho phan hoi khi bam/xuat hien */
+  --ft-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ft-fast: 0.16s;
+  --ft-base: 0.28s;
+  --ft-slow: 0.45s;
+
+  /* Bong do NHIEU LOP: bong gan (net) + bong xa (mo) = cam giac vat the that */
+  --ft-shadow-rest:
+    0 1px 2px rgba(18, 38, 27, 0.06),
+    0 4px 10px -4px rgba(18, 38, 27, 0.12),
+    0 12px 28px -12px rgba(18, 38, 27, 0.16);
+  --ft-shadow-lift:
+    0 2px 4px rgba(18, 38, 27, 0.08),
+    0 10px 22px -8px rgba(18, 38, 27, 0.2),
+    0 24px 48px -20px rgba(18, 38, 27, 0.28);
+
   /* Doi mau mac dinh cua Bootstrap sang vang den pha */
   --bs-primary: #b45309;
   --bs-primary-rgb: 180, 83, 9;
@@ -96,12 +115,40 @@ body,
 
 /* Nhan nut: nhun nhe khi bam, giu cam giac "vat ly" */
 .btn {
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease,
-    border-color 0.15s ease, color 0.15s ease;
+  transition: transform var(--ft-fast) var(--ft-spring), box-shadow var(--ft-fast) var(--ft-ease),
+    background-color var(--ft-fast) var(--ft-ease), border-color var(--ft-fast) var(--ft-ease),
+    color var(--ft-fast) var(--ft-ease);
+  position: relative;
+  overflow: hidden;
 }
 
 .btn:active {
   transform: scale(0.96);
+}
+
+/**
+ * Quang sang lan toa tu tam nut khi bam (ripple).
+ * Dung ::after co san nen khong phai them the/JS nao.
+ */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.btn:active::after {
+  width: 220%;
+  height: 220%;
+  opacity: 0.16;
+  transition: width var(--ft-slow) var(--ft-ease), height var(--ft-slow) var(--ft-ease),
+    opacity var(--ft-slow) var(--ft-ease);
 }
 
 :root {
@@ -121,12 +168,16 @@ body,
   top: 0;
   z-index: 1030;
   box-shadow: 0 2px 16px rgba(15, 61, 38, 0.35);
-  transition: box-shadow 0.25s ease;
+  transition: box-shadow var(--ft-base) var(--ft-ease), backdrop-filter var(--ft-base) var(--ft-ease);
 }
 
-/* Them ".scrolled" bang JS khi cuon trang xuong, cho navbar "sau" hon */
+/**
+ * Them ".scrolled" bang JS khi cuon trang xuong: bong dam hon + kinh mo,
+ * de navbar "noi" hai tren noi dung dang truot ben duoi.
+ */
 .ft-navbar.scrolled {
-  box-shadow: 0 6px 28px rgba(15, 61, 38, 0.5);
+  box-shadow: 0 8px 32px rgba(15, 61, 38, 0.55);
+  backdrop-filter: blur(10px) saturate(1.2);
 }
 
 .ft-brand {
@@ -388,11 +439,52 @@ body,
 
 /* ---------- Khung noi dung dang card ---------- */
 .ft-card {
+  position: relative; /* moc cho lop anh sang ::before cua .ft-tilt */
   background: var(--bs-body-bg);
   border: 1px solid var(--bs-border-color-translucent);
   border-radius: var(--ft-radius);
-  box-shadow: var(--ft-card-shadow);
+  box-shadow: var(--ft-shadow-rest);
   overflow: hidden;
+  transition: box-shadow var(--ft-base) var(--ft-ease), transform var(--ft-base) var(--ft-ease);
+}
+
+/**
+ * The nghieng 3D theo vi tri chuot. JS chi ghi 2 bien --rx/--ry (goc xoay),
+ * con lai CSS lo -> khong dung lai layout, chay tren GPU.
+ * Chi bat o may CO CHUOT that (hover: hover) de dien thoai khong bi ke.
+ */
+@media (hover: hover) and (pointer: fine) {
+  .ft-tilt {
+    position: relative; /* moc cho lop anh sang ::before ben duoi */
+    will-change: transform;
+  }
+
+  .ft-tilt:hover {
+    box-shadow: var(--ft-shadow-lift);
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg))
+      translateY(-2px) scale(1.006);
+  }
+
+  /* Anh sang "luot" theo chuot, tang cam giac be mat co do bong */
+  .ft-tilt::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      420px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 255, 255, 0.14),
+      transparent 42%
+    );
+    opacity: 0;
+    transition: opacity var(--ft-base) var(--ft-ease);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .ft-tilt:hover::before {
+    opacity: 1;
+  }
 }
 
 .ft-card .table {
@@ -432,12 +524,15 @@ body,
 }
 
 .ft-card tbody tr {
-  transition: background-color 0.15s ease, transform 0.15s ease;
+  transition: background-color var(--ft-fast) var(--ft-ease), transform var(--ft-base) var(--ft-ease),
+    box-shadow var(--ft-base) var(--ft-ease);
 }
 
+/* Hang duoc ro chuot: truot nhe + co vien sang ben trai lam "diem neo" thi giac */
 .ft-card tbody tr[role='button']:hover {
   background: var(--ft-accent-soft);
-  transform: translateX(3px);
+  transform: translateX(4px);
+  box-shadow: inset 3px 0 0 var(--ft-accent);
 }
 
 .ft-card td {
@@ -446,22 +541,26 @@ body,
 
 /* Hang/the co the bam: nang nhe + doi mau khi hover, anh logo phong to theo */
 .ft-card .list-group-item[role='button'] {
-  transition: background-color 0.15s ease, transform 0.15s ease;
+  transition: background-color var(--ft-fast) var(--ft-ease), transform var(--ft-base) var(--ft-ease),
+    box-shadow var(--ft-base) var(--ft-ease);
 }
 
 .ft-card .list-group-item[role='button']:hover {
   background: var(--ft-accent-soft);
-  transform: translateX(3px);
+  transform: translateX(4px);
+  box-shadow: inset 3px 0 0 var(--ft-accent);
 }
 
+/* Logo doi: phong to + lat 3D nhe, tao chieu sau khi ro chuot vao hang */
 tr[role='button'] img,
 .list-group-item[role='button'] img {
-  transition: transform 0.2s ease;
+  transition: transform var(--ft-base) var(--ft-spring), filter var(--ft-base) var(--ft-ease);
 }
 
 tr[role='button']:hover img,
 .list-group-item[role='button']:hover img {
-  transform: scale(1.2);
+  transform: perspective(320px) rotateY(18deg) scale(1.22);
+  filter: drop-shadow(0 4px 8px rgba(18, 38, 27, 0.35));
 }
 
 /* ---------- Huy hieu vi tri tren BXH ---------- */
@@ -614,7 +713,7 @@ tr[role='button']:hover img,
 @keyframes ft-fade-up {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(10px) scale(0.995);
   }
   to {
     opacity: 1;
@@ -623,12 +722,12 @@ tr[role='button']:hover img,
 }
 
 .ft-fade {
-  animation: ft-fade-up 0.22s ease-out;
+  animation: ft-fade-up var(--ft-base) var(--ft-ease);
 }
 
 /* ---------- Xuat hien so le cho tung hang trong bang/danh sach ---------- */
 .ft-stagger > * {
-  animation: ft-fade-up 0.35s ease-out both;
+  animation: ft-fade-up var(--ft-slow) var(--ft-ease) both;
 }
 
 .ft-stagger > *:nth-child(1) { animation-delay: 0.01s; }

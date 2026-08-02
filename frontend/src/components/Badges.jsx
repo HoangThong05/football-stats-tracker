@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
+import { useTilt } from '../useTilt'
 
 // Meta hien thi cho tung ma badge tra ve tu API (BadgeType o backend).
 const BADGE_META = {
@@ -31,23 +32,30 @@ export default function Badges({ token }) {
       {badges.map((b) => {
         const meta = BADGE_META[b.code]
         if (!meta) return null
-        const pct = Math.round((b.progress / b.target) * 100)
-        return (
-          <div key={b.code} className={`ft-badge${b.earned ? ' earned' : ''}`}>
-            <span className="ft-badge-icon">{meta.icon}</span>
-            <div style={{ minWidth: 0 }}>
-              <div className="ft-badge-title">{t(meta.titleKey)}</div>
-              <div className="ft-badge-desc">{t(meta.descKey)}</div>
-              <div className="ft-badge-progress-track">
-                <div className="ft-badge-progress-fill" style={{ width: `${pct}%` }} />
-              </div>
-              <div className="ft-badge-desc">
-                {b.progress}/{b.target}
-              </div>
-            </div>
-          </div>
-        )
+        return <BadgeCard key={b.code} badge={b} meta={meta} t={t} />
       })}
+    </div>
+  )
+}
+
+/** Tách riêng để mỗi thẻ có ref nghiêng 3D của chính nó (hook không gọi được trong map). */
+function BadgeCard({ badge, meta, t }) {
+  const tiltRef = useTilt()
+  const pct = Math.round((badge.progress / badge.target) * 100)
+
+  return (
+    <div ref={tiltRef} className={`ft-badge ft-tilt${badge.earned ? ' earned' : ''}`}>
+      <span className="ft-badge-icon">{meta.icon}</span>
+      <div style={{ minWidth: 0 }}>
+        <div className="ft-badge-title">{t(meta.titleKey)}</div>
+        <div className="ft-badge-desc">{t(meta.descKey)}</div>
+        <div className="ft-badge-progress-track">
+          <div className="ft-badge-progress-fill" style={{ width: `${pct}%` }} />
+        </div>
+        <div className="ft-badge-desc ft-num">
+          {badge.progress}/{badge.target}
+        </div>
+      </div>
     </div>
   )
 }

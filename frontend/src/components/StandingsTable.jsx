@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { normalizeText } from '../utils'
 import { useTranslation } from '../i18n'
+import CountUp from './CountUp'
 
 // Tra ve class huy hieu vi tri theo vung (suat cup chau Au / nguy hiem)
 function posClass(position, total, zones) {
@@ -62,14 +63,17 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
                         <span>{r.teamName}</span>
                       </div>
                     </td>
-                    <td className="text-center">{r.playedGames}</td>
-                    <td className="text-center">{r.won}</td>
-                    <td className="text-center">{r.draw}</td>
-                    <td className="text-center">{r.lost}</td>
-                    <td className="text-center">{r.goalsFor}</td>
-                    <td className="text-center">{r.goalsAgainst}</td>
-                    <td className="text-center">{r.goalDifference}</td>
-                    <td className="text-center fw-bold">{r.points}</td>
+                    <td className="text-center ft-num">{r.playedGames}</td>
+                    <td className="text-center ft-num">{r.won}</td>
+                    <td className="text-center ft-num">{r.draw}</td>
+                    <td className="text-center ft-num">{r.lost}</td>
+                    <td className="text-center ft-num">{r.goalsFor}</td>
+                    <td className="text-center ft-num">{r.goalsAgainst}</td>
+                    <td className="text-center ft-num">{r.goalDifference}</td>
+                    {/* Chi cot DIEM dem tang dan: dem het moi cot se thanh mo mat */}
+                    <td className="text-center fw-bold ft-num fs-5">
+                      <CountUp value={r.points} />
+                    </td>
                   </tr>
                 ))}
               </tbody>

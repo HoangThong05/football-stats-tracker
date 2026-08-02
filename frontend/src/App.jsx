@@ -25,6 +25,7 @@ import PredictionsView from "./components/PredictionsView";
 import MiniLeague from "./components/MiniLeague";
 import Profile from "./components/Profile";
 import TodayMatches from "./components/TodayMatches";
+import Football3D from "./components/Football3D";
 
 export default function App() {
   const [league, setLeague] = useState("PL");
@@ -215,7 +216,9 @@ export default function App() {
           <div className="container" style={{ maxWidth: 960 }}>
             <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
               <div className="d-flex align-items-center gap-3">
-                <span className="ft-ball">⚽</span>
+                <span className="ft-ball">
+                  <Football3D size={32} />
+                </span>
                 <div>
                   <div className="ft-brand fs-5">Football Stats Tracker</div>
                   <div className="ft-brand-sub">{t("app_subtitle")}</div>
