@@ -342,6 +342,50 @@ body,
   box-shadow: 0 0 0 2px var(--ft-accent-soft);
 }
 
+/* ---------- Trang "Hom nay": thanh chon ngay + nhan giai ---------- */
+.ft-day-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color-translucent);
+}
+
+.ft-day-nav .btn {
+  --bs-btn-border-radius: 999px;
+  --bs-btn-border-color: transparent;
+  --bs-btn-color: var(--bs-secondary-color);
+  --bs-btn-hover-color: var(--ft-accent-strong);
+  --bs-btn-hover-bg: var(--bs-body-bg);
+  --bs-btn-disabled-border-color: transparent;
+  min-width: 30px;
+  font-size: 1rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.ft-day-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--bs-body-color);
+  min-width: 96px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Nhan giai dau phia tren moi nhom tran */
+.ft-day-league {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ft-accent-strong);
+  margin-bottom: 6px;
+  padding-left: 2px;
+}
+
 /* ---------- Khung noi dung dang card ---------- */
 .ft-card {
   background: var(--bs-body-bg);

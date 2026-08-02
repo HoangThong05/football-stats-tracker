@@ -7,6 +7,7 @@ export const translations = {
     app_subtitle: 'Bảng xếp hạng · Lịch thi đấu · Kết quả · Vua phá lưới',
     theme_toggle_title: 'Chuyển giao diện sáng/tối',
     lang_toggle_title: 'Chuyển ngôn ngữ',
+    nav_today: '📅 Hôm nay',
     nav_leaderboard: '🏆 BXH dự đoán',
     nav_profile: '👤 Hồ sơ',
     nav_favorites: '★ Yêu thích',
@@ -150,6 +151,13 @@ export const translations = {
     season_label_prefix: 'Mùa',
     season_current_suffix: 'hiện tại',
 
+    today_title: '📅 Trận đấu trong ngày',
+    today_label: 'Hôm nay',
+    today_prev_day: 'Ngày trước',
+    today_next_day: 'Ngày sau',
+    today_empty: 'Không có trận nào của 6 giải trong ngày này.',
+    today_sync_note: 'Tỉ số cập nhật mỗi 30 phút, có thể chậm hơn diễn biến thực tế.',
+
     matches_empty: 'Không có trận nào trong 14 ngày. Các giải châu Âu thường nghỉ hè từ tháng 6 đến giữa tháng 8.',
     matches_matchday_prefix: '· Vòng',
     matches_vs: 'VS',
@@ -239,6 +247,7 @@ export const translations = {
     app_subtitle: 'Standings · Fixtures · Results · Top Scorers',
     theme_toggle_title: 'Toggle light/dark theme',
     lang_toggle_title: 'Switch language',
+    nav_today: '📅 Today',
     nav_leaderboard: '🏆 Leaderboard',
     nav_profile: '👤 Profile',
     nav_favorites: '★ Favorites',
@@ -381,6 +390,13 @@ export const translations = {
 
     season_label_prefix: 'Season',
     season_current_suffix: 'current',
+
+    today_title: "📅 Today's Matches",
+    today_label: 'Today',
+    today_prev_day: 'Previous day',
+    today_next_day: 'Next day',
+    today_empty: 'No matches across the 6 leagues on this day.',
+    today_sync_note: 'Scores refresh every 30 minutes, so they may lag behind live play.',
 
     matches_empty: 'No matches in the next 14 days. European leagues are usually on summer break from June to mid-August.',
     matches_matchday_prefix: '· Matchday',

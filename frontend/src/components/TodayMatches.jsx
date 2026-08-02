@@ -1,0 +1,165 @@
+import { useEffect, useState } from 'react'
+import { API_BASE } from '../api'
+import { LEAGUES } from '../constants'
+import { useTranslation } from '../i18n'
+import Loading from './Loading'
+
+// Cua so ma MatchSyncService dong bo san trong DB (2 ngay truoc -> 14 ngay toi).
+// Ra ngoai khoang nay se khong co du lieu, nen chan luon o UI.
+const MIN_OFFSET = -2
+const MAX_OFFSET = 14
+
+/** Moc dau/cuoi ngay theo MUI GIO NGUOI DUNG, doi sang ISO de gui len backend. */
+function dayRange(offset) {
+  const start = new Date()
+  start.setDate(start.getDate() + offset)
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(start)
+  end.setDate(end.getDate() + 1)
+  return { from: start.toISOString(), to: end.toISOString(), date: start }
+}
+
+/**
+ * Tran dau cua MOI giai trong 1 ngay, nhom theo giai.
+ * Doc tu DB (MatchSyncService dong bo moi 30 phut) nen ti so co the tre toi 30 phut.
+ */
+export default function TodayMatches({ onBack, onSelectMatch }) {
+  const { t, lang } = useTranslation()
+  const [offset, setOffset] = useState(0)
+  const [matches, setMatches] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const { from, to, date } = dayRange(offset)
+
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+
+    fetch(`${API_BASE}/matches/range?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Loi ${res.status}`)
+        return res.json()
+      })
+      .then((data) => setMatches(data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
+    // from/to duoc tinh tu offset nen chi can theo doi offset
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offset])
+
+  // Giu dung thu tu giai nhu tab chon giai o trang chinh
+  const groups = LEAGUES.map((l) => ({
+    code: l.code,
+    name: l.name,
+    matches: matches.filter((m) => m.competition === l.code),
+  })).filter((g) => g.matches.length > 0)
+
+  const dayLabel =
+    offset === 0
+      ? t('today_label')
+      : date.toLocaleDateString(lang === 'en' ? 'en-GB' : 'vi-VN', {
+          weekday: 'short',
+          day: '2-digit',
+          month: '2-digit',
+        })
+
+  const timeOf = (utcDate) =>
+    new Date(utcDate).toLocaleTimeString(lang === 'en' ? 'en-GB' : 'vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+
+  return (
+    <div className="ft-fade">
+      <button className="btn btn-link ps-0 mb-3" onClick={onBack}>
+        {t('back')}
+      </button>
+
+      <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <h3 className="h5 mb-0">{t('today_title')}</h3>
+        <div className="ft-day-nav">
+          <button
+            className="btn btn-sm"
+            onClick={() => setOffset((o) => o - 1)}
+            disabled={offset <= MIN_OFFSET}
+            aria-label={t('today_prev_day')}
+          >
+            ‹
+          </button>
+          <span className="ft-day-label">{dayLabel}</span>
+          <button
+            className="btn btn-sm"
+            onClick={() => setOffset((o) => o + 1)}
+            disabled={offset >= MAX_OFFSET}
+            aria-label={t('today_next_day')}
+          >
+            ›
+          </button>
+        </div>
+      </div>
+
+      {loading && <Loading rows={4} />}
+      {error && (
+        <div className="alert alert-danger">
+          {t('error_generic')} {error}
+        </div>
+      )}
+
+      {!loading && !error && groups.length === 0 && (
+        <div className="alert alert-secondary d-flex align-items-center gap-2">
+          <span style={{ fontSize: '1.3rem' }}>📅</span>
+          <span>{t('today_empty')}</span>
+        </div>
+      )}
+
+      {!loading &&
+        !error &&
+        groups.map((g) => (
+          <div key={g.code} className="mb-3">
+            <div className="ft-day-league">{g.name}</div>
+            <div className="ft-card">
+              <ul className="list-group list-group-flush ft-stagger">
+                {g.matches.map((m) => {
+                  const hasScore = m.homeScore != null && m.awayScore != null
+                  return (
+                    <li
+                      key={m.id}
+                      className="list-group-item d-flex align-items-center flex-wrap gap-2 py-3"
+                      role="button"
+                      onClick={() => onSelectMatch(m.id)}
+                    >
+                      <small className="text-secondary ft-num" style={{ minWidth: 52 }}>
+                        {timeOf(m.utcDate)}
+                      </small>
+
+                      <div
+                        className="d-flex align-items-center justify-content-end gap-2 flex-grow-1"
+                        style={{ minWidth: 0 }}
+                      >
+                        <span className="text-truncate fw-medium">{m.homeTeam}</span>
+                        {m.homeCrest && <img src={m.homeCrest} alt="" width="22" height="22" loading="lazy" />}
+                      </div>
+
+                      <span className={hasScore ? 'ft-score-badge played text-center' : 'ft-score-badge upcoming text-center'}>
+                        {hasScore ? `${m.homeScore} - ${m.awayScore}` : t('matches_vs')}
+                      </span>
+
+                      <div className="d-flex align-items-center gap-2 flex-grow-1" style={{ minWidth: 0 }}>
+                        {m.awayCrest && <img src={m.awayCrest} alt="" width="22" height="22" loading="lazy" />}
+                        <span className="text-truncate fw-medium">{m.awayTeam}</span>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          </div>
+        ))}
+
+      {!loading && !error && groups.length > 0 && (
+        <p className="ft-legend text-secondary ps-1">{t('today_sync_note')}</p>
+      )}
+    </div>
+  )
+}

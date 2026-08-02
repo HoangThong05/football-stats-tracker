@@ -20,4 +20,11 @@ public interface MatchFixtureRepository extends JpaRepository<MatchFixture, Long
 
     /** Tran da ket thuc, dung cho job cham diem du doan. */
     List<MatchFixture> findByStatus(String status);
+
+    /**
+     * Moi tran cua MOI giai trong khoang thoi gian, tran som nhat truoc.
+     * Dung cho trang "Hom nay": doc thang tu DB (da duoc MatchSyncService dong bo
+     * dinh ky) nen KHONG ton request nao toi football-data.org.
+     */
+    List<MatchFixture> findByUtcDateBetweenOrderByUtcDateAsc(Instant from, Instant to);
 }

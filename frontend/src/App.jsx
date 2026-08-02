@@ -17,6 +17,7 @@ import MatchList from "./components/MatchList";
 import PredictionsView from "./components/PredictionsView";
 import MiniLeague from "./components/MiniLeague";
 import Profile from "./components/Profile";
+import TodayMatches from "./components/TodayMatches";
 
 export default function App() {
   const [league, setLeague] = useState("PL");
@@ -35,6 +36,7 @@ export default function App() {
   const [showMyPredictions, setShowMyPredictions] = useState(false);
   const [showMiniLeague, setShowMiniLeague] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showToday, setShowToday] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const [token, setToken] = useState(() => localStorage.getItem("ft_token"));
@@ -133,6 +135,24 @@ export default function App() {
     setShowAuthForm(false);
   };
 
+  /**
+   * Dong het cac trang phu (moi trang la 1 co rieng). Goi truoc khi mo 1 trang moi,
+   * de khong phai liet ke lai tung co o moi nut dieu huong - va khong bi sot co nao
+   * khi them trang moi ve sau.
+   */
+  const closeAllPages = () => {
+    setSelectedTeamId(null);
+    setSelectedMatchId(null);
+    setShowFavorites(false);
+    setShowAdmin(false);
+    setShowLeaderboard(false);
+    setShowMyPredictions(false);
+    setShowMiniLeague(false);
+    setShowProfile(false);
+    setShowToday(false);
+    setShowUserMenu(false);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("ft_token");
     localStorage.removeItem("ft_email");
@@ -140,26 +160,16 @@ export default function App() {
     setToken(null);
     setUserEmail(null);
     setUserRole(null);
-    setShowFavorites(false);
-    setShowAdmin(false);
-    setShowLeaderboard(false);
-    setShowMyPredictions(false);
-    setSelectedTeamId(null);
-    setSelectedMatchId(null);
-    setShowMiniLeague(false);
-    setShowProfile(false);
-    setShowUserMenu(false);
+    closeAllPages();
   };
 
   const goToTeam = (teamId) => {
-    setShowFavorites(false);
-    setShowLeaderboard(false);
-    setShowMyPredictions(false);
-    setShowProfile(false);
-    setSelectedMatchId(null);
+    closeAllPages();
     setSelectedTeamId(teamId);
   };
 
+  // KHONG dong trang "Hom nay" o day: MatchDetail duoc uu tien hien truoc trong chuoi
+  // ternary ben duoi, nen giu showToday=true de bam "Quay lai" se ve dung trang Hom nay.
   const goToMatch = (matchId) => {
     setShowFavorites(false);
     setShowLeaderboard(false);
@@ -214,11 +224,16 @@ export default function App() {
                 <button
                   className="btn btn-nav btn-sm"
                   onClick={() => {
-                    setSelectedTeamId(null);
-                    setShowFavorites(false);
-                    setShowAdmin(false);
-                    setShowMyPredictions(false);
-                    setShowProfile(false);
+                    closeAllPages();
+                    setShowToday(true);
+                  }}
+                >
+                  {t("nav_today")}
+                </button>
+                <button
+                  className="btn btn-nav btn-sm"
+                  onClick={() => {
+                    closeAllPages();
                     setShowLeaderboard(true);
                   }}
                 >
@@ -227,13 +242,7 @@ export default function App() {
                 <button
                   className="btn btn-nav btn-sm"
                   onClick={() => {
-                    setSelectedTeamId(null);
-                    setSelectedMatchId(null);
-                    setShowFavorites(false);
-                    setShowAdmin(false);
-                    setShowLeaderboard(false);
-                    setShowMyPredictions(false);
-                    setShowProfile(false);
+                    closeAllPages();
                     setShowMiniLeague(true);
                   }}
                 >
@@ -269,15 +278,8 @@ export default function App() {
                         <button
                           className="ft-user-menu-item"
                           onClick={() => {
-                            setSelectedTeamId(null);
-                            setSelectedMatchId(null);
-                            setShowAdmin(false);
-                            setShowLeaderboard(false);
-                            setShowMyPredictions(false);
-                            setShowFavorites(false);
-                            setShowMiniLeague(false);
+                            closeAllPages();
                             setShowProfile(true);
-                            setShowUserMenu(false);
                           }}
                         >
                           {t("nav_profile")}
@@ -285,14 +287,8 @@ export default function App() {
                         <button
                           className="ft-user-menu-item"
                           onClick={() => {
-                            setSelectedTeamId(null);
-                            setSelectedMatchId(null);
-                            setShowAdmin(false);
-                            setShowLeaderboard(false);
-                            setShowMyPredictions(false);
-                            setShowProfile(false);
+                            closeAllPages();
                             setShowFavorites(true);
-                            setShowUserMenu(false);
                           }}
                         >
                           {t("nav_favorites")} ({favorites.length})
@@ -300,14 +296,8 @@ export default function App() {
                         <button
                           className="ft-user-menu-item"
                           onClick={() => {
-                            setSelectedTeamId(null);
-                            setSelectedMatchId(null);
-                            setShowAdmin(false);
-                            setShowLeaderboard(false);
-                            setShowFavorites(false);
-                            setShowProfile(false);
+                            closeAllPages();
                             setShowMyPredictions(true);
-                            setShowUserMenu(false);
                           }}
                         >
                           {t("nav_history")}
@@ -316,14 +306,8 @@ export default function App() {
                           <button
                             className="ft-user-menu-item"
                             onClick={() => {
-                              setSelectedTeamId(null);
-                              setSelectedMatchId(null);
-                              setShowFavorites(false);
-                              setShowLeaderboard(false);
-                              setShowMyPredictions(false);
-                              setShowProfile(false);
+                              closeAllPages();
                               setShowAdmin(true);
-                              setShowUserMenu(false);
                             }}
                           >
                             {t("nav_admin")}
@@ -407,6 +391,11 @@ export default function App() {
                 setShowProfile(false);
                 setShowMiniLeague(true);
               }}
+            />
+          ) : showToday ? (
+            <TodayMatches
+              onBack={() => setShowToday(false)}
+              onSelectMatch={goToMatch}
             />
           ) : (
             <>
