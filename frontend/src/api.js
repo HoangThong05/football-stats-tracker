@@ -15,3 +15,44 @@ export function endpointFor(view, league, season) {
 export function authHeaders(token) {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
+
+/**
+ * JWT còn hạn không? Chỉ dùng để quyết định hiển thị giao diện đã/chưa đăng nhập —
+ * KHÔNG thay thế việc xác thực ở backend (backend vẫn tự kiểm tra chữ ký + hạn).
+ * Token hỏng/không đọc được thì coi như hết hạn cho an toàn.
+ */
+export function isTokenExpired(token) {
+  if (!token) return true
+  try {
+    // JWT dùng base64url (- _) thay vì base64 chuẩn (+ /)
+    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    const { exp } = JSON.parse(atob(payload))
+    if (!exp) return false
+    return exp * 1000 <= Date.now()
+  } catch {
+    return true
+  }
+}
+
+/**
+ * Đọc phiên đăng nhập đã lưu. Nếu token hết hạn thì xoá luôn, tránh tình trạng
+ * giao diện hiện "đang đăng nhập" nhưng mọi request đều bị backend trả 403.
+ */
+export function loadSavedSession() {
+  const token = localStorage.getItem('ft_token')
+  if (isTokenExpired(token)) {
+    clearSavedSession()
+    return { token: null, email: null, role: null }
+  }
+  return {
+    token,
+    email: localStorage.getItem('ft_email'),
+    role: localStorage.getItem('ft_role'),
+  }
+}
+
+export function clearSavedSession() {
+  localStorage.removeItem('ft_token')
+  localStorage.removeItem('ft_email')
+  localStorage.removeItem('ft_role')
+}

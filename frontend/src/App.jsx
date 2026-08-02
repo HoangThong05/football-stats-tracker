@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { API_BASE, endpointFor, authHeaders } from "./api";
+import {
+  API_BASE,
+  endpointFor,
+  authHeaders,
+  isTokenExpired,
+  loadSavedSession,
+  clearSavedSession,
+} from "./api";
 import { LEAGUES, VIEWS } from "./constants";
 import { LanguageContext, translations } from "./i18n";
 import Loading from "./components/Loading";
@@ -39,13 +46,13 @@ export default function App() {
   const [showToday, setShowToday] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const [token, setToken] = useState(() => localStorage.getItem("ft_token"));
-  const [userEmail, setUserEmail] = useState(() =>
-    localStorage.getItem("ft_email"),
-  );
-  const [userRole, setUserRole] = useState(() =>
-    localStorage.getItem("ft_role"),
-  );
+  // Doc phien da luu MOT LAN khi mount; tu xoa neu JWT da het han (mac dinh 24h),
+  // tranh giao dien hien "dang dang nhap" nhung moi request deu bi tra 403.
+  const [initialSession] = useState(loadSavedSession);
+  const [token, setToken] = useState(initialSession.token);
+  const [userEmail, setUserEmail] = useState(initialSession.email);
+  const [userRole, setUserRole] = useState(initialSession.role);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [showAuthForm, setShowAuthForm] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [favorites, setFavorites] = useState([]);
@@ -132,6 +139,7 @@ export default function App() {
     setToken(newToken);
     setUserEmail(email);
     setUserRole(role);
+    setSessionExpired(false);
     setShowAuthForm(false);
   };
 
@@ -154,14 +162,26 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("ft_token");
-    localStorage.removeItem("ft_email");
-    localStorage.removeItem("ft_role");
+    clearSavedSession();
     setToken(null);
     setUserEmail(null);
     setUserRole(null);
     closeAllPages();
   };
+
+  // Token het han GIUA CHUNG luc dang dung: tu dang xuat + bao cho nguoi dung,
+  // thay vi de ho bam mai ma chi nhan loi 403 khong ro nguyen nhan.
+  useEffect(() => {
+    if (!token) return undefined;
+    const timer = setInterval(() => {
+      if (isTokenExpired(token)) {
+        handleLogout();
+        setSessionExpired(true);
+      }
+    }, 60000);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   const goToTeam = (teamId) => {
     closeAllPages();
@@ -340,6 +360,22 @@ export default function App() {
         </nav>
 
         <div className="container pb-4" style={{ maxWidth: 960 }}>
+          {sessionExpired && !userEmail && (
+            <div className="alert alert-warning d-flex align-items-center gap-2 ft-fade">
+              <span style={{ fontSize: "1.2rem" }}>🔒</span>
+              <span className="flex-grow-1">{t("session_expired")}</span>
+              <button
+                className="btn btn-sm btn-primary"
+                onClick={() => {
+                  setSessionExpired(false);
+                  setShowAuthForm(true);
+                }}
+              >
+                {t("auth_login_btn")}
+              </button>
+            </div>
+          )}
+
           {showAuthForm && !userEmail && (
             <div className="mb-4 ft-fade">
               <AuthPanel onSuccess={handleAuthSuccess} />
