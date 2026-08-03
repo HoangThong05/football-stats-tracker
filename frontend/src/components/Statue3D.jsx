@@ -146,10 +146,21 @@ export default function Statue3D({ height = 320, className = '' }) {
         })
         .catch(() => {})
 
-      import('three/examples/jsm/loaders/GLTFLoader.js')
-        .then(({ GLTFLoader }) => {
+      /*
+       * File .glb da duoc nen bang gltfpack (EXT_meshopt_compression) de giam 14MB -> 8MB.
+       * GLTFLoader KHONG tu giai nen duoc chuan nay, phai nap them MeshoptDecoder -
+       * thieu no thi file tai ve binh thuong nhung parse loi, ra dung canh "khong xem duoc".
+       * Decoder nho (~30KB) va cung nam o chunk rieng.
+       */
+      Promise.all([
+        import('three/examples/jsm/loaders/GLTFLoader.js'),
+        import('three/examples/jsm/libs/meshopt_decoder.module.js'),
+      ])
+        .then(([{ GLTFLoader }, { MeshoptDecoder }]) => {
           if (cancelled) return
-          new GLTFLoader().load(
+          const loader = new GLTFLoader()
+          loader.setMeshoptDecoder(MeshoptDecoder)
+          loader.load(
             MODEL_URL,
             (gltf) => {
               if (cancelled) return
