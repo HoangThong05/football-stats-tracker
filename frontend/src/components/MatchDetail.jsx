@@ -4,6 +4,7 @@ import { formatKickoff } from '../utils'
 import { useTranslation } from '../i18n'
 import Loading from './Loading'
 import HeadToHead from './HeadToHead'
+import Pitch3D from './Pitch3D'
 
 export default function MatchDetail({ matchId, onBack }) {
   const { t, lang } = useTranslation()
@@ -55,28 +56,36 @@ export default function MatchDetail({ matchId, onBack }) {
             </span>
           </div>
 
-          <div className="d-flex align-items-center justify-content-center gap-4 flex-wrap mb-3">
-            <div className="text-center" style={{ minWidth: 140 }}>
-              {match.homeCrest && <img src={match.homeCrest} alt="" width="48" height="48" />}
-              <div className="fw-semibold mt-1">{match.homeTeam}</div>
-            </div>
-
-            <div className="text-center">
-              <div className="fs-3 fw-bold">
-                {hasFullScore ? `${match.homeScore} - ${match.awayScore}` : t('matches_vs')}
+          {/* San 3D lam nen; logo + ti so la HTML phu len tren cho sac net */}
+          <Pitch3D height={210} className="mb-3">
+            <div className="d-flex align-items-center justify-content-center gap-3 gap-md-4 w-100 px-3">
+              <div className="text-center" style={{ minWidth: 0, flex: '1 1 0' }}>
+                {match.homeCrest && (
+                  <img src={match.homeCrest} alt="" width="44" height="44" loading="lazy" />
+                )}
+                <div className="ft-pitch-team text-truncate mt-1">{match.homeTeam}</div>
               </div>
-              {hasHalfScore && (
-                <div className="text-secondary small">
-                  {t('match_halftime')}: {match.homeHalfScore} - {match.awayHalfScore}
-                </div>
-              )}
-            </div>
 
-            <div className="text-center" style={{ minWidth: 140 }}>
-              {match.awayCrest && <img src={match.awayCrest} alt="" width="48" height="48" />}
-              <div className="fw-semibold mt-1">{match.awayTeam}</div>
+              <div className="text-center" style={{ flex: '0 0 auto' }}>
+                <div className="ft-pitch-score">
+                  {hasFullScore ? `${match.homeScore} - ${match.awayScore}` : t('matches_vs')}
+                </div>
+              </div>
+
+              <div className="text-center" style={{ minWidth: 0, flex: '1 1 0' }}>
+                {match.awayCrest && (
+                  <img src={match.awayCrest} alt="" width="44" height="44" loading="lazy" />
+                )}
+                <div className="ft-pitch-team text-truncate mt-1">{match.awayTeam}</div>
+              </div>
             </div>
-          </div>
+          </Pitch3D>
+
+          {hasHalfScore && (
+            <div className="text-center text-secondary small mb-3">
+              {t('match_halftime')}: <span className="ft-num">{match.homeHalfScore} - {match.awayHalfScore}</span>
+            </div>
+          )}
 
           {(match.venue || match.referees?.length > 0) && (
             <div className="d-flex flex-column gap-1 text-secondary small border-top pt-3">

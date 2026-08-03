@@ -437,6 +437,61 @@ body,
   padding-left: 2px;
 }
 
+/* ---------- San bong 3D isometric ---------- */
+.ft-pitch3d {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--ft-radius);
+  /* Nen toi de khi chua kip tai three (hoac may khong ve duoc) van ra dang "san dem" */
+  background: radial-gradient(120% 100% at 50% 0%, #17492f 0%, #0d2c1d 70%, #0a2317 100%);
+}
+
+.ft-pitch3d-canvas {
+  position: absolute;
+  inset: 0;
+  line-height: 0;
+}
+
+/* Ti so/ten doi phu len tren: de HTML lo cho sac net, khong ve chu trong 3D */
+.ft-pitch3d-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.65);
+}
+
+/* Chu tren san hero (ten giai + mua) */
+.ft-pitch-hero-title {
+  font-size: clamp(1.1rem, 3.4vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.ft-pitch-hero-sub {
+  font-size: 0.82rem;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+/* Ti so tren san o trang chi tiet tran */
+.ft-pitch-score {
+  font-family: var(--ft-num-font);
+  font-size: clamp(1.8rem, 6vw, 3rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.ft-pitch-team {
+  font-weight: 700;
+  font-size: clamp(0.78rem, 2.2vw, 1rem);
+}
+
 /* ---------- Khung noi dung dang card ---------- */
 .ft-card {
   position: relative; /* moc cho lop anh sang ::before cua .ft-tilt */
