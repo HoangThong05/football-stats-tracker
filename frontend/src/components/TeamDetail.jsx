@@ -163,17 +163,28 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
                       <div key={p.id} className="col-6 col-md-3">
                         <a href={playerSearchUrl(p.name, team.name)} target="_blank" rel="noreferrer" className="text-decoration-none">
                           <div className="ft-card p-3 text-center h-100">
-                            <img
-                              src={p.photoUrl || 'https://via.placeholder.com/80?text=?'}
-                              alt={p.name}
-                              className="rounded-circle mb-2"
-                              style={{ width: 72, height: 72, objectFit: 'cover', background: 'var(--ft-card-alt, #eee)' }}
-                              onError={(e) => { e.target.src = 'https://via.placeholder.com/80?text=?' }}
-                            />
+                            {p.photoUrl ? (
+                              <img
+                                src={p.photoUrl}
+                                alt={p.name}
+                                className="rounded-circle mb-2"
+                                style={{ width: 72, height: 72, objectFit: 'cover' }}
+                                loading="lazy"
+                              />
+                            ) : (
+                              /* Nguon du lieu hien tai khong co anh cau thu -> dung chu cai dau ten,
+                                 nhin gon hon la mot loat o xam giong het nhau */
+                              <div className="ft-player-avatar mb-2" aria-hidden="true">
+                                {p.name.charAt(0).toUpperCase()}
+                              </div>
+                            )}
                             {p.jerseyNumber != null && (
                               <div className="fw-bold small text-secondary mb-1">#{p.jerseyNumber}</div>
                             )}
                             <div className="fw-semibold small text-body">{p.name}</div>
+                            {p.nationality && (
+                              <div className="text-secondary small text-truncate">{p.nationality}</div>
+                            )}
                             {p.age != null && (
                               <div className="text-secondary small">
                                 <span className="ft-num">{p.age}</span> {t('team_player_age_suffix')}
