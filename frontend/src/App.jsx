@@ -27,6 +27,7 @@ import Profile from "./components/Profile";
 import TodayMatches from "./components/TodayMatches";
 import Football3D from "./components/Football3D";
 import Pitch3D from "./components/Pitch3D";
+import Statue3D from "./components/Statue3D";
 
 export default function App() {
   const [league, setLeague] = useState("PL");
@@ -474,6 +475,8 @@ export default function App() {
                   )}
                 </div>
               </Pitch3D>
+
+              <Statue3D height={320} className="mb-3" />
 
               <div className="ft-league-tabs mb-3">
                 {LEAGUES.map((l) => (

@@ -51,10 +51,17 @@ export function useThreeScene({ width, height, build, alpha = true }) {
         IcosahedronGeometry,
         PlaneGeometry,
         CylinderGeometry,
+        SphereGeometry,
+        CapsuleGeometry,
         AmbientLight,
         DirectionalLight,
+        SpotLight,
         BufferAttribute,
         CanvasTexture,
+        AnimationMixer,
+        Group,
+        Box3,
+        Clock,
         Vector3,
         Color,
         SRGBColorSpace,
@@ -71,10 +78,17 @@ export function useThreeScene({ width, height, build, alpha = true }) {
           IcosahedronGeometry,
           PlaneGeometry,
           CylinderGeometry,
+          SphereGeometry,
+          CapsuleGeometry,
           AmbientLight,
           DirectionalLight,
+          SpotLight,
           BufferAttribute,
           CanvasTexture,
+          AnimationMixer,
+          Group,
+          Box3,
+          Clock,
           Vector3,
           Color,
           SRGBColorSpace,
@@ -91,6 +105,8 @@ export function useThreeScene({ width, height, build, alpha = true }) {
         const built = buildRef.current(THREE, { scene, renderer, width, height })
         const camera = built.camera
         const onFrame = built.onFrame
+        // Canh tu don dep rieng cua tung canh (huy tai nguyen dang nap do, go control...)
+        const disposeScene = built.dispose
 
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -139,6 +155,7 @@ export function useThreeScene({ width, height, build, alpha = true }) {
 
         cleanup = () => {
           stop()
+          disposeScene?.()
           document.removeEventListener('visibilitychange', onVisibility)
           observer.disconnect()
           scene.traverse((obj) => {

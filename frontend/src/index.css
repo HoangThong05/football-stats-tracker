@@ -492,6 +492,77 @@ body,
   font-size: clamp(0.78rem, 2.2vw, 1rem);
 }
 
+/* ---------- Tuong cau thu 3D (the kinh mo) ---------- */
+.ft-statue-card {
+  position: relative;
+  border-radius: var(--ft-radius);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(160deg, rgba(15, 61, 38, 0.92) 0%, rgba(11, 20, 16, 0.96) 100%);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--ft-shadow-rest);
+}
+
+.ft-statue3d {
+  position: relative;
+  width: 100%;
+}
+
+.ft-statue3d-canvas {
+  position: absolute;
+  inset: 0;
+  line-height: 0;
+  /* Chuot keo de xoay tuong -> bao hieu bang con tro nam keo */
+  cursor: grab;
+}
+
+.ft-statue3d-canvas:active {
+  cursor: grabbing;
+}
+
+.ft-statue-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  align-content: center;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.82rem;
+  pointer-events: none;
+}
+
+@keyframes ft-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ft-statue-spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-top-color: var(--ft-accent-bright);
+  animation: ft-spin 0.7s linear infinite;
+}
+
+.ft-statue-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.ft-statue-hint {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-left: auto;
+}
+
 /* Anh dai dien cau thu khi nguon du lieu khong co anh: dung chu cai dau ten */
 .ft-player-avatar {
   display: grid;

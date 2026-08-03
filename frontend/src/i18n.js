@@ -156,6 +156,13 @@ export const translations = {
       'Dữ liệu cầu thủ tạm thời không khả dụng. Nguồn cung cấp dữ liệu cầu thủ đang gián đoạn — các phần khác của trang vẫn hoạt động bình thường.',
     team_player_age_suffix: 'tuổi',
 
+    statue_loading: 'Đang tải mô hình 3D...',
+    statue_celebrate: '🏆 ĂN MỪNG SIUUU',
+    statue_pause: '⏸ Dừng',
+    statue_play: '▶ Chạy',
+    statue_drag_hint: 'Kéo để xoay · Cuộn để phóng to',
+    statue_missing_file: 'Chưa có file ronaldo.glb trong thư mục public/',
+
     season_label_prefix: 'Mùa',
     season_current_suffix: 'hiện tại',
 
@@ -404,6 +411,13 @@ export const translations = {
     team_squad_unavailable:
       'Player data is temporarily unavailable. The player data provider is down — the rest of the page still works normally.',
     team_player_age_suffix: 'years old',
+
+    statue_loading: 'Loading 3D model...',
+    statue_celebrate: '🏆 SIUUU CELEBRATION',
+    statue_pause: '⏸ Pause',
+    statue_play: '▶ Play',
+    statue_drag_hint: 'Drag to rotate · Scroll to zoom',
+    statue_missing_file: 'No ronaldo.glb found in the public/ folder',
 
     season_label_prefix: 'Season',
     season_current_suffix: 'current',
