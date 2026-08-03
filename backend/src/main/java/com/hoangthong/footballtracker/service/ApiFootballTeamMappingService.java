@@ -2,7 +2,9 @@ package com.hoangthong.footballtracker.service;
 
 import com.hoangthong.footballtracker.client.ApiFootballClient;
 import com.hoangthong.footballtracker.client.dto.ApiFootballTeamListResponse.TeamWrapper;
+import com.hoangthong.footballtracker.entity.ApiFootballSyncState;
 import com.hoangthong.footballtracker.entity.ApiFootballTeamMap;
+import com.hoangthong.footballtracker.repository.ApiFootballSyncStateRepository;
 import com.hoangthong.footballtracker.repository.ApiFootballTeamMapRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +47,13 @@ public class ApiFootballTeamMappingService {
     /** Ten doi hiem khi doi -> 30 ngay moi lay lai 1 lan la du. */
     private static final long REFRESH_INTERVAL_DAYS = 30;
 
+    /**
+     * Sau khi goi API THAT BAI thi cho bao lau moi thu lai.
+     * Khong co con so nay, luc tai khoan bi khoa (API luon tra rong) se thanh: moi lan
+     * co nguoi mo trang chi tiet doi = 6 request nua -> tu dot quota cua chinh minh.
+     */
+    private static final long RETRY_AFTER_FAILURE_HOURS = 6;
+
     // id giai cua API-Football (khac voi football-data.org)
     private static final List<Integer> LEAGUE_IDS = List.of(
             39,  // Premier League
@@ -57,13 +66,18 @@ public class ApiFootballTeamMappingService {
 
     private final ApiFootballClient client;
     private final ApiFootballTeamMapRepository repository;
+    private final ApiFootballSyncStateRepository syncStateRepository;
 
     /** Cache lop 1 (RAM). Rong = chua nap tu DB lan nao trong vong doi app nay. */
     private volatile Map<String, Long> nameToId = Map.of();
 
-    public ApiFootballTeamMappingService(ApiFootballClient client, ApiFootballTeamMapRepository repository) {
+    public ApiFootballTeamMappingService(
+            ApiFootballClient client,
+            ApiFootballTeamMapRepository repository,
+            ApiFootballSyncStateRepository syncStateRepository) {
         this.client = client;
         this.repository = repository;
+        this.syncStateRepository = syncStateRepository;
     }
 
     public synchronized Optional<Long> findTeamId(String teamName) {
@@ -86,9 +100,29 @@ public class ApiFootballTeamMappingService {
         if (nameToId.isEmpty()) {
             loadFromDatabase();
         }
-        if (nameToId.isEmpty() || isDatabaseStale()) {
+
+        boolean needsRefresh = nameToId.isEmpty() || isDatabaseStale();
+        // Vua thu cach day chua lau (va truot) thi DUNG goi lai - day la thu duy nhat
+        // chan duoc canh "moi luot xem trang = 6 request" khi API dang tu choi.
+        if (needsRefresh && !isCoolingDown()) {
             refreshFromApi();
         }
+    }
+
+    /** Con trong thoi gian cho sau mot lan goi API that bai? */
+    private boolean isCoolingDown() {
+        return syncStateRepository.findById(ApiFootballSyncState.SINGLETON_ID)
+                .map(state -> Duration.between(state.getLastAttemptAt(), Instant.now())
+                        .toHours() < RETRY_AFTER_FAILURE_HOURS)
+                .orElse(false);
+    }
+
+    /** Ghi lai moc thoi gian da THU goi API (du thanh cong hay khong). */
+    private void recordAttempt(boolean success) {
+        ApiFootballSyncState state = syncStateRepository.findById(ApiFootballSyncState.SINGLETON_ID)
+                .orElseGet(() -> new ApiFootballSyncState(Instant.EPOCH));
+        state.markAttempt(success);
+        syncStateRepository.save(state);
     }
 
     private void loadFromDatabase() {
@@ -128,8 +162,9 @@ public class ApiFootballTeamMappingService {
         if (map.isEmpty()) {
             // Tai khoan bi khoa / het quota / mat mang -> GIU nguyen du lieu cu,
             // tha dung ban map cu con hon xoa trang roi khong map duoc doi nao.
-            log.warn("Khong lay duoc doi nao tu API-Football, giu nguyen bang map hien co ({} doi)",
-                    nameToId.size());
+            recordAttempt(false);
+            log.warn("Khong lay duoc doi nao tu API-Football, giu nguyen bang map hien co ({} doi). "
+                    + "Se khong thu lai trong {} gio toi.", nameToId.size(), RETRY_AFTER_FAILURE_HOURS);
             return;
         }
 
@@ -141,6 +176,7 @@ public class ApiFootballTeamMappingService {
             rows.add(row);
         }
         repository.saveAll(rows);
+        recordAttempt(true);
 
         nameToId = map;
         log.info("Cache mapping API-Football hoan tat: {} doi, da luu xuong DB", map.size());

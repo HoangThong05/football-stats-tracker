@@ -3,7 +3,9 @@ package com.hoangthong.footballtracker.service;
 import com.hoangthong.footballtracker.client.ApiFootballClient;
 import com.hoangthong.footballtracker.client.dto.ApiFootballTeamListResponse.TeamInfo;
 import com.hoangthong.footballtracker.client.dto.ApiFootballTeamListResponse.TeamWrapper;
+import com.hoangthong.footballtracker.entity.ApiFootballSyncState;
 import com.hoangthong.footballtracker.entity.ApiFootballTeamMap;
+import com.hoangthong.footballtracker.repository.ApiFootballSyncStateRepository;
 import com.hoangthong.footballtracker.repository.ApiFootballTeamMapRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,13 +27,23 @@ class ApiFootballTeamMappingServiceTest {
 
     private ApiFootballClient client;
     private ApiFootballTeamMapRepository repository;
+    private ApiFootballSyncStateRepository syncStateRepository;
     private ApiFootballTeamMappingService service;
 
     @BeforeEach
     void setUp() {
         client = mock(ApiFootballClient.class);
         repository = mock(ApiFootballTeamMapRepository.class);
-        service = new ApiFootballTeamMappingService(client, repository);
+        syncStateRepository = mock(ApiFootballSyncStateRepository.class);
+        // Mac dinh: chua tung goi API lan nao -> khong bi chan boi thoi gian cho
+        when(syncStateRepository.findById(ApiFootballSyncState.SINGLETON_ID)).thenReturn(Optional.empty());
+        service = new ApiFootballTeamMappingService(client, repository, syncStateRepository);
+    }
+
+    /** Gia lap: lan thu gan nhat cach day `hoursAgo` gio. */
+    private void lastAttempt(long hoursAgo) {
+        when(syncStateRepository.findById(ApiFootballSyncState.SINGLETON_ID))
+                .thenReturn(Optional.of(new ApiFootballSyncState(Instant.now().minus(hoursAgo, ChronoUnit.HOURS))));
     }
 
     private static TeamWrapper team(long id, String name) {
@@ -98,6 +110,45 @@ class ApiFootballTeamMappingServiceTest {
 
         assertThat(id).contains(42L); // van tra cuu duoc nho du lieu cu
         verify(repository, never()).saveAll(org.mockito.ArgumentMatchers.anyList());
+    }
+
+    /**
+     * LOI NGHIEM TRONG DA TUNG CO: khi DB rong va API luon that bai (tai khoan bi khoa),
+     * moi lan co nguoi mo trang chi tiet doi lai ban them 6 request -> tu dot quota.
+     * Sau khi vua thu that bai, phai IM LANG trong vai gio.
+     */
+    @Test
+    void vua_thu_that_bai_thi_khong_duoc_goi_lai_API() {
+        when(repository.findAll()).thenReturn(List.of());
+        when(repository.findLastUpdatedAt()).thenReturn(Optional.empty());
+        lastAttempt(1); // moi thu cach day 1 gio
+
+        Optional<Long> id = service.findTeamId("Arsenal FC");
+
+        assertThat(id).isEmpty();
+        verify(client, never()).getTeamsInLeague(anyInt(), anyInt());
+    }
+
+    @Test
+    void qua_thoi_gian_cho_thi_duoc_thu_lai() {
+        when(repository.findAll()).thenReturn(List.of());
+        when(repository.findLastUpdatedAt()).thenReturn(Optional.empty());
+        when(repository.findById(anyString())).thenReturn(Optional.empty());
+        lastAttempt(12); // qua 6 gio -> duoc thu lai
+        when(client.getTeamsInLeague(anyInt(), anyInt())).thenReturn(List.of(team(42L, "Arsenal")));
+
+        assertThat(service.findTeamId("Arsenal FC")).contains(42L);
+    }
+
+    @Test
+    void goi_API_that_bai_thi_ghi_lai_moc_thoi_gian_de_lan_sau_biet_ma_cho() {
+        when(repository.findAll()).thenReturn(List.of());
+        when(repository.findLastUpdatedAt()).thenReturn(Optional.empty());
+        when(client.getTeamsInLeague(anyInt(), anyInt())).thenReturn(List.of());
+
+        service.findTeamId("Arsenal FC");
+
+        verify(syncStateRepository).save(org.mockito.ArgumentMatchers.any(ApiFootballSyncState.class));
     }
 
     @Test
