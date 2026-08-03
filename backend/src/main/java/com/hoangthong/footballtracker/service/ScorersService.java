@@ -45,13 +45,22 @@ public class ScorersService {
                         competitionCode, requestedSeason, ex.getMessage());
                 return new Result(List.of(), SeasonLabel.ofStartYear(requestedSeason));
             }
-            // "Mua hien tai" tu dong cua football-data.org dang tro toi mua chua co du lieu
-            // vua pha luoi (thuong gap dau/cuoi mua, vd sau khi ho da chuyen sang mua moi
-            // nhung Bang xep hang van con giu du lieu mua cu - xem SeasonLabel).
-            // Thu lai 1 lan, chi dinh tuong minh mua "gan nhat" theo lich chau Au.
+            log.warn("Loi khi lay vua pha luoi giai {} (mua tu dong): {}", competitionCode, ex.getMessage());
+            response = null;
+        }
+
+        /*
+         * "Mua hien tai" tu dong cua football-data.org co the tro toi mua CHUA co du lieu
+         * vua pha luoi. Khi do ho tra ve 1 trong 2 kieu: nem loi, HOAC 200 kem danh sach RONG.
+         * Ca hai deu phai thu lai, neu khong se xay ra canh Bang xep hang hien mua 2025/26
+         * con Vua pha luoi lai hien mua 2026/27 rong tuech - cung 1 giai ma lech mua.
+         */
+        boolean emptyAuto = requestedSeason == null
+                && (response == null || response.scorers() == null || response.scorers().isEmpty());
+        if (emptyAuto) {
             fallbackSeasonYear = SeasonLabel.likelyCurrentSeasonStartYear(LocalDate.now());
-            log.warn("Khong lay duoc vua pha luoi giai {} (mua tu dong): {} -> thu lai voi season={}",
-                    competitionCode, ex.getMessage(), fallbackSeasonYear);
+            log.info("Vua pha luoi giai {} rong o mua tu dong -> thu lai voi season={}",
+                    competitionCode, fallbackSeasonYear);
             try {
                 response = client.getScorers(competitionCode, fallbackSeasonYear);
             } catch (RestClientException ex2) {
@@ -60,6 +69,7 @@ public class ScorersService {
                 return new Result(List.of(), null);
             }
         }
+
         if (response == null || response.scorers() == null) {
             return new Result(List.of(), null);
         }

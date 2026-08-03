@@ -79,10 +79,29 @@ class ScorersServiceTest {
     }
 
     @Test
-    void giai_chua_co_vua_pha_luoi_thi_tra_danh_sach_rong() {
-        when(client.getScorers("PL", null)).thenReturn(new ScorersApiResponse(List.of(), null));
+    void giai_chua_co_vua_pha_luoi_o_ca_2_mua_thi_tra_danh_sach_rong() {
+        when(client.getScorers(eq("PL"), isNull())).thenReturn(new ScorersApiResponse(List.of(), null));
+        when(client.getScorers(eq("PL"), anyInt())).thenReturn(new ScorersApiResponse(List.of(), null));
 
         assertThat(service.getScorers("PL", null).scorers()).isEmpty();
+    }
+
+    /**
+     * Bug thuc te: football-data.org tra 200 kem danh sach RONG (khong nem loi) khi "mua
+     * hien tai" cua ho tro toi mua chua khoi tranh. Ban va truoc chi thu lai khi CO LOI nen
+     * bo sot truong hop nay -> Bang xep hang hien mua 2025/26 con Vua pha luoi hien 2026/27 rong.
+     */
+    @Test
+    void mua_tu_dong_tra_ve_rong_thi_van_phai_thu_lai_voi_mua_gan_nhat() {
+        int expectedYear = SeasonLabel.likelyCurrentSeasonStartYear(LocalDate.now());
+        when(client.getScorers(eq("PL"), isNull())).thenReturn(new ScorersApiResponse(List.of(), null));
+        when(client.getScorers(eq("PL"), eq(expectedYear)))
+                .thenReturn(new ScorersApiResponse(List.of(scorer(1, "Haaland", 22, 3)), null));
+
+        ScorersService.Result result = service.getScorers("PL", null);
+
+        assertThat(result.scorers()).hasSize(1);
+        assertThat(result.seasonLabel()).isEqualTo(SeasonLabel.ofStartYear(expectedYear));
     }
 
     @Test
