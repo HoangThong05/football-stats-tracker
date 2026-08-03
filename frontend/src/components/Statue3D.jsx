@@ -12,6 +12,14 @@ const MODEL_URL = '/ronaldo.glb'
 /** Cỡ cao mong muốn của tượng trong khung, theo đơn vị của scene. */
 const TARGET_HEIGHT = 2.4
 
+// Kích thước bục — khai báo một chỗ để chỗ dựng bục và chỗ đặt tượng không lệch nhau
+const BASE_CENTER_Y = -1.6
+const BASE_HEIGHT = 0.35
+/** Cao độ MẶT TRÊN của bục — chân tượng phải đứng đúng ở đây. */
+const BASE_TOP_Y = BASE_CENTER_Y + BASE_HEIGHT / 2
+/** Tâm tượng sau khi dựng — camera ngắm vào đây để tượng nằm giữa khung. */
+const STATUE_CENTER_Y = BASE_TOP_Y + TARGET_HEIGHT / 2
+
 const CELEBRATE_MS = 1600
 
 /**
@@ -58,7 +66,8 @@ export default function Statue3D({ height = 320, className = '' }) {
     height,
     build: (THREE, { scene, renderer }) => {
       const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 100)
-      camera.position.set(0, 0.8, 6.2)
+      camera.position.set(0, STATUE_CENTER_Y + 0.9, 6.2)
+      camera.lookAt(0, STATUE_CENTER_Y, 0) // OrbitControls chua tai xong van ngam dung cho
 
       scene.add(new THREE.AmbientLight(0xffffff, 1.2))
       const key = new THREE.DirectionalLight(0xffd9a0, 2.2) // đèn pha ngả vàng
@@ -73,10 +82,10 @@ export default function Statue3D({ height = 320, className = '' }) {
       scene.add(spot)
 
       const base = new THREE.Mesh(
-        new THREE.CylinderGeometry(1.3, 1.5, 0.35, 48),
+        new THREE.CylinderGeometry(1.3, 1.5, BASE_HEIGHT, 48),
         new THREE.MeshStandardMaterial({ color: '#2b3a31', roughness: 0.85 }),
       )
-      base.position.y = -1.6
+      base.position.y = BASE_CENTER_Y
       scene.add(base)
 
       // Xoay cả nhóm thay vì xoay model, để tâm xoay luôn nằm giữa bục
@@ -88,7 +97,13 @@ export default function Statue3D({ height = 320, className = '' }) {
       let controls = null
       const clock = new THREE.Clock()
 
-      /** Căn model vào giữa khung và đặt chân lên mặt bục. */
+      /**
+       * Căn model vào giữa khung và đặt CHÂN lên mặt bục.
+       *
+       * Trục Y phải bám theo ĐÁY hộp bao (box.min.y), không phải tâm — lấy tâm thì tượng
+       * bị hạ xuống thêm nửa chiều cao và chìm nghỉm vào bục.
+       * Riêng X/Z vẫn dùng tâm, để tượng đứng chính giữa bục.
+       */
       const fitToStage = (model) => {
         const box = new THREE.Box3().setFromObject(model)
         const size = box.getSize(new THREE.Vector3())
@@ -97,7 +112,7 @@ export default function Statue3D({ height = 320, className = '' }) {
         model.scale.setScalar(scale)
         model.position.set(
           -center.x * scale,
-          -center.y * scale - 1.42,
+          BASE_TOP_Y - box.min.y * scale,
           -center.z * scale,
         )
       }
@@ -126,7 +141,8 @@ export default function Statue3D({ height = 320, className = '' }) {
           figure.add(arm, leg)
         }
 
-        figure.position.y = -0.35
+        // Dung chung cach can voi model that -> chan cung dung dung tren mat buc
+        fitToStage(figure)
         holder.add(figure)
       }
 
@@ -142,7 +158,7 @@ export default function Statue3D({ height = 320, className = '' }) {
           controls.maxDistance = 9
           // Chặn xoay xuống dưới mặt bục cho đỡ kỳ
           controls.maxPolarAngle = Math.PI / 1.9
-          controls.target.set(0, 0, 0)
+          controls.target.set(0, STATUE_CENTER_Y, 0) // xoay quanh tam tuong, khong phai goc toa do
         })
         .catch(() => {})
 
