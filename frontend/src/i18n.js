@@ -152,6 +152,9 @@ export const translations = {
     team_follow: '☆ Theo dõi',
     team_login_to_follow: 'Đăng nhập để theo dõi đội này',
     team_squad: 'Đội hình',
+    team_squad_unavailable:
+      'Dữ liệu cầu thủ tạm thời không khả dụng. Nguồn cung cấp dữ liệu cầu thủ đang gián đoạn — các phần khác của trang vẫn hoạt động bình thường.',
+    team_player_age_suffix: 'tuổi',
 
     season_label_prefix: 'Mùa',
     season_current_suffix: 'hiện tại',
@@ -398,6 +401,9 @@ export const translations = {
     team_follow: '☆ Follow',
     team_login_to_follow: 'Log in to follow this team',
     team_squad: 'Squad',
+    team_squad_unavailable:
+      'Player data is temporarily unavailable. The player data provider is down — the rest of the page still works normally.',
+    team_player_age_suffix: 'years old',
 
     season_label_prefix: 'Season',
     season_current_suffix: 'current',

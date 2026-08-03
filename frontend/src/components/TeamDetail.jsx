@@ -142,7 +142,15 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
             </div>
           </div>
 
-          {team.squad.length > 0 && (
+          {team.squad.length === 0 ? (
+            <>
+              <h3 className="h5 mb-3">{t('team_squad')}</h3>
+              <div className="alert alert-secondary d-flex align-items-start gap-2">
+                <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>👥</span>
+                <span>{t('team_squad_unavailable')}</span>
+              </div>
+            </>
+          ) : (
             <>
               <h3 className="h5 mb-3">{t('team_squad')}</h3>
               {groupSquadByPosition(team.squad).map((group) => (
@@ -166,7 +174,11 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
                               <div className="fw-bold small text-secondary mb-1">#{p.jerseyNumber}</div>
                             )}
                             <div className="fw-semibold small text-body">{p.name}</div>
-                            {p.age != null && <div className="text-secondary small">{p.age} tuổi</div>}
+                            {p.age != null && (
+                              <div className="text-secondary small">
+                                <span className="ft-num">{p.age}</span> {t('team_player_age_suffix')}
+                              </div>
+                            )}
                           </div>
                         </a>
                       </div>
