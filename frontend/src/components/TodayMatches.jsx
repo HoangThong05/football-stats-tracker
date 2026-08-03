@@ -3,6 +3,7 @@ import { API_BASE } from '../api'
 import { LEAGUES } from '../constants'
 import { useTranslation } from '../i18n'
 import Loading from './Loading'
+import Pitch3D from './Pitch3D'
 
 // Cua so ma MatchSyncService dong bo san trong DB (2 ngay truoc -> 14 ngay toi).
 // Ra ngoai khoang nay se khong co du lieu, nen chan luon o UI.
@@ -76,8 +77,15 @@ export default function TodayMatches({ onBack, onSelectMatch }) {
         {t('back')}
       </button>
 
-      <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-        <h3 className="h5 mb-0">{t('today_title')}</h3>
+      <Pitch3D height={190} className="mb-3">
+        <div className="text-center px-3">
+          <div className="ft-pitch-hero-title">{t('today_title')}</div>
+          <div className="ft-pitch-hero-sub ft-num">{dayLabel}</div>
+        </div>
+      </Pitch3D>
+
+      {/* Tieu de da nam tren san bong phia tren -> o day chi con thanh chon ngay */}
+      <div className="d-flex justify-content-center mb-3">
         <div className="ft-day-nav">
           <button
             className="btn btn-sm"

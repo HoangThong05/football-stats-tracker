@@ -26,7 +26,6 @@ import MiniLeague from "./components/MiniLeague";
 import Profile from "./components/Profile";
 import TodayMatches from "./components/TodayMatches";
 import Football3D from "./components/Football3D";
-import Pitch3D from "./components/Pitch3D";
 import Statue3D from "./components/Statue3D";
 
 export default function App() {
@@ -228,9 +227,6 @@ export default function App() {
   const currentLeague = LEAGUES.find((l) => l.code === league);
   // Vd 2025 -> "2025/26"
   const formatSeasonRange = (startYear) => `${startYear}/${String(startYear + 1).slice(2)}`;
-  // Nhan mua hien tren san hero: mua dang chon, hoac mua tu dong neu chua chon gi
-  const heroSeasonYear = season ?? autoSeasonYear;
-  const seasonLabelForHero = heroSeasonYear ? formatSeasonRange(heroSeasonYear) : null;
 
   return (
     <LanguageContext.Provider value={{ lang, t, setLang }}>
@@ -467,15 +463,6 @@ export default function App() {
             />
           ) : (
             <>
-              <Pitch3D height={190} className="mb-3">
-                <div className="text-center px-3">
-                  <div className="ft-pitch-hero-title">{currentLeague?.name}</div>
-                  {seasonLabelForHero && (
-                    <div className="ft-pitch-hero-sub ft-num">{seasonLabelForHero}</div>
-                  )}
-                </div>
-              </Pitch3D>
-
               <Statue3D height={320} className="mb-3" />
 
               <div className="ft-league-tabs mb-3">
