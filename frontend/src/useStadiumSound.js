@@ -230,23 +230,20 @@ export function useStadiumSound() {
    *
    * Ha bang setTargetAtTime chu khong gan thang 0: cat bien do dot ngot sinh ra
    * tieng "tach" o loa.
+   *
+   * CO Y KHONG goi stop(): tat roi mo lai thi nghe TIEP chu khong mat doan.
+   * AudioBufferSourceNode theo chuan la dung MOT LAN - da stop() thi khong start()
+   * lai duoc, phai dung nguon moi. Ma tao nguon moi se khien tieng lech pha voi
+   * hoat anh: tuong van an mung theo dong thoi gian cu cua no.
+   * De nguon chay ngam thi khi mo lai, tieng va hinh van dung khop nhau.
    */
   useEffect(() => {
     const ctx = ctxRef.current
     const master = masterRef.current
-    if (!ctx || !master) return undefined
+    if (!ctx || !master) return
 
     master.gain.cancelScheduledValues(ctx.currentTime)
     master.gain.setTargetAtTime(muted ? 0 : MASTER_GAIN, ctx.currentTime, 0.015)
-
-    if (!muted) return undefined
-
-    // Da im roi thi cat han nguon di cho do ton CPU, nhung phai doi ramp xong
-    const timer = setTimeout(() => {
-      currentRef.current?.stop?.()
-      currentRef.current = null
-    }, 80)
-    return () => clearTimeout(timer)
   }, [muted])
 
   /**
@@ -304,6 +301,10 @@ export function useStadiumSound() {
       voice.buffer = sampleRef.current
       voice.connect(master)
       voice.start()
+      // Phat het thi tu buong ra, khong giu tham chieu den nguon da xong viec
+      voice.onended = () => {
+        if (currentRef.current === voice) currentRef.current = null
+      }
       currentRef.current = voice
       return sampleRef.current.duration
     }
