@@ -180,40 +180,107 @@ body,
   backdrop-filter: blur(10px) saturate(1.2);
 }
 
+/*
+ * Bo cuc navbar: trai la cua trang web (thuong hieu + trang con + tuy chon),
+ * phai chi rieng tai khoan. Ben trai duoc phep xuong dong khi man hinh hep,
+ * ben phai thi khong co lai.
+ */
+.ft-navbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ft-navbar-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  min-width: 0;
+}
+
+.ft-navbar-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
 .ft-brand {
   font-weight: 800;
   letter-spacing: -0.02em;
   color: #fff;
-  line-height: 1.1;
+  line-height: 1.15;
+  font-size: 1.02rem;
 }
 
 .ft-brand-sub {
   color: rgba(255, 255, 255, 0.72);
-  font-size: 0.8rem;
+  font-size: 0.72rem;
+  line-height: 1.3;
 }
 
 .ft-ball {
   display: inline-grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  font-size: 1.35rem;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 1.1rem;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-/* Nut tren navbar: vien mo, chu trang, hover sang len */
-.ft-navbar .btn-nav {
-  --bs-btn-color: rgba(255, 255, 255, 0.9);
-  --bs-btn-border-color: rgba(255, 255, 255, 0.28);
-  --bs-btn-hover-color: #fff;
-  --bs-btn-hover-bg: rgba(255, 255, 255, 0.14);
-  --bs-btn-hover-border-color: rgba(255, 255, 255, 0.45);
-  --bs-btn-active-bg: rgba(255, 255, 255, 0.2);
-  --bs-btn-active-color: #fff;
-  --bs-btn-active-border-color: rgba(255, 255, 255, 0.5);
+/*
+ * Cum nut cung chuc nang: mot vien bao ngoai duy nhat, ben trong ngan nhau
+ * bang vach mo. Do vien vun cua tung nut rieng le lam navbar trong roi rac.
+ */
+.ft-nav-group {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(4px);
+  overflow: hidden;
+}
+
+.ft-nav-btn {
+  background: none;
+  border: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.35;
+  padding: 6px 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.ft-nav-btn:first-child {
+  border-left: 0;
+}
+
+.ft-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.ft-nav-btn:active {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.ft-nav-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: -2px;
+}
+
+/* Nut chi co bieu tuong (co, sang/toi): hep hon, chu to hon mot chut */
+.ft-nav-btn-icon {
+  padding: 6px 10px;
+  font-size: 0.95rem;
 }
 
 .ft-navbar .btn-nav-solid {
@@ -226,15 +293,49 @@ body,
   font-weight: 600;
 }
 
-.ft-user-email {
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.85rem;
-}
-
 /* ---------- Menu tai khoan (gop Ho so/Yeu thich/Lich su/Quan tri/Dang xuat) ---------- */
 .ft-user-menu {
   position: relative;
   outline: none;
+}
+
+.ft-user-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px 3px 3px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.ft-user-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.ft-user-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+}
+
+.ft-user-role {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(220, 38, 38, 0.92);
+  color: #fff;
+}
+
+.ft-user-caret {
+  font-size: 0.7rem;
+  opacity: 0.75;
 }
 
 .ft-user-avatar {
@@ -263,6 +364,16 @@ body,
   flex-direction: column;
   gap: 2px;
   z-index: 1040;
+}
+
+/* Dia chi email da bi day khoi nut tren navbar -> hien o dau menu */
+.ft-user-menu-header {
+  padding: 6px 10px 8px;
+  font-size: 0.78rem;
+  color: var(--bs-secondary-color);
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
 }
 
 .ft-user-menu-item {
@@ -294,6 +405,18 @@ body,
   height: 1px;
   background: var(--bs-border-color-translucent);
   margin: 4px 2px;
+}
+
+/* Man hinh hep: bo dong mo ta duoi ten, thu nho nut de ben trai bot xuong dong */
+@media (max-width: 575.98px) {
+  .ft-brand-sub {
+    display: none;
+  }
+
+  .ft-nav-btn {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
 }
 
 /* ---------- Tab chon giai dau ---------- */

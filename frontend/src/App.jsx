@@ -235,68 +235,80 @@ export default function App() {
         <nav
           ref={navbarRef}
           className={
-            scrolled ? "ft-navbar py-3 mb-4 scrolled" : "ft-navbar py-3 mb-4"
+            scrolled ? "ft-navbar py-2 mb-4 scrolled" : "ft-navbar py-2 mb-4"
           }
         >
           <div className="container" style={{ maxWidth: 960 }}>
-            <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
-              <div className="d-flex align-items-center gap-3">
-                <span className="ft-ball">
-                  <Football3D size={32} />
-                </span>
-                <div>
-                  <div className="ft-brand fs-5">Football Stats Tracker</div>
-                  <div className="ft-brand-sub">{t("app_subtitle")}</div>
+            {/*
+             * Hai ben ro rang: BEN TRAI la moi thu thuoc ve trang web (thuong hieu,
+             * cac trang con, tuy chon hien thi), BEN PHAI chi danh cho tai khoan.
+             * Nut cung nhom duoc gop thanh mot cum lien mach de bot vien vun vat.
+             */}
+            <div className="ft-navbar-row">
+              <div className="ft-navbar-left">
+                <div className="d-flex align-items-center gap-2">
+                  <span className="ft-ball">
+                    <Football3D size={26} />
+                  </span>
+                  <div>
+                    <div className="ft-brand">Football Stats Tracker</div>
+                    <div className="ft-brand-sub">{t("app_subtitle")}</div>
+                  </div>
+                </div>
+
+                {/* Cum 1: cac trang con */}
+                <div className="ft-nav-group">
+                  <button
+                    className="ft-nav-btn"
+                    onClick={() => {
+                      closeAllPages();
+                      setShowToday(true);
+                    }}
+                  >
+                    {t("nav_today")}
+                  </button>
+                  <button
+                    className="ft-nav-btn"
+                    onClick={() => {
+                      closeAllPages();
+                      setShowLeaderboard(true);
+                    }}
+                  >
+                    {t("nav_leaderboard")}
+                  </button>
+                  <button
+                    className="ft-nav-btn"
+                    onClick={() => {
+                      closeAllPages();
+                      setShowMiniLeague(true);
+                    }}
+                  >
+                    {t("nav_mini_league")}
+                  </button>
+                </div>
+
+                {/* Cum 2: tuy chon hien thi (ngon ngu + sang/toi) */}
+                <div className="ft-nav-group">
+                  <button
+                    className="ft-nav-btn"
+                    onClick={() => setLang((l) => (l === "vi" ? "en" : "vi"))}
+                    title={t("lang_toggle_title")}
+                  >
+                    {lang === "vi" ? "🇻🇳 VI" : "🇬🇧 EN"}
+                  </button>
+                  <button
+                    className="ft-nav-btn ft-nav-btn-icon"
+                    onClick={() =>
+                      setTheme((th) => (th === "dark" ? "light" : "dark"))
+                    }
+                    title={t("theme_toggle_title")}
+                  >
+                    {theme === "dark" ? "☀️" : "🌙"}
+                  </button>
                 </div>
               </div>
 
-              <div className="d-flex align-items-center gap-2 flex-wrap">
-                <button
-                  className="btn btn-nav btn-sm"
-                  onClick={() => setLang((l) => (l === "vi" ? "en" : "vi"))}
-                  title={t("lang_toggle_title")}
-                >
-                  {lang === "vi" ? "🇻🇳 VI" : "🇬🇧 EN"}
-                </button>
-
-                <button
-                  className="btn btn-nav btn-sm"
-                  onClick={() =>
-                    setTheme((th) => (th === "dark" ? "light" : "dark"))
-                  }
-                  title={t("theme_toggle_title")}
-                >
-                  {theme === "dark" ? "☀️" : "🌙"}
-                </button>
-
-                <button
-                  className="btn btn-nav btn-sm"
-                  onClick={() => {
-                    closeAllPages();
-                    setShowToday(true);
-                  }}
-                >
-                  {t("nav_today")}
-                </button>
-                <button
-                  className="btn btn-nav btn-sm"
-                  onClick={() => {
-                    closeAllPages();
-                    setShowLeaderboard(true);
-                  }}
-                >
-                  {t("nav_leaderboard")}
-                </button>
-                <button
-                  className="btn btn-nav btn-sm"
-                  onClick={() => {
-                    closeAllPages();
-                    setShowMiniLeague(true);
-                  }}
-                >
-                  {t("nav_mini_league")}
-                </button>
-
+              <div className="ft-navbar-right">
                 {userEmail ? (
                   <div
                     className="ft-user-menu"
@@ -307,22 +319,27 @@ export default function App() {
                       }
                     }}
                   >
+                    {/*
+                     * Email dai lam phinh ca thanh nav -> chi hien avatar o day,
+                     * dia chi day du nam trong dau muc cua menu khi mo ra.
+                     */}
                     <button
-                      className="btn btn-nav btn-sm d-flex align-items-center gap-2"
+                      className="ft-user-btn"
                       onClick={() => setShowUserMenu((v) => !v)}
+                      title={userEmail}
                     >
                       <span className="ft-user-avatar">
                         {userEmail.charAt(0).toUpperCase()}
                       </span>
-                      <span className="d-none d-md-inline">{userEmail}</span>
                       {userRole === "ADMIN" && (
-                        <span className="badge text-bg-danger">ADMIN</span>
+                        <span className="ft-user-role">ADMIN</span>
                       )}
-                      <span className="opacity-75">▾</span>
+                      <span className="ft-user-caret">▾</span>
                     </button>
 
                     {showUserMenu && (
                       <div className="ft-user-menu-panel ft-fade">
+                        <div className="ft-user-menu-header">{userEmail}</div>
                         <button
                           className="ft-user-menu-item"
                           onClick={() => {
