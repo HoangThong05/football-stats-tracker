@@ -30,11 +30,17 @@
     rgba(0, 0, 0, 0.04) 52px
   );
   --ft-body-bg: #f6f8f4;
+  /*
+   * Mau MAT PHANG NOI (the, bang, menu). PHAI khac --ft-body-bg, neu khong
+   * moi khung noi dung se chim vao nen va ca trang trong phang det - do bong
+   * mot minh khong du de tach lop, nhat la o giao dien toi.
+   */
+  --ft-surface: #ffffff;
   --ft-ink: #12261b;
 
-  /* Quang sang nen: giu THAT mo, nen sang de lo vet mau hon nen toi */
-  --ft-aurora-1: rgba(46, 125, 79, 0.1);
-  --ft-aurora-2: rgba(180, 83, 9, 0.07);
+  /* Quang sang nen. Nen sang de lo vet mau hon nen toi nen alpha thap hon mot bac. */
+  --ft-aurora-1: rgba(46, 125, 79, 0.26);
+  --ft-aurora-2: rgba(180, 83, 9, 0.16);
   --ft-card-shadow: 0 1px 2px rgba(18, 38, 27, 0.07), 0 8px 24px -12px rgba(18, 38, 27, 0.22);
   --ft-radius: 12px;
   --ft-num-font: 'Oswald', 'Be Vietnam Pro', system-ui, sans-serif;
@@ -79,11 +85,13 @@
 
   --ft-header-grad: linear-gradient(120deg, #071a11 0%, #0f3d26 55%, #163524 100%);
   --ft-body-bg: #0b1410;
+  /* Sang hon nen mot bac: giao dien toi khong the dua vao do bong de tach lop */
+  --ft-surface: #14241c;
   --ft-ink: #f4f7f2;
 
-  /* Nen toi: dam hon mot chut moi thay, nhung van duoi nguong gay xao nhang */
-  --ft-aurora-1: rgba(46, 125, 79, 0.16);
-  --ft-aurora-2: rgba(240, 169, 58, 0.09);
+  /* Nen toi nuot mau manh hon nen sang -> phai day alpha len cao hon moi thay */
+  --ft-aurora-1: rgba(46, 125, 79, 0.4);
+  --ft-aurora-2: rgba(240, 169, 58, 0.2);
   --ft-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.75);
 
   --bs-primary: #f0a93a;
@@ -231,8 +239,8 @@ body,
   z-index: 0;
   pointer-events: none;
   background: radial-gradient(
-    240px circle at var(--ft-glow-x, 50%) var(--ft-glow-y, 50%),
-    rgba(255, 255, 255, 0.12),
+    300px circle at var(--ft-glow-x, 50%) var(--ft-glow-y, 50%),
+    rgba(255, 255, 255, 0.22),
     transparent 70%
   );
   opacity: 0;
@@ -469,7 +477,7 @@ body,
   top: calc(100% + 8px);
   right: 0;
   min-width: 220px;
-  background: var(--bs-body-bg);
+  background: var(--ft-surface);
   border: 1px solid var(--bs-border-color-translucent);
   border-radius: var(--ft-radius);
   box-shadow: var(--ft-card-shadow);
@@ -556,7 +564,7 @@ body,
 
 .ft-league-tabs .btn:not(.active) {
   --bs-btn-color: var(--bs-secondary-color);
-  --bs-btn-bg: var(--bs-body-bg);
+  --bs-btn-bg: var(--ft-surface);
   --bs-btn-border-color: var(--bs-border-color);
   --bs-btn-hover-color: var(--ft-accent-strong);
   --bs-btn-hover-border-color: var(--ft-accent);
@@ -602,7 +610,7 @@ body,
   transform: translate(var(--ft-ind-x, 0), var(--ft-ind-y, 0));
   opacity: var(--ft-ind-o, 0);
   border-radius: 9px;
-  background: var(--bs-body-bg);
+  background: var(--ft-surface);
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
   pointer-events: none;
   transition: transform var(--ft-base) var(--ft-ease), width var(--ft-base) var(--ft-ease),
@@ -616,7 +624,7 @@ body,
   --bs-btn-border-color: transparent;
   --bs-btn-color: var(--bs-secondary-color);
   --bs-btn-hover-color: var(--bs-body-color);
-  --bs-btn-hover-bg: var(--bs-body-bg);
+  --bs-btn-hover-bg: var(--ft-surface);
   font-size: 0.85rem;
   font-weight: 600;
 }
@@ -678,7 +686,7 @@ body,
   --bs-btn-border-color: transparent;
   --bs-btn-color: var(--bs-secondary-color);
   --bs-btn-hover-color: var(--ft-accent-strong);
-  --bs-btn-hover-bg: var(--bs-body-bg);
+  --bs-btn-hover-bg: var(--ft-surface);
   --bs-btn-disabled-border-color: transparent;
   min-width: 30px;
   font-size: 1rem;
@@ -851,7 +859,7 @@ body,
 /* ---------- Khung noi dung dang card ---------- */
 .ft-card {
   position: relative; /* moc cho lop anh sang ::before cua .ft-tilt */
-  background: var(--bs-body-bg);
+  background: var(--ft-surface);
   border: 1px solid var(--bs-border-color-translucent);
   border-radius: var(--ft-radius);
   box-shadow: var(--ft-shadow-rest);
@@ -1004,6 +1012,20 @@ tr[role='button']:hover img,
   .ft-sticky-head .ft-standings thead th:last-child {
     border-top-right-radius: var(--ft-radius);
   }
+}
+
+/*
+ * Ke soc: bang 20 doi x 11 cot toan so rat de lac dong khi do ngang.
+ *
+ * To o TR chu khong phai TD - co chu y: nen vung nguy hiem va nen hover deu to o
+ * cap cao hon (td) hoac thay the (tr), nen ke soc nam duoi cung, khong tranh cho.
+ */
+.ft-standings tbody tr:nth-child(even) {
+  background: rgba(18, 38, 27, 0.028);
+}
+
+[data-bs-theme='dark'] .ft-standings tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 /* Duong ke day danh dau ranh gioi vung (suat cup / xuong hang) */
@@ -1399,7 +1421,7 @@ tr[role='button']:hover img,
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%) translateY(-6px);
-  background: var(--bs-body-bg);
+  background: var(--ft-surface);
   border: 1px solid var(--bs-border-color-translucent);
   border-radius: 8px;
   padding: 4px 8px;
@@ -1441,7 +1463,7 @@ tr[role='button']:hover img,
   padding: 10px 14px;
   border-radius: var(--ft-radius);
   border: 1px solid var(--bs-border-color-translucent);
-  background: var(--bs-body-bg);
+  background: var(--ft-surface);
   min-width: 220px;
   opacity: 0.55;
   filter: grayscale(0.7);
