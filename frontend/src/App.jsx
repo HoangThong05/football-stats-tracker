@@ -28,6 +28,7 @@ import Profile from "./components/Profile";
 import TodayMatches from "./components/TodayMatches";
 import Football3D from "./components/Football3D";
 import Statue3D from "./components/Statue3D";
+import PitchBackdrop from "./components/PitchBackdrop";
 
 export default function App() {
   const [league, setLeague] = useState("PL");
@@ -289,6 +290,8 @@ export default function App() {
   return (
     <LanguageContext.Provider value={{ lang, t, setLang }}>
       <>
+        <PitchBackdrop />
+
         {/* ===== Thanh dieu huong ===== */}
         <nav
           ref={navbarRef}

@@ -41,6 +41,10 @@
   /* Quang sang nen. Nen sang de lo vet mau hon nen toi nen alpha thap hon mot bac. */
   --ft-aurora-1: rgba(46, 125, 79, 0.26);
   --ft-aurora-2: rgba(180, 83, 9, 0.16);
+
+  /* San bong chim phia sau: vach ke va soc cat co */
+  --ft-pitch-line: rgba(18, 38, 27, 0.08);
+  --ft-mow-stripe: rgba(18, 38, 27, 0.022);
   --ft-card-shadow: 0 1px 2px rgba(18, 38, 27, 0.07), 0 8px 24px -12px rgba(18, 38, 27, 0.22);
   --ft-radius: 12px;
   --ft-num-font: 'Oswald', 'Be Vietnam Pro', system-ui, sans-serif;
@@ -92,6 +96,9 @@
   /* Nen toi nuot mau manh hon nen sang -> phai day alpha len cao hon moi thay */
   --ft-aurora-1: rgba(46, 125, 79, 0.4);
   --ft-aurora-2: rgba(240, 169, 58, 0.2);
+
+  --ft-pitch-line: rgba(255, 255, 255, 0.07);
+  --ft-mow-stripe: rgba(255, 255, 255, 0.016);
   --ft-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.75);
 
   --bs-primary: #f0a93a;
@@ -133,6 +140,98 @@ body::before {
   }
   to {
     transform: translate3d(2%, 2.5%, 0) scale(1.08);
+  }
+}
+
+/* ---------- San bong chim phia sau toan trang ---------- */
+
+/*
+ * Lop nen: soc cat co chay doc, kieu san van dong nhin tu tren xuong.
+ * z-index -1 -> nam duoi moi noi dung; the .ft-card co nen duc se che phan giua,
+ * chi con hai ben le lo ra vach san.
+ */
+.ft-pitch-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--ft-mow-stripe) 0 96px,
+    transparent 96px 192px
+  );
+}
+
+.ft-pitch-backdrop > * {
+  position: absolute;
+  border: 2px solid var(--ft-pitch-line);
+}
+
+/* Vach giua san */
+.ft-pitch-halfway {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  border-width: 0 0 0 2px;
+}
+
+/* Vong tron giua san */
+.ft-pitch-circle {
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  margin: -100px 0 0 -100px;
+  border-radius: 50%;
+}
+
+.ft-pitch-spot {
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--ft-pitch-line);
+}
+
+/* Vong cam - mo ra ngoai man hinh de chi thay phan cung nhu san that */
+.ft-pitch-box {
+  top: 50%;
+  width: 240px;
+  height: 460px;
+  margin-top: -230px;
+}
+
+.ft-pitch-box-left {
+  left: -2px;
+}
+
+.ft-pitch-box-right {
+  right: -2px;
+}
+
+/* Vong 5m50 */
+.ft-pitch-goal {
+  top: 50%;
+  width: 110px;
+  height: 220px;
+  margin-top: -110px;
+}
+
+.ft-pitch-goal-left {
+  left: -2px;
+}
+
+.ft-pitch-goal-right {
+  right: -2px;
+}
+
+/* Man hinh hep: le hai ben khong con -> vach chi lam roi mat, an di */
+@media (max-width: 1199.98px) {
+  .ft-pitch-backdrop > * {
+    display: none;
   }
 }
 
