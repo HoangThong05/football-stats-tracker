@@ -29,7 +29,15 @@
     rgba(0, 0, 0, 0.04) 26px,
     rgba(0, 0, 0, 0.04) 52px
   );
-  --ft-body-bg: #f6f8f4;
+  /*
+   * Nen sang la MAT CO ban ngay, khong phai giay trang.
+   *
+   * Truoc day de #f6f8f4 (gan nhu trang) roi ke vach bang muc den mo -> ra may khung
+   * chu nhat xam vo nghia o hai ben le, khong ai doc ra la san bong. Vach voi chi
+   * co nghia khi co mat co xanh do lay.
+   * The (.ft-surface) van trang tinh nen cang noi len ro tren nen nay.
+   */
+  --ft-body-bg: #dce8d7;
   /*
    * Mau MAT PHANG NOI (the, bang, menu). PHAI khac --ft-body-bg, neu khong
    * moi khung noi dung se chim vao nen va ca trang trong phang det - do bong
@@ -38,13 +46,19 @@
   --ft-surface: #ffffff;
   --ft-ink: #12261b;
 
-  /* Quang sang nen. Nen sang de lo vet mau hon nen toi nen alpha thap hon mot bac. */
-  --ft-aurora-1: rgba(46, 125, 79, 0.26);
-  --ft-aurora-2: rgba(180, 83, 9, 0.16);
+  /*
+   * Quang sang nen. Ha manh so voi truoc: quang CAM 0.16 tren nen gan trang lam ca
+   * trang ngoi ngoi nhu bi o vang. Nen da xanh roi thi khong can quang xanh manh nua.
+   */
+  --ft-aurora-1: rgba(46, 125, 79, 0.16);
+  --ft-aurora-2: rgba(180, 83, 9, 0.05);
 
-  /* San bong chim phia sau: vach ke va soc cat co */
-  --ft-pitch-line: rgba(18, 38, 27, 0.08);
-  --ft-mow-stripe: rgba(18, 38, 27, 0.022);
+  /*
+   * San bong chim phia sau. Nen sang -> vach VOI TRANG va soc cat co la vet SANG hon
+   * mat co, dung nhu san that duoi nang. (Nen toi thi nguoc lai, xem duoi.)
+   */
+  --ft-pitch-line: rgba(255, 255, 255, 0.8);
+  --ft-mow-stripe: rgba(255, 255, 255, 0.28);
   --ft-card-shadow: 0 1px 2px rgba(18, 38, 27, 0.07), 0 8px 24px -12px rgba(18, 38, 27, 0.22);
   --ft-radius: 12px;
   --ft-num-font: 'Oswald', 'Be Vietnam Pro', system-ui, sans-serif;
