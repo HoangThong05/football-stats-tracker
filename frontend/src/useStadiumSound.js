@@ -195,6 +195,18 @@ export function useStadiumSound() {
   const [muted, setMuted] = useState(true)
   const ctxRef = useRef(null)
   const noiseRef = useRef(null)
+
+  /*
+   * Buffer nhieu chi dung cho duong TONG HOP. Tao khi thuc su can chu khong tao san:
+   * co file that thi khong bao gio dung toi, khoi giu khong 440KB trong bo nho.
+   *
+   * Chi tao 2,5s roi cho lap khi phat: nhieu trang thi doan nao cung nhu doan nao,
+   * tai khong nghe ra cho noi, ma tiet kiem 2/3 bo nho so voi tao du 8 giay.
+   */
+  const getNoise = (ctx) => {
+    if (!noiseRef.current) noiseRef.current = createNoiseBuffer(ctx, NOISE_SECONDS)
+    return noiseRef.current
+  }
   const sampleRef = useRef(undefined) // undefined = chua thu tai, null = khong co file
 
   useEffect(
@@ -214,9 +226,6 @@ export function useStadiumSound() {
       const Ctx = window.AudioContext || window.webkitAudioContext
       if (!Ctx) return
       ctxRef.current = new Ctx()
-      // Chi tao 2,5s nhieu roi cho lap, thay vi tao du 6,5s: nhieu trang thi doan nao
-      // cung nhu doan nao, tai khong nghe ra cho noi, ma tiet kiem 2/3 bo nho.
-      noiseRef.current = createNoiseBuffer(ctxRef.current, NOISE_SECONDS)
     }
 
     const ctx = ctxRef.current
@@ -232,17 +241,19 @@ export function useStadiumSound() {
     }
 
     if (sampleRef.current) {
+      /*
+       * CO FILE THAT -> phat mot minh no, KHONG chong them nen dam dong tong hop.
+       * Ban thu am that von da co san khong khi san bong; cong them nhieu trang
+       * qua bo loc vao chi ra tieng re, khong ra tieng nguoi reo.
+       */
       const voice = ctx.createBufferSource()
       voice.buffer = sampleRef.current
-      const voiceGain = ctx.createGain()
-      voiceGain.gain.value = 1
-      voice.connect(voiceGain).connect(master)
+      voice.connect(master)
       voice.start()
-      // Co giong that thi ha nen dam dong xuong cho khoi lan at loi
-      playCrowd(ctx, noiseRef.current, master, 0.22)
     } else {
-      playSynthVoice(ctx, noiseRef.current, master)
-      playCrowd(ctx, noiseRef.current, master, 0.34)
+      // Khong co file: giong tong hop tro troi nghe rat mong, can nen dam dong do
+      playSynthVoice(ctx, getNoise(ctx), master)
+      playCrowd(ctx, getNoise(ctx), master, 0.34)
     }
   }, [muted])
 
