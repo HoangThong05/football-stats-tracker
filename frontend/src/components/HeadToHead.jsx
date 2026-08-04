@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { API_BASE } from '../api'
-import { formatKickoff } from '../utils'
+import { formatKickoff, shortTeamName } from '../utils'
 import { useTranslation } from '../i18n'
 
 /** 5 tran gan nhat giua 2 doi. perspectiveTeamId (tuy chon) dung de to mau W/D/L. */
@@ -59,7 +59,7 @@ export default function HeadToHead({ teamAId, teamBId, perspectiveTeamId }) {
                   {formatKickoff(m.utcDate, lang, { includeYear: true })}
                 </span>
                 <span className="flex-grow-1 text-center">
-                  {m.homeTeam} <span className={`fw-bold ${outcomeClass}`}>{m.homeScore} - {m.awayScore}</span> {m.awayTeam}
+                  {shortTeamName(m.homeTeam)} <span className={`fw-bold ${outcomeClass}`}>{m.homeScore} - {m.awayScore}</span> {shortTeamName(m.awayTeam)}
                 </span>
               </div>
             )

@@ -1,3 +1,4 @@
+import { shortTeamName } from '../utils'
 import { useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
@@ -54,7 +55,7 @@ export default function Profile({ token, userEmail, favorites, onBack, onSelectT
                     onClick={() => onSelectTeam(f.teamId)}
                   >
                     {f.teamCrest && <img src={f.teamCrest} alt="" width="22" height="22" loading="lazy" />}
-                    <span className="fw-medium text-truncate">{f.teamName}</span>
+                    <span className="fw-medium text-truncate" title={f.teamName}>{shortTeamName(f.teamName)}</span>
                     <span className="ms-auto text-secondary">›</span>
                   </li>
                 ))}

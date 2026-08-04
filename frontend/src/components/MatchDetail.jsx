@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { API_BASE } from '../api'
-import { formatKickoff } from '../utils'
+import { formatKickoff, shortTeamName } from '../utils'
 import { useTranslation } from '../i18n'
 import Loading from './Loading'
 import HeadToHead from './HeadToHead'
@@ -63,7 +63,7 @@ export default function MatchDetail({ matchId, onBack }) {
                 {match.homeCrest && (
                   <img src={match.homeCrest} alt="" width="44" height="44" loading="lazy" />
                 )}
-                <div className="ft-pitch-team text-truncate mt-1">{match.homeTeam}</div>
+                <div className="ft-pitch-team text-truncate mt-1" title={match.homeTeam}>{shortTeamName(match.homeTeam)}</div>
               </div>
 
               <div className="text-center" style={{ flex: '0 0 auto' }}>
@@ -76,7 +76,7 @@ export default function MatchDetail({ matchId, onBack }) {
                 {match.awayCrest && (
                   <img src={match.awayCrest} alt="" width="44" height="44" loading="lazy" />
                 )}
-                <div className="ft-pitch-team text-truncate mt-1">{match.awayTeam}</div>
+                <div className="ft-pitch-team text-truncate mt-1" title={match.awayTeam}>{shortTeamName(match.awayTeam)}</div>
               </div>
             </div>
           </Pitch3D>

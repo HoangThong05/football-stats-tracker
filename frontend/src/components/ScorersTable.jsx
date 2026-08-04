@@ -1,3 +1,4 @@
+import { shortTeamName } from '../utils'
 import { RANK_MEDALS } from '../constants'
 import { useTranslation } from '../i18n'
 
@@ -42,7 +43,7 @@ export default function ScorersTable({ scorers, onSelectTeam }) {
                   onClick={() => onSelectTeam(s.teamId)}
                 >
                   {s.teamCrest && <img src={s.teamCrest} alt="" width="22" height="22" loading="lazy" />}
-                  <span>{s.teamName}</span>
+                  <span title={s.teamName}>{shortTeamName(s.teamName)}</span>
                 </div>
               </td>
               <td className="text-center">{s.playedMatches ?? '—'}</td>

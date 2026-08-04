@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
-import { formatKickoff } from '../utils'
+import { formatKickoff, shortTeamName } from '../utils'
 import { useTranslation } from '../i18n'
 import BarChart from './BarChart'
 
@@ -27,8 +27,8 @@ export default function PredictionPointsChart({ token }) {
     .map((h) => ({
       label: formatKickoff(h.utcDate, lang),
       value: h.points,
-      homeTeam: h.homeTeam,
-      awayTeam: h.awayTeam,
+      homeTeam: shortTeamName(h.homeTeam),
+      awayTeam: shortTeamName(h.awayTeam),
     }))
 
   if (pointsOverTime.length < 3) return null

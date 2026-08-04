@@ -1,3 +1,4 @@
+import { shortTeamName } from '../utils'
 import { useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
@@ -100,7 +101,7 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
             <div className="d-flex align-items-center gap-4 flex-wrap">
               {team.crest && <img src={team.crest} alt="" className="crest-big" />}
               <div className="flex-grow-1">
-                <h2 className="h3 mb-2 fw-bold">{team.name}</h2>
+                <h2 className="h3 mb-2 fw-bold" title={team.name}>{shortTeamName(team.name)}</h2>
                 <div className="d-flex flex-wrap column-gap-4 row-gap-1">
                   {team.venue && (
                     <div className="text-muted small">

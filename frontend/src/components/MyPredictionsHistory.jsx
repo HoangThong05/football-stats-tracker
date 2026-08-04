@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
-import { formatKickoff } from '../utils'
+import { formatKickoff, shortTeamName } from '../utils'
 import { useTranslation } from '../i18n'
 import { LEAGUES } from '../constants'
 import Loading from './Loading'
@@ -105,7 +105,7 @@ export default function MyPredictionsHistory({ token, onBack }) {
                     className="d-flex align-items-center justify-content-end gap-2 flex-grow-1"
                     style={{ minWidth: 0 }}
                   >
-                    <span className="text-truncate fw-medium">{h.homeTeam}</span>
+                    <span className="text-truncate fw-medium" title={h.homeTeam}>{shortTeamName(h.homeTeam)}</span>
                     {h.homeCrest && <img src={h.homeCrest} alt="" width="20" height="20" loading="lazy" />}
                   </div>
 
@@ -118,7 +118,7 @@ export default function MyPredictionsHistory({ token, onBack }) {
 
                   <div className="d-flex align-items-center gap-2 flex-grow-1" style={{ minWidth: 0 }}>
                     {h.awayCrest && <img src={h.awayCrest} alt="" width="20" height="20" loading="lazy" />}
-                    <span className="text-truncate fw-medium">{h.awayTeam}</span>
+                    <span className="text-truncate fw-medium" title={h.awayTeam}>{shortTeamName(h.awayTeam)}</span>
                   </div>
 
                   <div style={{ minWidth: 96 }} className="text-center">

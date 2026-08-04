@@ -1,3 +1,4 @@
+import { shortTeamName } from '../utils'
 import { useTranslation } from '../i18n'
 
 export default function FavoritesList({ favorites, onSelectTeam, onBack }) {
@@ -24,7 +25,7 @@ export default function FavoritesList({ favorites, onSelectTeam, onBack }) {
                 onClick={() => onSelectTeam(f.teamId)}
               >
                 {f.teamCrest && <img src={f.teamCrest} alt="" width="28" height="28" loading="lazy" />}
-                <span className="fw-medium">{f.teamName}</span>
+                <span className="fw-medium" title={f.teamName}>{shortTeamName(f.teamName)}</span>
                 <span className="ms-auto text-secondary">›</span>
               </li>
             ))}

@@ -1,3 +1,4 @@
+import { shortTeamName } from '../utils'
 import { useEffect, useState } from 'react'
 import { COMPARE_METRICS } from '../constants'
 import { useTranslation } from '../i18n'
@@ -42,7 +43,7 @@ export default function CompareTeams({ rows, onSelectTeam }) {
           <select className="form-select" value={idA ?? ''} onChange={(e) => setIdA(Number(e.target.value))}>
             {rows.map((r) => (
               <option key={r.teamId} value={r.teamId}>
-                {r.teamName}
+                {shortTeamName(r.teamName)}
               </option>
             ))}
           </select>
@@ -51,7 +52,7 @@ export default function CompareTeams({ rows, onSelectTeam }) {
           <select className="form-select" value={idB ?? ''} onChange={(e) => setIdB(Number(e.target.value))}>
             {rows.map((r) => (
               <option key={r.teamId} value={r.teamId}>
-                {r.teamName}
+                {shortTeamName(r.teamName)}
               </option>
             ))}
           </select>
@@ -69,14 +70,14 @@ export default function CompareTeams({ rows, onSelectTeam }) {
               <th style={{ width: '35%' }} role="button" onClick={() => onSelectTeam(teamA.teamId)}>
                 <div className="d-flex align-items-center justify-content-center gap-2">
                   {teamA.crest && <img src={teamA.crest} alt="" width="26" height="26" />}
-                  <span>{teamA.teamName}</span>
+                  <span title={teamA.teamName}>{shortTeamName(teamA.teamName)}</span>
                 </div>
               </th>
               <th style={{ width: '30%' }}>{t('compare_metric_col')}</th>
               <th style={{ width: '35%' }} role="button" onClick={() => onSelectTeam(teamB.teamId)}>
                 <div className="d-flex align-items-center justify-content-center gap-2">
                   {teamB.crest && <img src={teamB.crest} alt="" width="26" height="26" />}
-                  <span>{teamB.teamName}</span>
+                  <span title={teamB.teamName}>{shortTeamName(teamB.teamName)}</span>
                 </div>
               </th>
             </tr>

@@ -1,4 +1,4 @@
-import { formatKickoff } from '../utils'
+import { formatKickoff, shortTeamName } from '../utils'
 import { useTranslation } from '../i18n'
 
 export default function MatchList({ matches, showScore, onSelectMatch }) {
@@ -31,7 +31,7 @@ export default function MatchList({ matches, showScore, onSelectMatch }) {
             </small>
 
             <div className="d-flex align-items-center justify-content-end gap-2 flex-grow-1" style={{ minWidth: 0 }}>
-              <span className="text-truncate fw-medium">{m.homeTeam}</span>
+              <span className="text-truncate fw-medium" title={m.homeTeam}>{shortTeamName(m.homeTeam)}</span>
               {m.homeCrest && <img src={m.homeCrest} alt="" width="22" height="22" loading="lazy" />}
             </div>
 
@@ -41,7 +41,7 @@ export default function MatchList({ matches, showScore, onSelectMatch }) {
 
             <div className="d-flex align-items-center gap-2 flex-grow-1" style={{ minWidth: 0 }}>
               {m.awayCrest && <img src={m.awayCrest} alt="" width="22" height="22" loading="lazy" />}
-              <span className="text-truncate fw-medium">{m.awayTeam}</span>
+              <span className="text-truncate fw-medium" title={m.awayTeam}>{shortTeamName(m.awayTeam)}</span>
             </div>
           </li>
         ))}

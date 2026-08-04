@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { normalizeText } from '../utils'
+import { normalizeText, shortTeamName } from '../utils'
 import { useTranslation } from '../i18n'
 import { RANK_MEDALS } from '../constants'
 import CountUp from './CountUp'
@@ -100,7 +100,7 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
                           </span>
                         )}
                         {r.crest && <img src={r.crest} alt="" width="22" height="22" loading="lazy" />}
-                        <span>{r.teamName}</span>
+                        <span title={r.teamName}>{shortTeamName(r.teamName)}</span>
                       </div>
                     </td>
                     <td className="text-center ft-num">{r.playedGames}</td>
