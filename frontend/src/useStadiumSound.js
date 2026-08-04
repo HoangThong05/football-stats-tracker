@@ -57,13 +57,11 @@ function loadSample(ctx) {
 }
 
 /*
- * Do dai nen tieng dam dong. Khop voi CELEBRATE_MS ben Statue3D.jsx (6500ms) de
- * tieng reo va hoat anh cung bat dau cung ket thuc.
- *
- * Rieng file /siuuu.mp3 thi KHONG bi cat theo con so nay - no phat het do dai that
- * cua no. Neu file dai hon 6,5s thi sua ca hai hang so cho bang do dai file.
+ * Do dai duong TONG HOP (khi khong tim thay file nao). Chi ap dung cho duong nay -
+ * co file that thi do dai lay thang tu chinh file, khong con hang so nao phai
+ * chinh tay moi lan doi file nua.
  */
-const CROWD_SECONDS = 8.0
+const CROWD_SECONDS = 6.0
 
 /** Do dai buffer nhieu trang. Ngan hon CROWD_SECONDS va duoc lap lai khi phat. */
 const NOISE_SECONDS = 2.5
@@ -208,6 +206,7 @@ export function useStadiumSound() {
     return noiseRef.current
   }
   const sampleRef = useRef(undefined) // undefined = chua thu tai, null = khong co file
+  const currentRef = useRef(null) // nguon dang phat, giu de con cat khi bam lai
 
   useEffect(
     () => () => {
@@ -217,14 +216,20 @@ export function useStadiumSound() {
     [],
   )
 
+  /**
+   * Phat tieng an mung.
+   * @returns {Promise<number>} do dai tieng vua phat, tinh bang giay. 0 = khong phat gi
+   *   (dang tat tieng hoac trinh duyet khong ho tro). Ben goi dung so nay de khop
+   *   do dai hoat anh - xem Statue3D.
+   */
   const play = useCallback(async () => {
-    if (muted) return
+    if (muted) return 0
 
     // Tao AudioContext o lan bam dau tien, khong phai luc mount: trinh duyet chan
     // context tao ngoai cu chi nguoi dung, tao som se sinh ra context bi treo.
     if (!ctxRef.current) {
       const Ctx = window.AudioContext || window.webkitAudioContext
-      if (!Ctx) return
+      if (!Ctx) return 0
       ctxRef.current = new Ctx()
     }
 
@@ -240,6 +245,14 @@ export function useStadiumSound() {
       sampleRef.current = await loadSample(ctx)
     }
 
+    /*
+     * Bam lai khi tieng cu con dang chay -> CAT tieng cu di.
+     * File dai 31 giay ma khong cat thi bam ba phat la ba ban ghi chong len nhau,
+     * nghe thanh mo bong bong.
+     */
+    currentRef.current?.stop?.()
+    currentRef.current = null
+
     if (sampleRef.current) {
       /*
        * CO FILE THAT -> phat mot minh no, KHONG chong them nen dam dong tong hop.
@@ -250,11 +263,14 @@ export function useStadiumSound() {
       voice.buffer = sampleRef.current
       voice.connect(master)
       voice.start()
-    } else {
-      // Khong co file: giong tong hop tro troi nghe rat mong, can nen dam dong do
-      playSynthVoice(ctx, getNoise(ctx), master)
-      playCrowd(ctx, getNoise(ctx), master, 0.34)
+      currentRef.current = voice
+      return sampleRef.current.duration
     }
+
+    // Khong co file: giong tong hop tro troi nghe rat mong, can nen dam dong do
+    playSynthVoice(ctx, getNoise(ctx), master)
+    playCrowd(ctx, getNoise(ctx), master, 0.34)
+    return CROWD_SECONDS
   }, [muted])
 
   return { muted, toggleMuted: () => setMuted((v) => !v), play }

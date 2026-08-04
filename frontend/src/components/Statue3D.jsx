@@ -23,11 +23,17 @@ const BASE_TOP_Y = BASE_CENTER_Y + BASE_HEIGHT / 2
 const STATUE_CENTER_Y = BASE_TOP_Y + TARGET_HEIGHT / 2
 
 /*
- * Do dai man an mung. PHAI KHOP voi do dai file /siuuu.mp3 va voi CROWD_SECONDS
- * trong useStadiumSound.js - lech nhau thi tuong dung im giua chung tieng ho,
- * hoac nguoc lai tuong con quay khi da het tieng.
+ * Do dai man an mung khi CHUA BIET tieng dai bao nhieu - dang tat tieng, hoac
+ * lan bam dau tien file chua tai xong. Biet roi thi lay dung do dai file, nen
+ * doi file am thanh khong con phai sua con so nao o day.
  */
-const CELEBRATE_MS = 8000
+const DEFAULT_CELEBRATE_MS = 6000
+
+/* Toc do xoay tinh bang RAD/GIAY (khong phai rad/khung hinh - xem onFrame). */
+const SPIN_IDLE = 0.25 // luc binh thuong, chi de tuong khong dung chet
+const SPIN_PEAK = 1.8 // ngay khi bam nut
+const SPIN_REST = 0.4 // sau khi lang xuong, toc do "trung bay"
+const SPIN_DECAY_S = 1.8 // hang so thoi gian giam tu PEAK ve REST
 
 /**
  * Tượng cầu thủ 3D nạp từ file .glb.
@@ -48,7 +54,8 @@ export default function Statue3D({ height = 320, className = '' }) {
   const [hasAnimation, setHasAnimation] = useState(false)
 
   // Cầu nối sang vòng vẽ: đổi state React không nên chạm vào vòng lặp mỗi khung hình
-  const controlRef = useRef({ playing: true, celebrateUntil: 0 })
+  // celebrateMs: do dai man an mung DANG chay - can no de tinh nguoc ra da troi bao lau
+  const controlRef = useRef({ playing: true, celebrateUntil: 0, celebrateMs: DEFAULT_CELEBRATE_MS })
 
   useEffect(() => {
     controlRef.current.playing = playing
@@ -66,9 +73,21 @@ export default function Statue3D({ height = 320, className = '' }) {
 
   const { muted, toggleMuted, play } = useStadiumSound()
 
-  const celebrate = () => {
-    controlRef.current.celebrateUntil = performance.now() + CELEBRATE_MS
-    play()
+  /*
+   * Chay hoat anh NGAY voi do dai mac dinh, roi keo dai lai khi biet tieng dai bao
+   * nhieu. Cho play() xong moi bat dau thi lan bam dau tien se tre - luc do file
+   * con dang tai. Va vi chi keo DAI ra, mat nhin khong thay cho noi.
+   */
+  const celebrate = async () => {
+    const ctrl = controlRef.current
+    ctrl.celebrateMs = DEFAULT_CELEBRATE_MS
+    ctrl.celebrateUntil = performance.now() + DEFAULT_CELEBRATE_MS
+
+    const seconds = await play()
+    if (seconds > 0) {
+      ctrl.celebrateMs = seconds * 1000
+      ctrl.celebrateUntil = performance.now() + ctrl.celebrateMs
+    }
   }
 
   const { mountRef, failed } = useThreeScene({
@@ -146,23 +165,21 @@ export default function Statue3D({ height = 320, className = '' }) {
        * anh sang that - do bong the tich that su qua nang cho mot hinh trang tri.
        * depthWrite:false de cac non khong cat nhau thanh mang toi.
        */
-      const beams = [-1, 0, 1].map((slot) => {
-        const beam = new THREE.Mesh(
-          new THREE.ConeGeometry(1.5, 7, 32, 1, true),
-          new THREE.MeshBasicMaterial({
-            color: '#ffe6b0',
-            transparent: true,
-            opacity: 0.05,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            side: THREE.DoubleSide,
-          }),
-        )
-        // Non mac dinh dinh o tren, day o duoi - dung luon huong cua den roi xuong
-        beam.position.set(slot * 2.2, BASE_TOP_Y + 3.5, slot * -1.2)
-        scene.add(beam)
-        return beam
-      })
+      // MOT luong duy nhat, roi thang tu tren dinh xuong giua buc
+      const beam = new THREE.Mesh(
+        new THREE.ConeGeometry(1.7, 7, 40, 1, true),
+        new THREE.MeshBasicMaterial({
+          color: '#ffe6b0',
+          transparent: true,
+          opacity: 0.06,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+        }),
+      )
+      // Non mac dinh dinh o tren, day o duoi - dung luon huong cua den roi xuong
+      beam.position.set(0, BASE_TOP_Y + 3.5, 0)
+      scene.add(beam)
 
       /* ===== Hat kim tuyen vang ===== */
 
@@ -355,15 +372,21 @@ export default function Statue3D({ height = 320, className = '' }) {
            *   0,0 - 1,6s : nay len + quay nhanh   (cu an mung)
            *   1,6 - 6,5s : ha dan ve quay cham    (trung bay tuong)
            */
-          const elapsed = celebrating ? (CELEBRATE_MS - (ctrl.celebrateUntil - now)) / 1000 : 0
+          const elapsed = celebrating ? (ctrl.celebrateMs - (ctrl.celebrateUntil - now)) / 1000 : 0
 
-          // Giam dan theo ham mu: nhanh -> cham muot, khong co diem gay
-          const spin = celebrating ? 0.03 + 0.19 * Math.exp(-elapsed / 1.2) : 0.004
-          holder.rotation.y += spin
+          /*
+           * Nhan voi delta -> toc do tinh theo GIAY THAT, khong theo khung hinh.
+           * Cong thang mot so co dinh moi khung se lam man 144Hz quay nhanh gap 2,4
+           * lan man 60Hz, va chay giat moi khi trinh duyet rot khung.
+           */
+          const spin = celebrating
+            ? SPIN_REST + (SPIN_PEAK - SPIN_REST) * Math.exp(-elapsed / SPIN_DECAY_S)
+            : SPIN_IDLE
+          holder.rotation.y += spin * delta
 
           const bounceLeft = Math.max(0, 1 - elapsed / 1.6)
           holder.position.y = celebrating
-            ? Math.abs(Math.sin(now / 90)) * 0.45 * bounceLeft
+            ? Math.abs(Math.sin(now / 120)) * 0.32 * bounceLeft
             : 0
 
           spot.intensity = celebrating ? 90 : 0
@@ -373,9 +396,7 @@ export default function Statue3D({ height = 320, className = '' }) {
           neonMaterial.opacity = celebrating ? 0.9 : 0.45 + Math.sin(now / 700) * 0.12
 
           // Luong den pha day len luc an mung, ngay thuong chi hu hu
-          for (const beam of beams) {
-            beam.material.opacity = celebrating ? 0.16 : 0.05
-          }
+          beam.material.opacity = celebrating ? 0.17 : 0.06
 
           /*
            * Suon len: ban mot loat that day. Sau do moi khung hinh bu them vai hat
