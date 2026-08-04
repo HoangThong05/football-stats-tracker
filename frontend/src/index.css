@@ -59,6 +59,10 @@
    */
   --ft-pitch-line: rgba(255, 255, 255, 0.85);
   --ft-mow-stripe: rgba(255, 255, 255, 0.22);
+
+  /* Khung san khau 3D: xanh san co dam, KHONG ha xuong den (xem .ft-statue-card) */
+  --ft-stage-grad: linear-gradient(160deg, #216541 0%, #123a24 100%);
+  --ft-stage-border: rgba(18, 58, 36, 0.35);
   --ft-card-shadow: 0 1px 2px rgba(18, 38, 27, 0.07), 0 8px 24px -12px rgba(18, 38, 27, 0.22);
   --ft-radius: 12px;
   --ft-num-font: 'Oswald', 'Be Vietnam Pro', system-ui, sans-serif;
@@ -113,6 +117,10 @@
 
   --ft-pitch-line: rgba(255, 255, 255, 0.07);
   --ft-mow-stripe: rgba(255, 255, 255, 0.016);
+
+  /* Nen trang da toi san, khung san khau ha sau them cho tach lop */
+  --ft-stage-grad: linear-gradient(160deg, rgba(15, 61, 38, 0.92) 0%, rgba(11, 20, 16, 0.96) 100%);
+  --ft-stage-border: rgba(255, 255, 255, 0.12);
   --ft-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.75);
 
   --bs-primary: #f0a93a;
@@ -1023,12 +1031,20 @@ body,
 }
 
 /* ---------- Tuong cau thu 3D (the kinh mo) ---------- */
+/*
+ * Khung san khau 3D. PHAI TOI o ca hai giao dien, khong the sang theo trang:
+ * luong den pha va vong neon dung AdditiveBlending - phep CONG anh sang. Nen sang
+ * thi cong them sang nua khong ra gi, ca hai hieu ung se bien mat sach.
+ *
+ * Nen chi chinh duoc SAC do: giao dien sang dung xanh san co dam (cung ho mau voi
+ * trang) thay vi troi ve den, de khung khong nhu mot lo thung khoet tren mat co.
+ */
 .ft-statue-card {
   position: relative;
   border-radius: var(--ft-radius);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(160deg, rgba(15, 61, 38, 0.92) 0%, rgba(11, 20, 16, 0.96) 100%);
+  border: 1px solid var(--ft-stage-border);
+  background: var(--ft-stage-grad);
   backdrop-filter: blur(10px);
   box-shadow: var(--ft-shadow-rest);
 }
