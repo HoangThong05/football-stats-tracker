@@ -66,6 +66,9 @@ const CROWD_SECONDS = 6.0
 /** Do dai buffer nhieu trang. Ngan hon CROWD_SECONDS va duoc lap lai khi phat. */
 const NOISE_SECONDS = 2.5
 
+/** Am luong khi bat tieng. Nut loa dao qua lai giua muc nay va 0. */
+const MASTER_GAIN = 0.9
+
 /** Nhieu trang dung lam "loi" cua tieng dam dong va am /s/. Tao 1 lan roi dung lai. */
 function createNoiseBuffer(ctx, seconds) {
   const length = Math.floor(ctx.sampleRate * seconds)
@@ -207,14 +210,44 @@ export function useStadiumSound() {
   }
   const sampleRef = useRef(undefined) // undefined = chua thu tai, null = khong co file
   const currentRef = useRef(null) // nguon dang phat, giu de con cat khi bam lai
+  const masterRef = useRef(null) // nut am luong CHUNG, song suot doi component
 
   useEffect(
     () => () => {
       ctxRef.current?.close?.()
       ctxRef.current = null
+      masterRef.current = null
     },
     [],
   )
+
+  /*
+   * Bam nut loa GIUA CHUNG tieng dang phat thi phai im NGAY.
+   *
+   * Chi chan o dau vao cua play() la khong du: AudioBufferSourceNode da start() roi
+   * thi cu the chay het 31 giay, co doi muted thanh true no cung khong biet.
+   * Vi vay moi am thanh deu di qua mot nut am luong chung, tat = ha nut do ve 0.
+   *
+   * Ha bang setTargetAtTime chu khong gan thang 0: cat bien do dot ngot sinh ra
+   * tieng "tach" o loa.
+   */
+  useEffect(() => {
+    const ctx = ctxRef.current
+    const master = masterRef.current
+    if (!ctx || !master) return undefined
+
+    master.gain.cancelScheduledValues(ctx.currentTime)
+    master.gain.setTargetAtTime(muted ? 0 : MASTER_GAIN, ctx.currentTime, 0.015)
+
+    if (!muted) return undefined
+
+    // Da im roi thi cat han nguon di cho do ton CPU, nhung phai doi ramp xong
+    const timer = setTimeout(() => {
+      currentRef.current?.stop?.()
+      currentRef.current = null
+    }, 80)
+    return () => clearTimeout(timer)
+  }, [muted])
 
   /**
    * Phat tieng an mung.
@@ -231,14 +264,22 @@ export function useStadiumSound() {
       const Ctx = window.AudioContext || window.webkitAudioContext
       if (!Ctx) return 0
       ctxRef.current = new Ctx()
+      masterRef.current = ctxRef.current.createGain()
+      masterRef.current.gain.value = MASTER_GAIN
+      masterRef.current.connect(ctxRef.current.destination)
     }
 
     const ctx = ctxRef.current
+    const master = masterRef.current
     ctx.resume?.()
 
-    const master = ctx.createGain()
-    master.gain.value = 0.9
-    master.connect(ctx.destination)
+    /*
+     * Mo lai sau khi tat: keo am luong ve muc thuong.
+     * Effect theo doi `muted` khong lam duoc viec nay o lan bam DAU TIEN, vi luc no
+     * chay thi masterRef con chua ton tai - context chi duoc tao o day.
+     */
+    master.gain.cancelScheduledValues(ctx.currentTime)
+    master.gain.setTargetAtTime(MASTER_GAIN, ctx.currentTime, 0.015)
 
     // Thu tai file that dung MOT lan, ket qua nho lai cho cac lan bam sau
     if (sampleRef.current === undefined) {
