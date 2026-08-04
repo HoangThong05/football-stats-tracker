@@ -77,6 +77,14 @@ export function useThreeScene({ width, height, build, alpha = true }) {
       }) => {
         if (disposed) return
 
+        /*
+         * PHAI GIU KHOP VOI DANH SACH DESTRUCTURE O TREN.
+         *
+         * Them ten o tren ma quen them o day thi KHONG co loi bien dich: thuoc tinh
+         * chi la undefined, den luc `new THREE.CaiGiDo()` moi nem loi - ma cho nem lai
+         * nam trong .then(), bi .catch() ben duoi nuot mat va chuyen sang failed=true.
+         * Ket qua: ca canh 3D lang le bien mat, khong mot dong log. Da dinh dung bay nay.
+         */
         const THREE = {
           Scene,
           WebGLRenderer,
@@ -84,15 +92,24 @@ export function useThreeScene({ width, height, build, alpha = true }) {
           OrthographicCamera,
           Mesh,
           MeshStandardMaterial,
+          MeshBasicMaterial,
           IcosahedronGeometry,
           PlaneGeometry,
           CylinderGeometry,
           SphereGeometry,
           CapsuleGeometry,
+          RingGeometry,
+          CircleGeometry,
+          ConeGeometry,
           AmbientLight,
           DirectionalLight,
           SpotLight,
           BufferAttribute,
+          BufferGeometry,
+          Points,
+          PointsMaterial,
+          AdditiveBlending,
+          DoubleSide,
           CanvasTexture,
           AnimationMixer,
           Group,
