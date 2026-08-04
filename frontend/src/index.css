@@ -640,6 +640,146 @@ body,
   }
 }
 
+/* ---------- Thanh ty so chay ngang ---------- */
+.ft-ticker {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  background: var(--ft-pitch-strong);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.8rem;
+  overflow: hidden;
+}
+
+.ft-ticker-label {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  background: var(--ft-accent);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+[data-bs-theme='dark'] .ft-ticker-label {
+  color: var(--ft-on-accent);
+}
+
+/* Khung cat: bang chay bên trong rong hon nhieu, phan thua bi cat o day */
+.ft-ticker-viewport {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+}
+
+@keyframes ft-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* -50% = het dung ban sao thu nhat, ban sao thu hai vao dung cho xuat phat */
+    transform: translateX(-50%);
+  }
+}
+
+.ft-ticker-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  animation: ft-ticker-scroll 45s linear infinite;
+}
+
+.ft-ticker:hover .ft-ticker-track {
+  animation-play-state: paused;
+}
+
+/*
+ * Ban sao thu hai phai TAN BIEN khoi cay layout, neu khong ca cum se thanh MOT o flex
+ * duy nhat va bang chay hong. Bootstrap 5 khong co lop d-contents nen tu khai bao.
+ */
+.ft-ticker-dup {
+  display: contents;
+}
+
+.ft-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 18px;
+  white-space: nowrap;
+  cursor: pointer;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ft-ticker-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ft-ticker-league {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+}
+
+.ft-ticker-score {
+  font-family: var(--ft-num-font);
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ft-ticker-score-live {
+  background: var(--ft-accent);
+  color: #fff;
+}
+
+[data-bs-theme='dark'] .ft-ticker-score-live {
+  color: var(--ft-on-accent);
+}
+
+@keyframes ft-ticker-blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.ft-ticker-live {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #ff6b6b;
+  animation: ft-ticker-blink 1.4s ease-in-out infinite;
+}
+
+.ft-ticker-ft {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  opacity: 0.5;
+}
+
+/*
+ * Giam chuyen dong: dung bang chay lai. Quy tac chung o cuoi file rut moi animation
+ * ve 0.001ms, ap vao day se lam bang NHAY thang toi -50% roi dung - mat nua danh sach.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .ft-ticker-track {
+    animation: none !important;
+  }
+
+  .ft-ticker-viewport {
+    overflow-x: auto;
+  }
+}
+
 /* ---------- Tab chon giai dau ---------- */
 .ft-league-tabs {
   display: flex;
@@ -921,6 +1061,110 @@ body,
   border: 2px solid rgba(255, 255, 255, 0.18);
   border-top-color: var(--ft-accent-bright);
   animation: ft-spin 0.7s linear infinite;
+}
+
+/* ---------- The chi so kieu FUT de goc canvas 3D ---------- */
+.ft-fut-card {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 2;
+  width: 132px;
+  padding: 10px 10px 8px;
+  border-radius: 10px;
+  overflow: hidden;
+  pointer-events: none;
+  color: #2a1e05;
+  background: linear-gradient(155deg, #f7e08a 0%, #d9a441 42%, #b8801f 72%, #f0d078 100%);
+  border: 1px solid rgba(255, 240, 190, 0.75);
+  box-shadow: 0 8px 22px -8px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+/* Vet sang quet cheo qua the, lap lai - tao cam giac be mat kim loai */
+@keyframes ft-fut-shine {
+  0% {
+    transform: translateX(-140%) rotate(18deg);
+  }
+  55%,
+  100% {
+    transform: translateX(240%) rotate(18deg);
+  }
+}
+
+.ft-fut-shine {
+  position: absolute;
+  top: -30%;
+  left: 0;
+  width: 45%;
+  height: 160%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.65),
+    transparent
+  );
+  animation: ft-fut-shine 4.5s var(--ft-ease) infinite;
+}
+
+.ft-fut-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 1;
+}
+
+.ft-fut-rating {
+  font-family: var(--ft-num-font);
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.ft-fut-position {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+}
+
+.ft-fut-name {
+  margin: 4px 0 6px;
+  padding-top: 5px;
+  border-top: 1px solid rgba(90, 62, 10, 0.35);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.ft-fut-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px 6px;
+}
+
+.ft-fut-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.ft-fut-stat-value {
+  font-family: var(--ft-num-font);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.ft-fut-stat-key {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+}
+
+/* Man hinh hep: canvas 3D da nho, the se che mat tuong -> bo di */
+@media (max-width: 575.98px) {
+  .ft-fut-card {
+    display: none;
+  }
 }
 
 .ft-statue-bar {

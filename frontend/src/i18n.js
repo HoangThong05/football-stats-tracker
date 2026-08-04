@@ -161,6 +161,12 @@ export const translations = {
     statue_pause: '⏸ Dừng',
     statue_play: '▶ Chạy',
     statue_drag_hint: 'Kéo để xoay · Cuộn để phóng to',
+    statue_sound_on: 'Bật tiếng cổ vũ',
+    statue_sound_off: 'Tắt tiếng cổ vũ',
+
+    ticker_label: 'Tỷ số',
+    ticker_live: 'TRỰC TIẾP',
+    ticker_finished: 'KT',
     statue_missing_file: 'Chưa có file ronaldo.glb trong thư mục public/',
 
     season_label_prefix: 'Mùa',
@@ -417,6 +423,12 @@ export const translations = {
     statue_pause: '⏸ Pause',
     statue_play: '▶ Play',
     statue_drag_hint: 'Drag to rotate · Scroll to zoom',
+    statue_sound_on: 'Turn on crowd sound',
+    statue_sound_off: 'Turn off crowd sound',
+
+    ticker_label: 'Scores',
+    ticker_live: 'LIVE',
+    ticker_finished: 'FT',
     statue_missing_file: 'No ronaldo.glb found in the public/ folder',
 
     season_label_prefix: 'Season',

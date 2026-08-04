@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useThreeScene } from '../useThreeScene'
 import { useTranslation } from '../i18n'
+import FutCard from './FutCard'
+import { useStadiumSound } from '../useStadiumSound'
 
 /**
  * File .glb đặt trong frontend/public/ — KHÔNG phải resources/static của backend.
@@ -57,8 +59,11 @@ export default function Statue3D({ height = 320, className = '' }) {
     return () => observer.disconnect()
   }, [])
 
+  const { muted, toggleMuted, play } = useStadiumSound()
+
   const celebrate = () => {
     controlRef.current.celebrateUntil = performance.now() + CELEBRATE_MS
+    play()
   }
 
   const { mountRef, failed } = useThreeScene({
@@ -81,12 +86,124 @@ export default function Statue3D({ height = 320, className = '' }) {
       spot.position.set(0, 6, 3)
       scene.add(spot)
 
+      /* ===== Buc co: dia co + vach voi + vong neon ===== */
+
       const base = new THREE.Mesh(
-        new THREE.CylinderGeometry(1.3, 1.5, BASE_HEIGHT, 48),
-        new THREE.MeshStandardMaterial({ color: '#2b3a31', roughness: 0.85 }),
+        new THREE.CylinderGeometry(1.5, 1.62, BASE_HEIGHT, 64),
+        new THREE.MeshStandardMaterial({ color: '#1e5e37', roughness: 0.95 }),
       )
       base.position.y = BASE_CENTER_Y
       scene.add(base)
+
+      /*
+       * Vach voi nam NGAY TREN mat buc, khong phai o dung cao do mat buc:
+       * trung cao do se sinh z-fighting, vach nhap nhay khi xoay camera.
+       */
+      const LINE_Y = BASE_TOP_Y + 0.002
+      const chalk = new THREE.MeshBasicMaterial({
+        color: '#eaf5ee',
+        transparent: true,
+        opacity: 0.5,
+        side: THREE.DoubleSide,
+      })
+
+      const addFlatRing = (inner, outer, material, y = LINE_Y) => {
+        const ring = new THREE.Mesh(new THREE.RingGeometry(inner, outer, 72), material)
+        ring.rotation.x = -Math.PI / 2 // RingGeometry nam trong mat phang XY -> lat cho nam ngang
+        ring.position.y = y
+        scene.add(ring)
+        return ring
+      }
+
+      addFlatRing(1.4, 1.45, chalk) // duong bien
+      addFlatRing(0.62, 0.66, chalk) // vong tron giua san
+
+      const centerSpot = new THREE.Mesh(new THREE.CircleGeometry(0.07, 20), chalk)
+      centerSpot.rotation.x = -Math.PI / 2
+      centerSpot.position.y = LINE_Y
+      scene.add(centerSpot)
+
+      // Vong neon vang quay quanh chan - sang han len luc an mung
+      const neonMaterial = new THREE.MeshBasicMaterial({
+        color: '#ffc24b',
+        transparent: true,
+        opacity: 0.55,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      })
+      const neonRing = addFlatRing(1.52, 1.68, neonMaterial, BASE_TOP_Y + 0.004)
+
+      /* ===== Luong den pha tu tren xuong ===== */
+
+      /*
+       * "Luong sang" chi la hinh non trong suot cong mau (AdditiveBlending), khong phai
+       * anh sang that - do bong the tich that su qua nang cho mot hinh trang tri.
+       * depthWrite:false de cac non khong cat nhau thanh mang toi.
+       */
+      const beams = [-1, 0, 1].map((slot) => {
+        const beam = new THREE.Mesh(
+          new THREE.ConeGeometry(1.5, 7, 32, 1, true),
+          new THREE.MeshBasicMaterial({
+            color: '#ffe6b0',
+            transparent: true,
+            opacity: 0.05,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            side: THREE.DoubleSide,
+          }),
+        )
+        // Non mac dinh dinh o tren, day o duoi - dung luon huong cua den roi xuong
+        beam.position.set(slot * 2.2, BASE_TOP_Y + 3.5, slot * -1.2)
+        scene.add(beam)
+        return beam
+      })
+
+      /* ===== Hat kim tuyen vang ===== */
+
+      const PARTICLE_COUNT = 500
+      const PARTICLE_LIFE_S = 1.8
+      const DEAD_Y = -999 // day hat da tat ra khoi khung thay vi xoa khoi buffer
+
+      const positions = new Float32Array(PARTICLE_COUNT * 3)
+      const velocities = new Float32Array(PARTICLE_COUNT * 3)
+      const lives = new Float32Array(PARTICLE_COUNT)
+
+      for (let i = 0; i < PARTICLE_COUNT; i += 1) positions[i * 3 + 1] = DEAD_Y
+
+      const particleGeometry = new THREE.BufferGeometry()
+      particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+
+      const particles = new THREE.Points(
+        particleGeometry,
+        new THREE.PointsMaterial({
+          color: '#ffc24b',
+          size: 0.07,
+          transparent: true,
+          opacity: 0.95,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        }),
+      )
+      scene.add(particles)
+
+      /** Ban toan bo hat len tu vien buc, moi hat mot huong va mot toc do khac nhau. */
+      const burstParticles = () => {
+        for (let i = 0; i < PARTICLE_COUNT; i += 1) {
+          const angle = Math.random() * Math.PI * 2
+          const radius = 0.3 + Math.random() * 1.2
+          positions[i * 3] = Math.cos(angle) * radius
+          positions[i * 3 + 1] = BASE_TOP_Y
+          positions[i * 3 + 2] = Math.sin(angle) * radius
+
+          velocities[i * 3] = Math.cos(angle) * (0.4 + Math.random() * 0.9)
+          velocities[i * 3 + 1] = 2.6 + Math.random() * 2.6
+          velocities[i * 3 + 2] = Math.sin(angle) * (0.4 + Math.random() * 0.9)
+
+          lives[i] = PARTICLE_LIFE_S
+        }
+        particleGeometry.attributes.position.needsUpdate = true
+      }
 
       // Xoay cả nhóm thay vì xoay model, để tâm xoay luôn nằm giữa bục
       const holder = new THREE.Group()
@@ -204,19 +321,54 @@ export default function Statue3D({ height = 320, className = '' }) {
           setStatus('fallback')
         })
 
+      let wasCelebrating = false
+
       return {
         camera,
         onFrame: () => {
           const delta = clock.getDelta()
+          const now = performance.now()
           const ctrl = controlRef.current
-          const celebrating = performance.now() < ctrl.celebrateUntil
+          const celebrating = now < ctrl.celebrateUntil
 
           if (mixer && ctrl.playing) mixer.update(delta)
 
           // Ăn mừng: quay tít + nảy lên + đèn rọi bừng sáng
           holder.rotation.y += celebrating ? 0.22 : 0.004
-          holder.position.y = celebrating ? Math.abs(Math.sin(performance.now() / 90)) * 0.45 : 0
+          holder.position.y = celebrating ? Math.abs(Math.sin(now / 90)) * 0.45 : 0
           spot.intensity = celebrating ? 90 : 0
+
+          // Vong neon quay deu, an mung thi sang bung
+          neonRing.rotation.z += delta * 0.6
+          neonMaterial.opacity = celebrating ? 0.9 : 0.45 + Math.sin(now / 700) * 0.12
+
+          // Luong den pha day len luc an mung, ngay thuong chi hu hu
+          for (const beam of beams) {
+            beam.material.opacity = celebrating ? 0.16 : 0.05
+          }
+
+          // Bat dau an mung -> ban hat (chi ban dung mot lan o suon len)
+          if (celebrating && !wasCelebrating) burstParticles()
+          wasCelebrating = celebrating
+
+          // Hat bay: van toc + trong luc, het tuoi thi day ra ngoai khung
+          let anyAlive = false
+          for (let i = 0; i < PARTICLE_COUNT; i += 1) {
+            if (lives[i] <= 0) continue
+            anyAlive = true
+            lives[i] -= delta
+
+            if (lives[i] <= 0) {
+              positions[i * 3 + 1] = DEAD_Y
+              continue
+            }
+
+            velocities[i * 3 + 1] -= 5.2 * delta // trong luc, nhe hon that cho hat bay lau
+            positions[i * 3] += velocities[i * 3] * delta
+            positions[i * 3 + 1] += velocities[i * 3 + 1] * delta
+            positions[i * 3 + 2] += velocities[i * 3 + 2] * delta
+          }
+          if (anyAlive) particleGeometry.attributes.position.needsUpdate = true
 
           controls?.update()
         },
@@ -236,6 +388,9 @@ export default function Statue3D({ height = 320, className = '' }) {
       <div ref={boxRef} className="ft-statue3d" style={{ height }}>
         <div ref={mountRef} className="ft-statue3d-canvas" aria-hidden="true" />
 
+        {/* Chi hien khi mo hinh da len - the vang tren nen trong lam luc dang tai trong ky */}
+        {status !== 'loading' && <FutCard />}
+
         {status === 'loading' && (
           <div className="ft-statue-loading">
             <span className="ft-statue-spinner" aria-hidden="true" />
@@ -254,6 +409,15 @@ export default function Statue3D({ height = 320, className = '' }) {
             {playing ? t('statue_pause') : t('statue_play')}
           </button>
         )}
+
+        <button
+          className="btn btn-sm btn-outline-secondary"
+          onClick={toggleMuted}
+          title={muted ? t('statue_sound_on') : t('statue_sound_off')}
+          aria-pressed={!muted}
+        >
+          {muted ? '🔇' : '🔊'}
+        </button>
 
         <span className="ft-statue-hint">
           {status === 'fallback' ? t('statue_missing_file') : t('statue_drag_hint')}

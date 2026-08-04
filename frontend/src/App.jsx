@@ -29,6 +29,7 @@ import TodayMatches from "./components/TodayMatches";
 import Football3D from "./components/Football3D";
 import Statue3D from "./components/Statue3D";
 import PitchBackdrop from "./components/PitchBackdrop";
+import LiveTicker from "./components/LiveTicker";
 
 export default function App() {
   const [league, setLeague] = useState("PL");
@@ -296,7 +297,7 @@ export default function App() {
         <nav
           ref={navbarRef}
           className={
-            scrolled ? "ft-navbar py-2 mb-4 scrolled" : "ft-navbar py-2 mb-4"
+            scrolled ? "ft-navbar py-2 scrolled" : "ft-navbar py-2"
           }
         >
           <div className="container" style={{ maxWidth: 960 }}>
@@ -465,7 +466,12 @@ export default function App() {
           </div>
         </nav>
 
-        <div className="container pb-4" style={{ maxWidth: 960 }}>
+        {/* Dan ngay duoi navbar, khong co khe ho - navbar da bo mb-4 de nhuong cho.
+            Trai mua giai thi LiveTicker tu tra null, luc do khoang cach van nhu cu
+            nho mt-4 cua khoi noi dung ben duoi. */}
+        <LiveTicker onSelectMatch={goToMatch} />
+
+        <div className="container mt-4 pb-4" style={{ maxWidth: 960 }}>
           {sessionExpired && !userEmail && (
             <div className="alert alert-warning d-flex align-items-center gap-2 ft-fade">
               <span style={{ fontSize: "1.2rem" }}>🔒</span>
