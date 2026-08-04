@@ -1,44 +1,31 @@
 /**
- * The chi so kieu EA Sports FUT, de goc canvas 3D.
+ * Bang ten kieu the FUT, de goc canvas 3D.
  *
- * CANH BAO: TOAN BO chi so o day la SO GO CUNG, khong lay tu API nao.
- * Du an khong co nguon du lieu chi so cau thu - football-data.org chi tra ten/vi tri/
- * quoc tich, khong he co OVR/PAC/SHO. Day thuan tuy la trang tri di kem mo hinh 3D,
- * dung nham tuong la so lieu that va cung dung nhan ban cho cau thu khac.
+ * TRUOC DAY cho la the chi so (OVR 99, PAC, SHO...) nhung TOAN BO so do la go tay:
+ * du an khong co nguon du lieu chi so cau thu nao. Dat so bia len mot trang web ma
+ * gia tri nam o thong ke that thi chinh no la thu duy nhat noi doi.
+ *
+ * Gio chi giu nhung thong tin DUNG va khong bao gio cu: ten, so ao, quoc tich.
  */
-const RATING = 99
-const NAME = 'RONALDO'
-const POSITION = 'ST'
+const NAME_FIRST = 'CRISTIANO'
+const NAME_LAST = 'RONALDO'
+const SHIRT_NUMBER = 7
+const COUNTRY = 'Bồ Đào Nha'
+const COUNTRY_EN = 'Portugal'
 
-const STATS = [
-  { key: 'PAC', value: 89 },
-  { key: 'SHO', value: 93 },
-  { key: 'PAS', value: 81 },
-  { key: 'DRI', value: 85 },
-  { key: 'DEF', value: 35 },
-  { key: 'PHY', value: 77 },
-]
-
-export default function FutCard() {
+export default function FutCard({ lang = 'vi' }) {
   return (
     <div className="ft-fut-card" aria-hidden="true">
       <div className="ft-fut-shine" />
 
-      <div className="ft-fut-head">
-        <div className="ft-fut-rating">{RATING}</div>
-        <div className="ft-fut-position">{POSITION}</div>
+      <div className="ft-fut-number">{SHIRT_NUMBER}</div>
+
+      <div className="ft-fut-name">
+        <span className="ft-fut-name-first">{NAME_FIRST}</span>
+        <span className="ft-fut-name-last">{NAME_LAST}</span>
       </div>
 
-      <div className="ft-fut-name">{NAME}</div>
-
-      <div className="ft-fut-stats">
-        {STATS.map((s) => (
-          <div key={s.key} className="ft-fut-stat">
-            <span className="ft-fut-stat-value">{s.value}</span>
-            <span className="ft-fut-stat-key">{s.key}</span>
-          </div>
-        ))}
-      </div>
+      <div className="ft-fut-country">{lang === 'en' ? COUNTRY_EN : COUNTRY}</div>
     </div>
   )
 }

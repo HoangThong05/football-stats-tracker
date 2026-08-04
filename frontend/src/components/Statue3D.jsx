@@ -46,7 +46,7 @@ const SPIN_DECAY_S = 1.8 // hang so thoi gian giam tu PEAK ve REST
  * chỗ này không bao giờ trống trơn.
  */
 export default function Statue3D({ height = 320, className = '' }) {
-  const { t } = useTranslation()
+  const { t, lang } = useTranslation()
   const boxRef = useRef(null)
   const [width, setWidth] = useState(0)
   const [status, setStatus] = useState('loading') // loading | ready | fallback
@@ -443,7 +443,7 @@ export default function Statue3D({ height = 320, className = '' }) {
         <div ref={mountRef} className="ft-statue3d-canvas" aria-hidden="true" />
 
         {/* Chi hien khi mo hinh da len - the vang tren nen trong lam luc dang tai trong ky */}
-        {status !== 'loading' && <FutCard />}
+        {status !== 'loading' && <FutCard lang={lang} />}
 
         {status === 'loading' && (
           <div className="ft-statue-loading">

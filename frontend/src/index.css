@@ -1069,8 +1069,13 @@ body,
   top: 14px;
   left: 14px;
   z-index: 2;
-  width: 132px;
-  padding: 10px 10px 8px;
+  /*
+   * Rong theo NOI DUNG chu khong dat cung 132px. Ban cu dat cung nen ba cot chi so
+   * can ~138px bi overflow:hidden xen cut duoi ("81 PAS" mat duoi).
+   * min-width giu the khong qua gay khi ten ngan.
+   */
+  min-width: 118px;
+  padding: 10px 14px 9px;
   border-radius: 10px;
   overflow: hidden;
   pointer-events: none;
@@ -1106,58 +1111,40 @@ body,
   animation: ft-fut-shine 4.5s var(--ft-ease) infinite;
 }
 
-.ft-fut-head {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  line-height: 1;
-}
-
-.ft-fut-rating {
+.ft-fut-number {
   font-family: var(--ft-num-font);
-  font-size: 2rem;
+  font-size: 2.4rem;
   font-weight: 700;
-}
-
-.ft-fut-position {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  opacity: 0.85;
+  line-height: 0.95;
 }
 
 .ft-fut-name {
-  margin: 4px 0 6px;
-  padding-top: 5px;
-  border-top: 1px solid rgba(90, 62, 10, 0.35);
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-}
-
-.ft-fut-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 3px 6px;
-}
-
-.ft-fut-stat {
   display: flex;
-  align-items: baseline;
-  gap: 3px;
-}
-
-.ft-fut-stat-value {
-  font-family: var(--ft-num-font);
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.ft-fut-stat-key {
-  font-size: 0.58rem;
-  font-weight: 700;
+  flex-direction: column;
+  margin: 5px 0 5px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(90, 62, 10, 0.35);
   letter-spacing: 0.04em;
-  opacity: 0.75;
+}
+
+/* Ten goi nho va nhat hon HO, dung thu bac giong the cau thu that */
+.ft-fut-name-first {
+  font-size: 0.62rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.ft-fut-name-last {
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.ft-fut-country {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  opacity: 0.78;
 }
 
 /* Man hinh hep: canvas 3D da nho, the se che mat tuong -> bo di */
