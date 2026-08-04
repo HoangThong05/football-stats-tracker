@@ -22,7 +22,12 @@ const BASE_TOP_Y = BASE_CENTER_Y + BASE_HEIGHT / 2
 /** Tâm tượng sau khi dựng — camera ngắm vào đây để tượng nằm giữa khung. */
 const STATUE_CENTER_Y = BASE_TOP_Y + TARGET_HEIGHT / 2
 
-const CELEBRATE_MS = 1600
+/*
+ * Do dai man an mung. PHAI KHOP voi do dai file /siuuu.mp3 va voi CROWD_SECONDS
+ * trong useStadiumSound.js - lech nhau thi tuong dung im giua chung tieng ho,
+ * hoac nguoc lai tuong con quay khi da het tieng.
+ */
+const CELEBRATE_MS = 8000
 
 /**
  * Tượng cầu thủ 3D nạp từ file .glb.
@@ -187,9 +192,19 @@ export default function Statue3D({ height = 320, className = '' }) {
       )
       scene.add(particles)
 
-      /** Ban toan bo hat len tu vien buc, moi hat mot huong va mot toc do khac nhau. */
-      const burstParticles = () => {
-        for (let i = 0; i < PARTICLE_COUNT; i += 1) {
+      /**
+       * Cho song toi da `limit` hat DANG TAT, ban len tu vien buc.
+       *
+       * Chi dung lai hat da tat chu khong reset ca mang: an mung keo dai 6,5s ma hat
+       * chi song 1,8s, nen moi khung hinh phai bu them vai hat cho voi phun lien tuc.
+       * Reset ca mang se lam nhung hat dang bay giua chung bi keo tut ve chan tuong.
+       */
+      const emitParticles = (limit) => {
+        let emitted = 0
+        for (let i = 0; i < PARTICLE_COUNT && emitted < limit; i += 1) {
+          if (lives[i] > 0) continue
+          emitted += 1
+
           const angle = Math.random() * Math.PI * 2
           const radius = 0.3 + Math.random() * 1.2
           positions[i * 3] = Math.cos(angle) * radius
@@ -333,9 +348,24 @@ export default function Statue3D({ height = 320, className = '' }) {
 
           if (mixer && ctrl.playing) mixer.update(delta)
 
-          // Ăn mừng: quay tít + nảy lên + đèn rọi bừng sáng
-          holder.rotation.y += celebrating ? 0.22 : 0.004
-          holder.position.y = celebrating ? Math.abs(Math.sin(now / 90)) * 0.45 : 0
+          /*
+           * An mung dai 6,5s nen phai CHIA MAN chu khong quay tit deu tu dau chi cuoi -
+           * xoay 14 vong lien tuc thi chong mat va het hap dan tu giay thu hai.
+           *
+           *   0,0 - 1,6s : nay len + quay nhanh   (cu an mung)
+           *   1,6 - 6,5s : ha dan ve quay cham    (trung bay tuong)
+           */
+          const elapsed = celebrating ? (CELEBRATE_MS - (ctrl.celebrateUntil - now)) / 1000 : 0
+
+          // Giam dan theo ham mu: nhanh -> cham muot, khong co diem gay
+          const spin = celebrating ? 0.03 + 0.19 * Math.exp(-elapsed / 1.2) : 0.004
+          holder.rotation.y += spin
+
+          const bounceLeft = Math.max(0, 1 - elapsed / 1.6)
+          holder.position.y = celebrating
+            ? Math.abs(Math.sin(now / 90)) * 0.45 * bounceLeft
+            : 0
+
           spot.intensity = celebrating ? 90 : 0
 
           // Vong neon quay deu, an mung thi sang bung
@@ -347,8 +377,11 @@ export default function Statue3D({ height = 320, className = '' }) {
             beam.material.opacity = celebrating ? 0.16 : 0.05
           }
 
-          // Bat dau an mung -> ban hat (chi ban dung mot lan o suon len)
-          if (celebrating && !wasCelebrating) burstParticles()
+          /*
+           * Suon len: ban mot loat that day. Sau do moi khung hinh bu them vai hat
+           * de voi phun chay suot man an mung thay vi tat ngum sau 1,8s.
+           */
+          if (celebrating) emitParticles(wasCelebrating ? 8 : PARTICLE_COUNT)
           wasCelebrating = celebrating
 
           // Hat bay: van toc + trong luc, het tuoi thi day ra ngoai khung
