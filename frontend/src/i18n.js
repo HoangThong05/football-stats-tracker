@@ -132,6 +132,16 @@ export const translations = {
     compare_legend_highlight: 'tô xanh',
     compare_legend_suffix: '. Bấm vào tên đội để xem chi tiết.',
 
+    radar_title: '📊 Biểu đồ so sánh',
+    radar_attack: 'Tấn công',
+    radar_defence: 'Phòng ngự',
+    radar_win_rate: 'Hiệu suất thắng',
+    radar_form: 'Phong độ',
+    radar_goals: 'Số bàn thắng',
+    radar_per_match: 'bàn/trận',
+    radar_note:
+      'Mỗi trục lấy đội mạnh nhất giải làm mốc, nên hình cho thấy đội đứng ở đâu trong cả giải. Trục Phòng ngự đã đảo chiều: càng rộng là thủng lưới càng ít. Rê chuột vào đỉnh để xem số liệu thật.',
+
     h2h_title: '⚔ Lịch sử đối đầu',
     h2h_empty: 'Chưa có dữ liệu đối đầu giữa 2 đội này.',
     h2h_loading: 'Đang tải lịch sử đối đầu...',
@@ -393,6 +403,16 @@ export const translations = {
     compare_legend_prefix: 'The better metric is',
     compare_legend_highlight: 'highlighted in green',
     compare_legend_suffix: '. Click a team name to view its details.',
+
+    radar_title: '📊 Comparison chart',
+    radar_attack: 'Attack',
+    radar_defence: 'Defence',
+    radar_win_rate: 'Win rate',
+    radar_form: 'Form',
+    radar_goals: 'Goals scored',
+    radar_per_match: 'per match',
+    radar_note:
+      "Each axis is scaled against the league's best, so the shape shows where a team sits within the whole league. The Defence axis is inverted: wider means fewer goals conceded. Hover a vertex to see the real figure.",
 
     h2h_title: '⚔ Head-to-Head',
     h2h_empty: 'No head-to-head data between these two teams yet.',

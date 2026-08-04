@@ -2,7 +2,9 @@ import { shortTeamName } from '../utils'
 import { useEffect, useState } from 'react'
 import { COMPARE_METRICS } from '../constants'
 import { useTranslation } from '../i18n'
+import { buildRadarModel } from '../radarMetrics'
 import HeadToHead from './HeadToHead'
+import RadarChart from './RadarChart'
 
 export default function CompareTeams({ rows, onSelectTeam }) {
   const { t } = useTranslation()
@@ -36,6 +38,11 @@ export default function CompareTeams({ rows, onSelectTeam }) {
   const cellClass = (metric, side) =>
     winnerOf(metric) === side ? 'fw-bold text-success' : 'text-secondary'
 
+  // Moc chuan hoa lay tu CA GIAI (rows), khong phai chi hai doi dang chon
+  const radar = buildRadarModel(rows, t)
+  const radarA = radar.build(teamA)
+  const radarB = radar.build(teamB)
+
   return (
     <div>
       <div className="row g-2 mb-3">
@@ -61,6 +68,42 @@ export default function CompareTeams({ rows, onSelectTeam }) {
 
       {idA === idB && (
         <div className="alert alert-warning py-2">{t('compare_same_team_warning')}</div>
+      )}
+
+      {radar.hasData && (
+      <div className="ft-card p-3 mb-3">
+        <div className="fw-semibold mb-1">{t('radar_title')}</div>
+        <div className="ft-radar-wrap">
+          <RadarChart
+            axes={radar.axes}
+            ariaLabel={`${t('radar_title')}: ${shortTeamName(teamA.teamName)} / ${shortTeamName(teamB.teamName)}`}
+            series={[
+              {
+                name: shortTeamName(teamA.teamName),
+                color: 'var(--ft-radar-a)',
+                values: radarA.values,
+                raw: radarA.raw,
+              },
+              {
+                name: shortTeamName(teamB.teamName),
+                color: 'var(--ft-radar-b)',
+                values: radarB.values,
+                raw: radarB.raw,
+              },
+            ]}
+          />
+
+          <div className="ft-radar-legend">
+            <span className="ft-radar-key" style={{ '--ft-radar-color': 'var(--ft-radar-a)' }}>
+              {shortTeamName(teamA.teamName)}
+            </span>
+            <span className="ft-radar-key" style={{ '--ft-radar-color': 'var(--ft-radar-b)' }}>
+              {shortTeamName(teamB.teamName)}
+            </span>
+          </div>
+        </div>
+        <p className="ft-legend text-secondary mb-0 mt-1">{t('radar_note')}</p>
+      </div>
       )}
 
       <div className="ft-card table-responsive">

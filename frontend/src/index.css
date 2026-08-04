@@ -63,6 +63,14 @@
   /* Khung san khau 3D: xanh san co dam, KHONG ha xuong den (xem .ft-statue-card) */
   --ft-stage-grad: linear-gradient(160deg, #216541 0%, #123a24 100%);
   --ft-stage-border: rgba(18, 58, 36, 0.35);
+
+  /*
+   * Hai mau cho bieu do radar. Cap cam/xanh duong lay theo bang Okabe-Ito - phan
+   * biet duoc voi CA BA dang mu mau pho bien. Tuyet doi khong dung cap do/xanh la:
+   * nguoi mu mau do-luc se thay hai da giac trung mau nhau.
+   */
+  --ft-radar-a: #b45309;
+  --ft-radar-b: #0072b2;
   --ft-card-shadow: 0 1px 2px rgba(18, 38, 27, 0.07), 0 8px 24px -12px rgba(18, 38, 27, 0.22);
   --ft-radius: 12px;
   --ft-num-font: 'Oswald', 'Be Vietnam Pro', system-ui, sans-serif;
@@ -121,6 +129,10 @@
   /* Nen trang da toi san, khung san khau ha sau them cho tach lop */
   --ft-stage-grad: linear-gradient(160deg, rgba(15, 61, 38, 0.92) 0%, rgba(11, 20, 16, 0.96) 100%);
   --ft-stage-border: rgba(255, 255, 255, 0.12);
+
+  /* Van cap Okabe-Ito nhung ban sang hon, de noi tren nen toi */
+  --ft-radar-a: #f0a93a;
+  --ft-radar-b: #56b4e9;
   --ft-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.75);
 
   --bs-primary: #f0a93a;
@@ -1703,6 +1715,80 @@ tr[role='button']:hover img,
 
 .ft-auth-icon {
   animation: ft-icon-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ---------- Bieu do radar so sanh 2 doi (SVG thuan) ---------- */
+.ft-radar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.ft-radar {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  overflow: visible; /* nhan truc nam ngoai vung ve, cat di la mat chu */
+}
+
+.ft-radar-grid {
+  fill: none;
+  stroke: var(--bs-border-color-translucent);
+  stroke-width: 1;
+}
+
+.ft-radar-spoke {
+  stroke: var(--bs-border-color-translucent);
+  stroke-width: 1;
+}
+
+/*
+ * Hai da giac PHAI trong suot de nhin duoc phan chong nhau - do moi la cho
+ * dang xem: hai doi hon kem nhau o truc nao.
+ */
+.ft-radar-area {
+  fill: var(--ft-radar-color);
+  fill-opacity: 0.22;
+  stroke: var(--ft-radar-color);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.ft-radar-dot {
+  fill: var(--ft-radar-color);
+  stroke: var(--ft-surface);
+  stroke-width: 1.5;
+  cursor: help; /* bao hieu co tooltip khi ro chuot */
+}
+
+.ft-radar-label {
+  font-size: 9.5px;
+  font-weight: 600;
+  fill: var(--bs-secondary-color);
+}
+
+.ft-radar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.ft-radar-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ft-radar-key::before {
+  content: '';
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  background: var(--ft-radar-color);
 }
 
 /* ---------- Bieu do cot don gian (HTML/CSS, khong dung thu vien) ---------- */
