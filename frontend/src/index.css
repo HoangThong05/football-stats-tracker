@@ -31,6 +31,10 @@
   );
   --ft-body-bg: #f6f8f4;
   --ft-ink: #12261b;
+
+  /* Quang sang nen: giu THAT mo, nen sang de lo vet mau hon nen toi */
+  --ft-aurora-1: rgba(46, 125, 79, 0.1);
+  --ft-aurora-2: rgba(180, 83, 9, 0.07);
   --ft-card-shadow: 0 1px 2px rgba(18, 38, 27, 0.07), 0 8px 24px -12px rgba(18, 38, 27, 0.22);
   --ft-radius: 12px;
   --ft-num-font: 'Oswald', 'Be Vietnam Pro', system-ui, sans-serif;
@@ -76,6 +80,10 @@
   --ft-header-grad: linear-gradient(120deg, #071a11 0%, #0f3d26 55%, #163524 100%);
   --ft-body-bg: #0b1410;
   --ft-ink: #f4f7f2;
+
+  /* Nen toi: dam hon mot chut moi thay, nhung van duoi nguong gay xao nhang */
+  --ft-aurora-1: rgba(46, 125, 79, 0.16);
+  --ft-aurora-2: rgba(240, 169, 58, 0.09);
   --ft-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.75);
 
   --bs-primary: #f0a93a;
@@ -88,8 +96,36 @@
 }
 
 body {
+  position: relative;
   background: var(--ft-body-bg);
   font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/**
+ * Hai quang sang rat mo troi cham phia sau toan trang, cho nen bot phang.
+ *
+ * position:fixed + z-index:-1 -> nam duoi moi noi dung, khong an chuot, khong cuon theo.
+ * Chu ky 32s va bien do nho: de mat cam nhan duoc chieu sau chu khong thay no "dang chay".
+ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -25%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 32% at 18% 22%, var(--ft-aurora-1), transparent 70%),
+    radial-gradient(34% 30% at 82% 14%, var(--ft-aurora-2), transparent 70%);
+  animation: ft-aurora 32s var(--ft-ease) infinite alternate;
+}
+
+@keyframes ft-aurora {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(2%, 2.5%, 0) scale(1.08);
+  }
 }
 
 /* So lieu/ty so: Oswald condensed, dung font-variant-numeric cho cot thang hang */
@@ -127,16 +163,22 @@ body,
 }
 
 /**
- * Quang sang lan toa tu tam nut khi bam (ripple).
- * Dung ::after co san nen khong phai them the/JS nao.
+ * Quang sang lan toa tu DUNG DIEM BAM (ripple).
+ *
+ * --ft-rx/--ft-ry do App.jsx ghi vao luc pointerdown; chua bam bao gio thi mac dinh
+ * 50% 50%, tuc lan toa tu tam - dung nhu cu, nen ban phim/cham deu khong bi vo.
+ *
+ * aspect-ratio giu quang luon TRON: neu dat ca width lan height theo % thi nut chu
+ * nhat se cho ra hinh bau duc.
  */
 .btn::after {
   content: '';
   position: absolute;
-  inset: 0;
-  margin: auto;
+  top: var(--ft-ry, 50%);
+  left: var(--ft-rx, 50%);
   width: 0;
-  height: 0;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   background: currentColor;
   opacity: 0;
@@ -144,11 +186,9 @@ body,
 }
 
 .btn:active::after {
-  width: 220%;
-  height: 220%;
+  width: 260%;
   opacity: 0.16;
-  transition: width var(--ft-slow) var(--ft-ease), height var(--ft-slow) var(--ft-ease),
-    opacity var(--ft-slow) var(--ft-ease);
+  transition: width var(--ft-slow) var(--ft-ease), opacity var(--ft-slow) var(--ft-ease);
 }
 
 :root {
@@ -178,6 +218,37 @@ body,
 .ft-navbar.scrolled {
   box-shadow: 0 8px 32px rgba(15, 61, 38, 0.55);
   backdrop-filter: blur(10px) saturate(1.2);
+}
+
+/**
+ * Vet sang "den pha" di theo con tro tren dai san co.
+ * JS chi ghi --ft-glow-x/y (xem App.jsx); tat o may khong co chuot that.
+ */
+.ft-navbar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    240px circle at var(--ft-glow-x, 50%) var(--ft-glow-y, 50%),
+    rgba(255, 255, 255, 0.12),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity var(--ft-base) var(--ft-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ft-navbar:hover::after {
+    opacity: 1;
+  }
+}
+
+/* Noi dung navbar phai nam TREN lop vet sang, neu khong se bi phu mo len chu */
+.ft-navbar > .container {
+  position: relative;
+  z-index: 1;
 }
 
 /*
@@ -291,6 +362,49 @@ body,
   --bs-btn-hover-bg: #fde7c7;
   --bs-btn-hover-border-color: #fde7c7;
   font-weight: 600;
+}
+
+/* ---------- Nut theo doi doi bong: an mung khi vua bat ---------- */
+.ft-follow-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+@keyframes ft-follow-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.ft-follow-btn.ft-follow-burst {
+  animation: ft-follow-pop 0.45s var(--ft-spring);
+}
+
+/* Vong sang lan ra roi tan - "danh dau" hanh dong vua thanh cong */
+@keyframes ft-follow-ring {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+.ft-follow-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--bs-border-radius, 8px);
+  border: 2px solid var(--ft-accent-bright);
+  pointer-events: none;
+  animation: ft-follow-ring 0.55s var(--ft-ease) forwards;
 }
 
 /* ---------- Menu tai khoan (gop Ho so/Yeu thich/Lich su/Quan tri/Dang xuat) ---------- */
@@ -462,6 +576,7 @@ body,
 
 /* ---------- Tab chon che do xem (segmented control) ---------- */
 .ft-view-tabs {
+  position: relative; /* moc cho vien truot ::before */
   display: inline-flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -471,7 +586,32 @@ body,
   border: 1px solid var(--bs-border-color-translucent);
 }
 
+/**
+ * Vien "thuoc" truot tu tab cu sang tab moi. Kich thuoc/vi tri do useSlidingIndicator
+ * do va ghi vao --ft-ind-*; o day chi viec ve va cho no truot.
+ *
+ * Dung transform (khong dung left/top) de trinh duyet chay tren GPU.
+ */
+.ft-view-tabs::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--ft-ind-w, 0);
+  height: var(--ft-ind-h, 0);
+  transform: translate(var(--ft-ind-x, 0), var(--ft-ind-y, 0));
+  opacity: var(--ft-ind-o, 0);
+  border-radius: 9px;
+  background: var(--bs-body-bg);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+  pointer-events: none;
+  transition: transform var(--ft-base) var(--ft-ease), width var(--ft-base) var(--ft-ease),
+    height var(--ft-base) var(--ft-ease), opacity var(--ft-fast) var(--ft-ease);
+}
+
 .ft-view-tabs .btn {
+  position: relative; /* nam tren vien truot */
+  z-index: 1;
   --bs-btn-border-radius: 9px;
   --bs-btn-border-color: transparent;
   --bs-btn-color: var(--bs-secondary-color);
@@ -481,10 +621,16 @@ body,
   font-weight: 600;
 }
 
+/* Nen cua tab dang chon gio do vien truot lo -> nut chi con doi mau chu */
 .ft-view-tabs .btn.active {
-  background: var(--bs-body-bg);
+  background: transparent;
   color: var(--ft-accent-strong);
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+  box-shadow: none;
+}
+
+/* Ro chuot vao tab dang chon thi khong to nen nua, keo do vien truot */
+.ft-view-tabs .btn.active:hover {
+  background: transparent;
 }
 
 /* ---------- Dropdown chon mua giai (canh tab chon view) ---------- */
@@ -972,6 +1118,43 @@ tr[role='button']:hover img,
   filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.2));
 }
 
+/* ---------- Thanh diem duoi con so o cot DIEM ----------
+   Ty le --ft-pts-ratio (0..1) do JSX ghi vao: diem doi / diem doi dau bang.
+   Ve bang scaleX chu khong doi width -> chay tren GPU, khong gay reflow ca bang. */
+.ft-points-cell {
+  position: relative;
+}
+
+.ft-points-cell::before,
+.ft-points-cell::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 4px;
+  height: 3px;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* Rai nen mo lam "duong ray" de thay ro phan con thieu */
+.ft-points-cell::before {
+  background: var(--bs-tertiary-bg);
+}
+
+.ft-points-cell::after {
+  background: linear-gradient(90deg, var(--ft-accent) 0%, var(--ft-accent-bright) 100%);
+  transform-origin: left center;
+  transform: scaleX(var(--ft-pts-ratio, 0));
+  animation: ft-pts-grow var(--ft-slow) var(--ft-ease) both;
+}
+
+@keyframes ft-pts-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
 /* ---------- Vua pha luoi: 3 hang dau ---------- */
 @keyframes ft-medal-pop {
   0% {
@@ -1310,5 +1493,15 @@ tr[role='button']:hover img,
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+
+  /*
+   * Hai lop trang tri thuan tuy: tat han thay vi de dung yen.
+   * Quy tac tren chi lam chung DUNG LAI - quang sang nen se ket o khung cuoi,
+   * con vet sang navbar thanh dom sang chet cung giua thanh, nhin nhu loi hien thi.
+   */
+  body::before,
+  .ft-navbar::after {
+    display: none;
   }
 }

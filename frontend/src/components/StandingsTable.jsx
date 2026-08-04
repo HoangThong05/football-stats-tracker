@@ -47,6 +47,9 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
   // Chi hien cot phong do khi thuc su co du lieu (dau mua giai se chua co)
   const hasForm = rows.some((r) => parseForm(r.form).length > 0)
 
+  // Moc de ve thanh diem: doi dan dau = thanh day. Tranh chia 0 luc dau mua.
+  const maxPoints = rows.reduce((max, r) => Math.max(max, r.points), 0)
+
   return (
     <div>
       <input
@@ -110,8 +113,15 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
                     <td className="text-center ft-num">{r.goalsFor}</td>
                     <td className="text-center ft-num">{r.goalsAgainst}</td>
                     <td className="text-center ft-num">{r.goalDifference}</td>
-                    {/* Chi cot DIEM dem tang dan: dem het moi cot se thanh mo mat */}
-                    <td className="text-center fw-bold ft-num fs-5">
+                    {/*
+                      Chi cot DIEM dem tang dan: dem het moi cot se thanh mo mat.
+                      Thanh mo duoi con so cho thay khoang cach diem so voi doi dau bang -
+                      doc duoc ca bang trong mot cai liec, khong phai tru nham.
+                    */}
+                    <td
+                      className="text-center fw-bold ft-num fs-5 ft-points-cell"
+                      style={{ '--ft-pts-ratio': maxPoints ? r.points / maxPoints : 0 }}
+                    >
                       <CountUp value={r.points} />
                     </td>
                     {hasForm && (

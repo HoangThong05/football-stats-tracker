@@ -9,6 +9,7 @@ import {
 } from "./api";
 import { LEAGUES, VIEWS } from "./constants";
 import { LanguageContext, translations } from "./i18n";
+import { useSlidingIndicator } from "./useSlidingIndicator";
 import Loading from "./components/Loading";
 import AuthPanel from "./components/AuthPanel";
 import AdminUsers from "./components/AdminUsers";
@@ -70,6 +71,10 @@ export default function App() {
   // Tra tu dien theo ngon ngu hien tai; rot ve tieng Viet neu thieu key, roi rot ve chinh key
   const t = (key) => translations[lang]?.[key] ?? translations.vi[key] ?? key;
 
+  // Vien truot trong thanh chon che do xem. Do lai khi doi tab HOAC doi ngon ngu
+  // (nhan tieng Anh dai ngan khac tieng Viet -> nut rong khac -> vien phai chinh theo).
+  const viewTabsRef = useSlidingIndicator(`${view}-${lang}`);
+
   // Bootstrap 5.3 doi giao dien toi khi <html data-bs-theme="dark">
   useEffect(() => {
     document.documentElement.setAttribute("data-bs-theme", theme);
@@ -107,6 +112,59 @@ export default function App() {
     const observer = new ResizeObserver(apply);
     observer.observe(nav);
     return () => observer.disconnect();
+  }, []);
+
+  /**
+   * Vet sang den pha di theo con tro tren navbar.
+   * Chi ghi 2 bien CSS (--ft-glow-x/y), phan ve de CSS lo -> khong gay reflow.
+   * Bo qua o may khong co chuot that hoac khi nguoi dung bat "giam chuyen dong".
+   */
+  useEffect(() => {
+    const nav = navbarRef.current;
+    if (!nav) return undefined;
+
+    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!finePointer || reduceMotion) return undefined;
+
+    let frame = 0;
+
+    // Gop nhieu su kien chuot vao 1 khung hinh -> khong tinh toan thua
+    const onMove = (e) => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        const r = nav.getBoundingClientRect();
+        nav.style.setProperty("--ft-glow-x", `${e.clientX - r.left}px`);
+        nav.style.setProperty("--ft-glow-y", `${e.clientY - r.top}px`);
+      });
+    };
+
+    nav.addEventListener("pointermove", onMove);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      nav.removeEventListener("pointermove", onMove);
+    };
+  }, []);
+
+  /**
+   * Ghi diem bam vao --ft-rx/--ft-ry de gon song lan ra tu dung ngon tay/con tro
+   * (xem .btn::after), thay vi luc nao cung tu tam nut.
+   *
+   * Bat o cap document nen nut nao them sau nay cung tu co, khong phai sua gi.
+   * Bam bang ban phim khong co toa do -> bo qua, CSS tu rot ve tam nut.
+   */
+  useEffect(() => {
+    const onPointerDown = (e) => {
+      const btn = e.target.closest?.(".btn");
+      if (!btn) return;
+      const r = btn.getBoundingClientRect();
+      btn.style.setProperty("--ft-rx", `${e.clientX - r.left}px`);
+      btn.style.setProperty("--ft-ry", `${e.clientY - r.top}px`);
+    };
+
+    document.addEventListener("pointerdown", onPointerDown, { passive: true });
+    return () => document.removeEventListener("pointerdown", onPointerDown);
   }, []);
 
   const loadViewData = () => {
@@ -497,7 +555,7 @@ export default function App() {
               </div>
 
               <div className="d-flex align-items-center flex-wrap gap-2 mb-4">
-                <div className="ft-view-tabs">
+                <div className="ft-view-tabs" ref={viewTabsRef}>
                   {VIEWS.map((v) => (
                     <button
                       key={v.key}
@@ -536,8 +594,10 @@ export default function App() {
                 </div>
               )}
 
+              {/* Doi key -> React thay the ca cay con -> hieu ung xuat hien chay lai.
+                  Co ca season, neu khong thi doi mua giai se thay so lang le, khong co chuyen canh. */}
               {!loading && !error && (
-                <div className="ft-fade" key={`${league}-${view}`}>
+                <div className="ft-fade" key={`${league}-${view}-${season ?? "auto"}`}>
                   {view === "standings" && (
                     <StandingsTable
                       rows={data}

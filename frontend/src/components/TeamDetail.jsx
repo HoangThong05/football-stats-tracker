@@ -41,6 +41,8 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [followBusy, setFollowBusy] = useState(false)
+  // Chi bat khi BAT theo doi (khong bat luc bo theo doi): an mung, khong phai bao tang
+  const [followBurst, setFollowBurst] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -77,6 +79,7 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
     request
       .then((res) => {
         if (!res.ok) throw new Error(`Loi ${res.status}`)
+        if (!isFollowing) setFollowBurst(true)
         onFavoritesChange()
       })
       .finally(() => setFollowBusy(false))
@@ -130,13 +133,29 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
               </div>
 
               {token ? (
-                <button
-                  className={isFollowing ? 'btn btn-warning fw-semibold' : 'btn btn-outline-light fw-semibold'}
-                  onClick={toggleFollow}
-                  disabled={followBusy}
-                >
-                  {isFollowing ? t('team_following') : t('team_follow')}
-                </button>
+                /*
+                 * Vong tia phai la the RIENG ben canh nut, khong the dung ::before cua nut:
+                 * .btn co overflow:hidden (de gon song khong tran ra) nen vong tia lan
+                 * ra ngoai se bi cat cut.
+                 */
+                <span className="ft-follow-wrap">
+                  <button
+                    className={`btn fw-semibold ft-follow-btn${
+                      isFollowing ? ' btn-warning' : ' btn-outline-light'
+                    }${followBurst ? ' ft-follow-burst' : ''}`}
+                    onClick={toggleFollow}
+                    disabled={followBusy}
+                  >
+                    {isFollowing ? t('team_following') : t('team_follow')}
+                  </button>
+                  {followBurst && (
+                    <span
+                      className="ft-follow-ring"
+                      aria-hidden="true"
+                      onAnimationEnd={() => setFollowBurst(false)}
+                    />
+                  )}
+                </span>
               ) : (
                 <span className="text-muted small">{t('team_login_to_follow')}</span>
               )}
