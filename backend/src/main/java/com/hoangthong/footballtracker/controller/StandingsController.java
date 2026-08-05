@@ -36,6 +36,8 @@ public class StandingsController {
         StandingsService.Result result = service.getStandings(code.toUpperCase(), season);
         return ResponseEntity.ok()
                 .header("X-Season-Label", result.seasonLabel() != null ? result.seasonLabel() : "")
+                // Ngay khai mac mua giai (ISO yyyy-MM-dd) - frontend dung de dem nguoc luc trai mua
+                .header("X-Season-Start", result.seasonStart() != null ? result.seasonStart() : "")
                 .body(result.rows());
     }
 }

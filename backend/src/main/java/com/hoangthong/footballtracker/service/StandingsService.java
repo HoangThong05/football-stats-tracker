@@ -41,7 +41,7 @@ public class StandingsService {
             // Vd chon mua qua cu ma football-data.org khong co du lieu -> coi nhu rong,
             // khong de loi 500 lan ra frontend.
             log.warn("Khong lay duoc bang xep hang giai {} (season={}): {}", competitionCode, season, ex.getMessage());
-            return new Result(List.of(), season != null ? SeasonLabel.ofStartYear(season) : null);
+            return new Result(List.of(), season != null ? SeasonLabel.ofStartYear(season) : null, null);
         }
 
         // football-data.org tra ve nhieu block (TOTAL / HOME / AWAY). Ta chi lay TOTAL.
@@ -77,10 +77,16 @@ public class StandingsService {
             boolean anyDataPlayed = rows.stream().anyMatch(r -> r.playedGames() > 0);
             seasonLabel = SeasonLabel.of(response.season(), anyDataPlayed);
         }
-        return new Result(rows, seasonLabel);
+        String seasonStart = response.season() != null ? response.season().startDate() : null;
+        return new Result(rows, seasonLabel, seasonStart);
     }
 
-    /** rows: du lieu tra ve nguyen JSON body; seasonLabel: gan vao header X-Season-Label (xem StandingsController). */
-    public record Result(List<StandingRow> rows, String seasonLabel) {
+    /**
+     * rows: du lieu tra ve nguyen JSON body.
+     * seasonLabel + seasonStart: gan vao header (xem StandingsController) chu KHONG boc
+     * chung vao body - frontend dang doc thang mang tu response.json(), doi thanh object
+     * se lam vo StandingsTable, CompareTeams va moi cho khac dung du lieu nay.
+     */
+    public record Result(List<StandingRow> rows, String seasonLabel, String seasonStart) {
     }
 }

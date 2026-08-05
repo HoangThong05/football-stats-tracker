@@ -179,6 +179,13 @@ export const translations = {
     ticker_finished: 'KT',
     statue_missing_file: 'Chưa có file ronaldo.glb trong thư mục public/',
 
+    break_title: '⏳ Mùa giải mới khởi tranh',
+    break_days: 'ngày nữa',
+    break_recap_title: 'Nhìn lại mùa',
+    break_champion: 'Vô địch',
+    break_top_scorer: 'Vua phá lưới',
+    break_goals: 'bàn',
+
     season_label_prefix: 'Mùa',
     season_current_suffix: 'hiện tại',
 
@@ -450,6 +457,13 @@ export const translations = {
     ticker_live: 'LIVE',
     ticker_finished: 'FT',
     statue_missing_file: 'No ronaldo.glb found in the public/ folder',
+
+    break_title: '⏳ New season kicks off',
+    break_days: 'days to go',
+    break_recap_title: 'Looking back at',
+    break_champion: 'Champions',
+    break_top_scorer: 'Top scorer',
+    break_goals: 'goals',
 
     season_label_prefix: 'Season',
     season_current_suffix: 'current',

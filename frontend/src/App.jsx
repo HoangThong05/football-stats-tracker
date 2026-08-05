@@ -30,6 +30,7 @@ import Football3D from "./components/Football3D";
 import Statue3D from "./components/Statue3D";
 import PitchBackdrop from "./components/PitchBackdrop";
 import LiveTicker from "./components/LiveTicker";
+import SeasonBreak from "./components/SeasonBreak";
 
 export default function App() {
   const [league, setLeague] = useState("PL");
@@ -39,6 +40,7 @@ export default function App() {
   // (suy tu seasonLabel cua lan fetch tu dong gan nhat), dung de dung danh sach 2 mua truoc do.
   const [season, setSeason] = useState(null);
   const [autoSeasonYear, setAutoSeasonYear] = useState(null);
+  const [seasonStart, setSeasonStart] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
@@ -185,6 +187,8 @@ export default function App() {
           const label = res.headers.get("X-Season-Label") || null;
           const year = label ? parseInt(label.split("/")[0], 10) : NaN;
           if (!Number.isNaN(year)) setAutoSeasonYear(year);
+          // Ngay khai mac mua giai, dung de dem nguoc luc trai mua (xem SeasonBreak)
+          setSeasonStart(res.headers.get("X-Season-Start") || null);
         }
         return res.json();
       })
@@ -595,6 +599,13 @@ export default function App() {
                   </select>
                 )}
               </div>
+
+              {/* Chi hien trong ky nghi giua hai mua - tu an khi giai da khoi tranh */}
+              <SeasonBreak
+                league={league}
+                seasonStart={seasonStart}
+                onSelectTeam={setSelectedTeamId}
+              />
 
               {loading && <Loading />}
               {error && (

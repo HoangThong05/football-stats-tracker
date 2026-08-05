@@ -28,7 +28,12 @@ public class WebCorsConfig {
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         // Cho phep frontend doc header tuy chinh nay qua fetch (mac dinh trinh duyet chi
         // cho JS doc mot so header "don gian", header tu dat phai khai bao rieng o day).
-        config.setExposedHeaders(List.of("X-Season-Label"));
+        /*
+         * Header tu dat PHAI khai bao o day. Khong co trong danh sach nay thi trinh duyet
+         * VAN nhan duoc header nhung CHAN JavaScript doc - res.headers.get() tra ve null
+         * ma khong bao loi gi, rat kho lan ra.
+         */
+        config.setExposedHeaders(List.of("X-Season-Label", "X-Season-Start"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", config);

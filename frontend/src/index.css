@@ -1717,6 +1717,118 @@ tr[role='button']:hover img,
   animation: ft-icon-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ---------- The nghi giua hai mua giai ---------- */
+.ft-season-break {
+  background: linear-gradient(135deg, var(--ft-pitch-strong) 0%, var(--ft-pitch) 100%);
+  border-color: transparent;
+  color: #fff;
+}
+
+.ft-season-break-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ft-season-break-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ft-accent-bright);
+}
+
+.ft-season-break-date {
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.ft-season-break-count {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.ft-season-break-days {
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ft-accent-bright);
+}
+
+.ft-season-break-unit {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ft-season-break-recap {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.ft-season-break-recap-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 6px;
+}
+
+.ft-season-break-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+}
+
+.ft-season-break-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* Chi o doi vo dich moi bam duoc (dan sang trang doi) */
+.ft-season-break-item[role='button'] {
+  border-radius: 8px;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  transition: background-color var(--ft-fast) var(--ft-ease);
+}
+
+.ft-season-break-item[role='button']:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ft-season-break-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.ft-season-break-item-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ft-season-break-item-value {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+/* Chu phu trong the nay nam tren nen xanh dam -> phai sang len, khong theo mau chung */
+.ft-season-break .text-secondary {
+  color: rgba(255, 255, 255, 0.66) !important;
+  font-weight: 600;
+}
+
 /* ---------- Bieu do radar so sanh 2 doi (SVG thuan) ---------- */
 .ft-radar-wrap {
   display: flex;
