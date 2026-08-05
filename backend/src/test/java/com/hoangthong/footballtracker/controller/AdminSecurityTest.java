@@ -83,7 +83,8 @@ class AdminSecurityTest {
 
     @Test
     void api_cong_khai_van_goi_duoc_khi_chua_dang_nhap() throws Exception {
-        when(standingsService.getStandings("PL", null)).thenReturn(new StandingsService.Result(List.of(), null));
+        when(standingsService.getStandings("PL", null))
+                .thenReturn(new StandingsService.Result(List.of(), null, null));
 
         mockMvc.perform(get("/api/standings/PL"))
                 .andExpect(status().isOk());
