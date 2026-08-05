@@ -35,6 +35,11 @@ const SPIN_PEAK = 1.8 // ngay khi bam nut
 const SPIN_REST = 0.4 // sau khi lang xuong, toc do "trung bay"
 const SPIN_DECAY_S = 1.8 // hang so thoi gian giam tu PEAK ve REST
 
+/* Man mo the pack: tong do dai, va thoi diem CHOP sang giua man. */
+const REVEAL_TOTAL_S = 2.6
+const REVEAL_FLASH_S = 0.6
+export const REVEAL_TOTAL_MS = REVEAL_TOTAL_S * 1000
+
 /**
  * Tượng cầu thủ 3D nạp từ file .glb.
  *
@@ -55,7 +60,31 @@ export default function Statue3D({ height = 320, className = '' }) {
 
   // Cầu nối sang vòng vẽ: đổi state React không nên chạm vào vòng lặp mỗi khung hình
   // celebrateMs: do dai man an mung DANG chay - can no de tinh nguoc ra da troi bao lau
-  const controlRef = useRef({ playing: true, celebrateUntil: 0, celebrateMs: DEFAULT_CELEBRATE_MS })
+  // revealStart: moc bat dau man mo pack (performance.now), 0 = khong chay
+  const controlRef = useRef({
+    playing: true,
+    celebrateUntil: 0,
+    celebrateMs: DEFAULT_CELEBRATE_MS,
+    revealStart: 0,
+  })
+
+  const [revealing, setRevealing] = useState(false)
+
+  /*
+   * Nguoi dung bat "giam chuyen dong" -> useThreeScene chi ve DUNG MOT khung hinh
+   * roi dung han vong lap. Man reveal se ket o khung do: tuong thu nho ve 0 va
+   * KHONG BAO GIO lon lai, tuc CR7 bien mat vinh vien. Bat buoc phai an nut di.
+   */
+  const [canReveal] = useState(
+    () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  )
+
+  const openPack = () => {
+    if (!canReveal) return
+    controlRef.current.revealStart = performance.now()
+    setRevealing(true)
+    setTimeout(() => setRevealing(false), REVEAL_TOTAL_MS)
+  }
 
   useEffect(() => {
     controlRef.current.playing = playing
@@ -98,13 +127,22 @@ export default function Statue3D({ height = 320, className = '' }) {
       camera.position.set(0, STATUE_CENTER_Y + 0.9, 6.2)
       camera.lookAt(0, STATUE_CENTER_Y, 0) // OrbitControls chua tai xong van ngam dung cho
 
-      scene.add(new THREE.AmbientLight(0xffffff, 1.2))
+      // Giu tham chieu ca ba den: man mo pack can vặn toi roi bat sang tro lai
+      const ambient = new THREE.AmbientLight(0xffffff, 1.2)
+      scene.add(ambient)
       const key = new THREE.DirectionalLight(0xffd9a0, 2.2) // đèn pha ngả vàng
       key.position.set(3, 5, 4)
       scene.add(key)
       const rim = new THREE.DirectionalLight(0x9fe0bb, 0.9)
       rim.position.set(-4, 2, -3)
       scene.add(rim)
+
+      // Do sang goc, de con nhan he so lam mo trong man reveal
+      const BASE_LIGHTS = [
+        [ambient, ambient.intensity],
+        [key, key.intensity],
+        [rim, rim.intensity],
+      ]
       // Đèn rọi này bừng sáng lúc ăn mừng
       const spot = new THREE.SpotLight(0xffc24b, 0, 20, Math.PI / 5, 0.4)
       spot.position.set(0, 6, 3)
@@ -237,6 +275,59 @@ export default function Statue3D({ height = 320, className = '' }) {
         particleGeometry.attributes.position.needsUpdate = true
       }
 
+      /* ===== Khoi san khau (chi dung trong man mo pack) ===== */
+
+      /*
+       * Hat khoi can vien MEM, khong phai o vuong. PointsMaterial khong co san
+       * hinh tron nao nen tu ve mot vet mo bang canvas roi dung lam texture -
+       * re hon nhieu so voi keo them mot file anh ve.
+       */
+      const smokeCanvas = document.createElement('canvas')
+      smokeCanvas.width = 64
+      smokeCanvas.height = 64
+      const sctx = smokeCanvas.getContext('2d')
+      const grad = sctx.createRadialGradient(32, 32, 0, 32, 32, 32)
+      grad.addColorStop(0, 'rgba(255,255,255,0.85)')
+      grad.addColorStop(0.45, 'rgba(255,255,255,0.28)')
+      grad.addColorStop(1, 'rgba(255,255,255,0)')
+      sctx.fillStyle = grad
+      sctx.fillRect(0, 0, 64, 64)
+
+      const SMOKE_COUNT = 90
+      const smokePositions = new Float32Array(SMOKE_COUNT * 3)
+      const smokeVelocities = new Float32Array(SMOKE_COUNT * 3)
+      for (let i = 0; i < SMOKE_COUNT; i += 1) smokePositions[i * 3 + 1] = DEAD_Y
+
+      const smokeGeometry = new THREE.BufferGeometry()
+      smokeGeometry.setAttribute('position', new THREE.BufferAttribute(smokePositions, 3))
+
+      const smokeMaterial = new THREE.PointsMaterial({
+        map: new THREE.CanvasTexture(smokeCanvas),
+        color: '#dfe8e2',
+        size: 1.5,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false, // khong thi cac hat khoi cat nhau thanh vien cung
+      })
+      const smoke = new THREE.Points(smokeGeometry, smokeMaterial)
+      scene.add(smoke)
+
+      /** Phun khoi la la quanh chan buc, toa ra ngoai va boc len rat cham. */
+      const burstSmoke = () => {
+        for (let i = 0; i < SMOKE_COUNT; i += 1) {
+          const angle = Math.random() * Math.PI * 2
+          const radius = 0.2 + Math.random() * 1.5
+          smokePositions[i * 3] = Math.cos(angle) * radius
+          smokePositions[i * 3 + 1] = BASE_TOP_Y - 0.1 + Math.random() * 0.4
+          smokePositions[i * 3 + 2] = Math.sin(angle) * radius
+
+          smokeVelocities[i * 3] = Math.cos(angle) * (0.25 + Math.random() * 0.5)
+          smokeVelocities[i * 3 + 1] = 0.15 + Math.random() * 0.35
+          smokeVelocities[i * 3 + 2] = Math.sin(angle) * (0.25 + Math.random() * 0.5)
+        }
+        smokeGeometry.attributes.position.needsUpdate = true
+      }
+
       // Xoay cả nhóm thay vì xoay model, để tâm xoay luôn nằm giữa bục
       const holder = new THREE.Group()
       scene.add(holder)
@@ -355,6 +446,12 @@ export default function Statue3D({ height = 320, className = '' }) {
 
       let wasCelebrating = false
 
+      // Trang thai man mo pack, song giua cac khung hinh
+      let lightFactor = 1 // he so lam mo den, 1 = binh thuong
+      let revealScale = 1 // co tuong, 0 = an han
+      let smokeFired = false
+      let burstFired = false
+
       return {
         camera,
         onFrame: () => {
@@ -375,6 +472,69 @@ export default function Statue3D({ height = 320, className = '' }) {
           const elapsed = celebrating ? (ctrl.celebrateMs - (ctrl.celebrateUntil - now)) / 1000 : 0
 
           /*
+           * ===== MAN MO THE PACK =====
+           *
+           * Moc thoi gian tinh tu luc bam (giay):
+           *   0,00 - 0,45  den tat dan, tuong thu nho ve 0
+           *   0,45 - 0,60  toi hoan toan, khoi bat dau phun
+           *   0,60         CHOP: den bung, phao hoa no, tuong bat dau lon ra
+           *   0,60 - 1,40  tuong bung len theo ham nhun (vot qua 1 roi tra ve)
+           *   1,40 - 2,60  khoi tan, den ve binh thuong
+           */
+          const revealT = ctrl.revealStart > 0 ? (now - ctrl.revealStart) / 1000 : -1
+          const inReveal = revealT >= 0 && revealT < REVEAL_TOTAL_S
+
+          if (inReveal) {
+            if (revealT < REVEAL_FLASH_S) {
+              // Giai doan toi: den tut xuong, tuong co lai
+              const k = revealT / REVEAL_FLASH_S
+              lightFactor = Math.max(0.06, 1 - k * 1.6)
+              revealScale = Math.max(0, 1 - k * 2.2)
+              if (!smokeFired && revealT > 0.3) {
+                burstSmoke()
+                smokeFired = true
+              }
+            } else {
+              // Sau chop: tuong bung ra, den sang tro lai
+              const k = Math.min(1, (revealT - REVEAL_FLASH_S) / 0.8)
+              lightFactor = 0.06 + (1 - 0.06) * k
+              // Nhun qua 1 roi tra ve -> cam giac "bat" ra khoi goi
+              revealScale = 1 + Math.sin(k * Math.PI) * 0.18 * (1 - k)
+              if (k >= 1) revealScale = 1
+              if (!burstFired) {
+                emitParticles(PARTICLE_COUNT)
+                burstFired = true
+              }
+            }
+          } else if (ctrl.revealStart > 0) {
+            // Man vua ket thuc -> tra moi thu ve mac dinh dung MOT lan
+            ctrl.revealStart = 0
+            lightFactor = 1
+            revealScale = 1
+            smokeFired = false
+            burstFired = false
+          }
+
+          for (const [light, baseIntensity] of BASE_LIGHTS) {
+            light.intensity = baseIntensity * lightFactor
+          }
+          holder.scale.setScalar(revealScale)
+
+          // Khoi: boc len, toa ra, mo dan roi tan han
+          if (smokeFired) {
+            const fade = Math.max(0, 1 - Math.max(0, revealT - 0.45) / 2.0)
+            smokeMaterial.opacity = 0.5 * fade
+            for (let i = 0; i < SMOKE_COUNT; i += 1) {
+              smokePositions[i * 3] += smokeVelocities[i * 3] * delta
+              smokePositions[i * 3 + 1] += smokeVelocities[i * 3 + 1] * delta
+              smokePositions[i * 3 + 2] += smokeVelocities[i * 3 + 2] * delta
+            }
+            smokeGeometry.attributes.position.needsUpdate = true
+          } else if (smokeMaterial.opacity !== 0) {
+            smokeMaterial.opacity = 0
+          }
+
+          /*
            * Nhan voi delta -> toc do tinh theo GIAY THAT, khong theo khung hinh.
            * Cong thang mot so co dinh moi khung se lam man 144Hz quay nhanh gap 2,4
            * lan man 60Hz, va chay giat moi khi trinh duyet rot khung.
@@ -389,14 +549,27 @@ export default function Statue3D({ height = 320, className = '' }) {
             ? Math.abs(Math.sin(now / 120)) * 0.32 * bounceLeft
             : 0
 
-          spot.intensity = celebrating ? 90 : 0
+          /*
+           * Den roi. Ngay sau CHOP thi doi len gap boi cho ra "hao quang", roi tat dan.
+           * Man reveal duoc uu tien hon an mung vi no ngan va la tam diem.
+           */
+          const flashAge = inReveal ? revealT - REVEAL_FLASH_S : -1
+          if (flashAge >= 0) {
+            spot.intensity = 260 * Math.max(0, 1 - flashAge / 1.1)
+          } else {
+            spot.intensity = celebrating ? 90 : 0
+          }
 
-          // Vong neon quay deu, an mung thi sang bung
+          // Vong neon quay deu, an mung thi sang bung, luc toi thi tat theo den
           neonRing.rotation.z += delta * 0.6
-          neonMaterial.opacity = celebrating ? 0.9 : 0.45 + Math.sin(now / 700) * 0.12
+          const neonBase = celebrating ? 0.9 : 0.45 + Math.sin(now / 700) * 0.12
+          neonMaterial.opacity = neonBase * lightFactor
 
           // Luong den pha day len luc an mung, ngay thuong chi hu hu
-          beam.material.opacity = celebrating ? 0.17 : 0.06
+          const beamBase = celebrating ? 0.17 : 0.06
+          beam.material.opacity = flashAge >= 0
+            ? Math.max(beamBase, 0.4 * Math.max(0, 1 - flashAge / 1.1))
+            : beamBase * lightFactor
 
           /*
            * Suon len: ban mot loat that day. Sau do moi khung hinh bu them vai hat
@@ -445,6 +618,12 @@ export default function Statue3D({ height = 320, className = '' }) {
         {/* Chi hien khi mo hinh da len - the vang tren nen trong lam luc dang tai trong ky */}
         {status !== 'loading' && <FutCard lang={lang} />}
 
+        {/*
+          Man toi + chop sang de o lop HTML chu khong ve trong 3D: mot lop phu CSS
+          re hon nhieu so voi dung post-processing cua three, ma hieu qua nhin nhu nhau.
+        */}
+        {revealing && <div className="ft-reveal-veil" aria-hidden="true" />}
+
         {status === 'loading' && (
           <div className="ft-statue-loading">
             <span className="ft-statue-spinner" aria-hidden="true" />
@@ -457,6 +636,16 @@ export default function Statue3D({ height = 320, className = '' }) {
         <button className="btn btn-sm btn-primary fw-semibold" onClick={celebrate}>
           {t('statue_celebrate')}
         </button>
+
+        {canReveal && (
+          <button
+            className="btn btn-sm btn-outline-warning fw-semibold"
+            onClick={openPack}
+            disabled={revealing}
+          >
+            {t('statue_open_pack')}
+          </button>
+        )}
 
         {hasAnimation && (
           <button className="btn btn-sm btn-outline-secondary" onClick={() => setPlaying((v) => !v)}>

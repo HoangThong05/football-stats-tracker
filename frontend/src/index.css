@@ -1196,6 +1196,43 @@ body,
   }
 }
 
+/* ---------- Man mo the pack: toi dan roi chop sang ---------- */
+
+/*
+ * Moc thoi gian PHAI khop voi REVEAL_TOTAL_S / REVEAL_FLASH_S trong Statue3D.jsx:
+ * 2,6s tong, chop o giay 0,6 (= 23%). Lech nhau thi chop CSS va phao hoa 3D
+ * no o hai thoi diem khac nhau, hong ca man.
+ */
+@keyframes ft-reveal-veil {
+  0% {
+    background: rgba(3, 8, 5, 0);
+  }
+  17% {
+    background: rgba(3, 8, 5, 0.82);
+  }
+  22% {
+    background: rgba(3, 8, 5, 0.82);
+  }
+  /* Giay 0,6: chop trang nga vang - dung luc phao hoa 3D no */
+  24% {
+    background: rgba(255, 233, 176, 0.9);
+  }
+  32% {
+    background: rgba(255, 200, 90, 0.28);
+  }
+  100% {
+    background: rgba(3, 8, 5, 0);
+  }
+}
+
+.ft-reveal-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 3; /* tren canvas va tren ca the vang */
+  pointer-events: none;
+  animation: ft-reveal-veil 2.6s var(--ft-ease) forwards;
+}
+
 .ft-statue-bar {
   display: flex;
   align-items: center;

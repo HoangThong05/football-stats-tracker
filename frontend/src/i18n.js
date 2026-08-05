@@ -173,6 +173,7 @@ export const translations = {
     statue_drag_hint: 'Kéo để xoay · Cuộn để phóng to',
     statue_sound_on: 'Bật tiếng cổ vũ',
     statue_sound_off: 'Tắt tiếng cổ vũ',
+    statue_open_pack: '✨ Mở thẻ pack',
 
     ticker_label: 'Tỷ số',
     ticker_live: 'TRỰC TIẾP',
@@ -445,6 +446,7 @@ export const translations = {
     statue_drag_hint: 'Drag to rotate · Scroll to zoom',
     statue_sound_on: 'Turn on crowd sound',
     statue_sound_off: 'Turn off crowd sound',
+    statue_open_pack: '✨ Open pack',
 
     ticker_label: 'Scores',
     ticker_live: 'LIVE',
