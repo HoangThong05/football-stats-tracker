@@ -418,18 +418,51 @@ body,
   flex-shrink: 0;
 }
 
+/*
+ * Khoi thuong hieu duoc phep CO LAI khi thanh nav chat.
+ *
+ * Mac dinh flex item khong co nho hon noi dung (min-width:auto), nen phu de dai
+ * 250px ep ca hang phai xuong dong - dung luc chua dang nhap va dang o tieng Viet
+ * thi tong be rong vuot 960px, nhom ngon ngu bi day xuong dong duoi.
+ * Cho no co lai va cat bot phu de thi khong con ai phai xuong dong.
+ */
+.ft-navbar-brand {
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+/*
+ * Phai dat lai min-width tren CA HAI cap: khoi ngoai va khoi chu ben trong.
+ * Bo qua cap trong thi text-overflow cua phu de khong bao gio chay - o flex,
+ * min-width:auto o bat ky cap nao cung du de chan viec co lai.
+ * Bootstrap khong co lop tien ich nao cho viec nay nen tu khai bao.
+ */
+.ft-brand-text {
+  min-width: 0;
+}
+
 .ft-brand {
   font-weight: 800;
   letter-spacing: -0.02em;
   color: #fff;
   line-height: 1.15;
   font-size: 1.02rem;
+  white-space: nowrap;
 }
 
 .ft-brand-sub {
   color: rgba(255, 255, 255, 0.72);
   font-size: 0.72rem;
   line-height: 1.3;
+  /* Het cho thi cat bot bang dau ba cham, khong lam vo bo cuc */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Hai cum nut la phan chuc nang - khong bao gio bi bop meo de nhuong cho chu */
+.ft-navbar-left .ft-nav-group {
+  flex-shrink: 0;
 }
 
 .ft-ball {

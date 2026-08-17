@@ -312,11 +312,11 @@ export default function App() {
              */}
             <div className="ft-navbar-row">
               <div className="ft-navbar-left">
-                <div className="d-flex align-items-center gap-2">
+                <div className="ft-navbar-brand d-flex align-items-center gap-2">
                   <span className="ft-ball">
                     <Football3D size={26} />
                   </span>
-                  <div>
+                  <div className="ft-brand-text">
                     <div className="ft-brand">Football Stats Tracker</div>
                     <div className="ft-brand-sub">{t("app_subtitle")}</div>
                   </div>

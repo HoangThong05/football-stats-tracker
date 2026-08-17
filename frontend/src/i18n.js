@@ -14,7 +14,9 @@ export const translations = {
     nav_history: '📜 Lịch sử',
     nav_admin: '🛡 Quản trị',
     nav_logout: 'Đăng xuất',
-    nav_login: 'Đăng nhập / Đăng ký',
+    // Ngan gon co chu y: nhan dai lam thanh nav tran chieu rong va day nhom
+    // ngon ngu xuong dong. Bang dang nhap ben trong da co san lien ket "Dang ky ngay".
+    nav_login: 'Đăng nhập',
 
     view_standings: 'Bảng xếp hạng',
     view_upcoming: 'Lịch thi đấu',
@@ -295,7 +297,7 @@ export const translations = {
     nav_history: '📜 History',
     nav_admin: '🛡 Admin',
     nav_logout: 'Log out',
-    nav_login: 'Log in / Sign up',
+    nav_login: 'Log in',
 
     view_standings: 'Standings',
     view_upcoming: 'Fixtures',
