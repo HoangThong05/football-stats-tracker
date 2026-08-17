@@ -715,16 +715,19 @@ body,
   mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
 }
 
+/*
+ * Diem dau/cuoi do JS tinh bang PIXEL, vi hai kieu chay can quang duong khac han nhau:
+ *   - Noi dung dai hon khung: 0 -> -(be rong mot ban sao), lap vong lien tuc
+ *   - Noi dung ngan hon khung: +(be rong khung) -> -(be rong noi dung), di ngang qua
+ * Dung % thi khong dien ta duoc kieu thu hai, vi % o day tinh theo be rong cua chinh
+ * bang chay chu khong phai cua khung nhin.
+ */
 @keyframes ft-ticker-scroll {
   from {
-    transform: translateX(0);
+    transform: translateX(var(--ft-ticker-from, 0));
   }
   to {
-    /*
-     * Dich dung MOT ban sao roi nhay ve 0. So ban sao thay doi theo be rong man hinh
-     * nen quang duong phai do JS tinh (100 / so ban sao), khong the ghi cung -50%.
-     */
-    transform: translateX(var(--ft-ticker-shift, -50%));
+    transform: translateX(var(--ft-ticker-to, -50%));
   }
 }
 

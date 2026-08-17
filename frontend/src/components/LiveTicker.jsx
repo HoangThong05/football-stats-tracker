@@ -16,6 +16,9 @@ import { shortTeamName } from '../utils'
  */
 const REFRESH_MS = 60_000
 
+/** Toc do chay, pixel moi giay. Doc thoai mai o muc nay, khong phai duoi mat theo. */
+const SPEED_PX_PER_S = 70
+
 /** Tran dang da: football-data.org dung 3 trang thai nay. */
 const LIVE_STATUSES = new Set(['LIVE', 'IN_PLAY', 'PAUSED'])
 
@@ -33,17 +36,19 @@ export default function LiveTicker({ onSelectMatch }) {
 
   const viewportRef = useRef(null)
   const setRef = useRef(null)
-  const [copies, setCopies] = useState(2)
-  const [durationSeconds, setDurationSeconds] = useState(30)
+  const [motion, setMotion] = useState({ copies: 1, from: 0, to: 0, duration: 20 })
 
   /*
-   * Do be rong THAT cua mot ban sao roi tinh can bao nhieu ban sao moi phu kin khung.
+   * HAI KIEU CHAY khac han nhau, chon theo noi dung co dai hon khung hay khong.
    *
-   * Can it nhat 2 lan be rong khung: mot ban sao dang truot ra ngoai thi phan con lai
-   * van con du de khong ho khoang trong nao.
+   * a) Noi dung DAI HON khung (nhieu tran): lap du ban sao cho kin, chay vong lien
+   *    tuc, het mot ban sao thi nhay ve 0 - mat khong thay diem noi.
    *
-   * Toc do co dinh 70px/giay -> it tran hay nhieu tran deu chay muot nhu nhau. De
-   * nguyen mot thoi luong cung thi 1 tran se bo lu tu, 20 tran thi lao vun vut.
+   * b) Noi dung NGAN HON khung (1-2 tran): chi MOT ban duy nhat, di tu mep phai sang
+   *    het mep trai roi quay lai. Truoc day van lap cho kin o ca truong hop nay, ra
+   *    canh mot tran bi nhan ban chuc lan nam canh nhau - nhin nhu bi ket dia.
+   *
+   * Toc do co dinh 70px/giay cho ca hai -> it tran hay nhieu tran deu mot nhip.
    */
   useLayoutEffect(() => {
     const viewport = viewportRef.current
@@ -55,9 +60,21 @@ export default function LiveTicker({ onSelectMatch }) {
       const viewWidth = viewport.clientWidth
       if (setWidth <= 0 || viewWidth <= 0) return
 
-      const needed = Math.max(2, Math.ceil((viewWidth * 2) / setWidth))
-      setCopies(needed)
-      setDurationSeconds(Math.max(12, Math.round(setWidth / 70)))
+      if (setWidth > viewWidth) {
+        setMotion({
+          copies: Math.max(2, Math.ceil((viewWidth * 2) / setWidth)),
+          from: 0,
+          to: -setWidth,
+          duration: Math.max(12, setWidth / SPEED_PX_PER_S),
+        })
+      } else {
+        setMotion({
+          copies: 1,
+          from: viewWidth,
+          to: -setWidth,
+          duration: Math.max(10, (viewWidth + setWidth) / SPEED_PX_PER_S),
+        })
+      }
     }
 
     measure()
@@ -138,11 +155,12 @@ export default function LiveTicker({ onSelectMatch }) {
         <div
           className="ft-ticker-track"
           style={{
-            '--ft-ticker-shift': `-${100 / copies}%`,
-            '--ft-ticker-duration': `${durationSeconds}s`,
+            '--ft-ticker-from': `${motion.from}px`,
+            '--ft-ticker-to': `${motion.to}px`,
+            '--ft-ticker-duration': `${motion.duration}s`,
           }}
         >
-          {Array.from({ length: copies }, (_, copy) => (
+          {Array.from({ length: motion.copies }, (_, copy) => (
             <span
               key={copy}
               ref={copy === 0 ? setRef : undefined}
