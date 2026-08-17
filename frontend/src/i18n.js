@@ -228,7 +228,7 @@ export const translations = {
     predict_scoring_rule: 'Đúng chính xác tỉ số: 3 điểm · Đúng thắng/hòa/thua: 1 điểm · Có thể sửa dự đoán tới trước giờ bóng lăn.',
 
     footer_data_from: 'Dữ liệu từ',
-    footer_updated: '· Cập nhật mỗi 30 phút · Xây dựng bằng Spring Boot & React',
+    footer_tagline: 'Theo dõi 6 giải đấu hàng đầu châu Âu',
 
 
     nav_mini_league: '🏆 Mini League',
@@ -509,7 +509,7 @@ export const translations = {
     predict_scoring_rule: 'Exact score: 3 points · Correct outcome: 1 point · You can edit your prediction until kickoff.',
 
     footer_data_from: 'Data from',
-    footer_updated: '· Updated every 30 minutes · Built with Spring Boot & React',
+    footer_tagline: 'Following six of Europe’s top leagues',
 
     nav_mini_league: '🏆 Mini League',
     ml_create_title: 'Create a new room',
