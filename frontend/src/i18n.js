@@ -171,6 +171,8 @@ export const translations = {
     statue_pause: '⏸ Dừng',
     statue_play: '▶ Chạy',
     statue_drag_hint: 'Kéo để xoay · Cuộn để phóng to',
+    statue_open: 'Xem tượng CR7 3D',
+    statue_close: 'Đóng',
     statue_sound_on: 'Bật tiếng cổ vũ',
     statue_sound_off: 'Tắt tiếng cổ vũ',
 
@@ -450,6 +452,8 @@ export const translations = {
     statue_pause: '⏸ Pause',
     statue_play: '▶ Play',
     statue_drag_hint: 'Drag to rotate · Scroll to zoom',
+    statue_open: 'View 3D CR7 statue',
+    statue_close: 'Close',
     statue_sound_on: 'Turn on crowd sound',
     statue_sound_off: 'Turn off crowd sound',
 

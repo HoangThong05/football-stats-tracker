@@ -27,7 +27,7 @@ import MiniLeague from "./components/MiniLeague";
 import Profile from "./components/Profile";
 import TodayMatches from "./components/TodayMatches";
 import Football3D from "./components/Football3D";
-import Statue3D from "./components/Statue3D";
+import StatueDrawer from "./components/StatueDrawer";
 import PitchBackdrop from "./components/PitchBackdrop";
 import LiveTicker from "./components/LiveTicker";
 import SeasonBreak from "./components/SeasonBreak";
@@ -551,8 +551,6 @@ export default function App() {
             />
           ) : (
             <>
-              <Statue3D height={320} className="mb-3" />
-
               <div className="ft-league-tabs mb-3">
                 {LEAGUES.map((l) => (
                   <button
@@ -669,6 +667,14 @@ export default function App() {
             {t("footer_updated")}
           </footer>
         </div>
+
+        {/*
+          Tuong CR7 nam trong ngan keo, mac dinh DONG.
+          Khong mount Statue3D thi ca goi three.js (578KB) lan file .glb (8,25MB) deu
+          khong duoc tai - do la ly do chinh de cat no di, ngoai chuyen no xoay lien
+          tuc gay xao nhang khi dang doc so lieu.
+        */}
+        <StatueDrawer />
       </>
     </LanguageContext.Provider>
   );
