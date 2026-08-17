@@ -679,10 +679,11 @@ body,
   display: flex;
   align-items: stretch;
   gap: 0;
-  background: var(--ft-pitch-strong);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 0.8rem;
+  /* Dam hon nen trang han de bang ty so tach ra thanh mot dai rieng, khong lan vao navbar */
+  background: #08170f;
+  border-bottom: 2px solid var(--ft-accent);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.9rem;
   overflow: hidden;
 }
 
@@ -690,13 +691,15 @@ body,
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  padding: 6px 12px;
+  padding: 9px 16px;
   background: var(--ft-accent);
   color: #fff;
   font-weight: 800;
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  /* Nhan phai noi len tren dai, khong bi vet mo cua khung nhin an mat mep */
+  z-index: 1;
 }
 
 [data-bs-theme='dark'] .ft-ticker-label {
@@ -717,8 +720,11 @@ body,
     transform: translateX(0);
   }
   to {
-    /* -50% = het dung ban sao thu nhat, ban sao thu hai vao dung cho xuat phat */
-    transform: translateX(-50%);
+    /*
+     * Dich dung MOT ban sao roi nhay ve 0. So ban sao thay doi theo be rong man hinh
+     * nen quang duong phai do JS tinh (100 / so ban sao), khong the ghi cung -50%.
+     */
+    transform: translateX(var(--ft-ticker-shift, -50%));
   }
 }
 
@@ -726,7 +732,14 @@ body,
   display: flex;
   align-items: center;
   width: max-content;
-  animation: ft-ticker-scroll 45s linear infinite;
+  /* Thoi luong cung do JS dat, de toc do luon la 70px/giay du it hay nhieu tran */
+  animation: ft-ticker-scroll var(--ft-ticker-duration, 30s) linear infinite;
+}
+
+/* Moi ban sao la mot cum phang, khong tao them cap flex long nhau */
+.ft-ticker-set {
+  display: flex;
+  align-items: center;
 }
 
 .ft-ticker:hover .ft-ticker-track {
@@ -744,11 +757,12 @@ body,
 .ft-ticker-item {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 6px 18px;
+  gap: 8px;
+  padding: 9px 22px;
   white-space: nowrap;
   cursor: pointer;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 500;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .ft-ticker-item:hover {
@@ -765,9 +779,11 @@ body,
 .ft-ticker-score {
   font-family: var(--ft-num-font);
   font-weight: 700;
-  padding: 1px 7px;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.12);
+  font-size: 1.02rem;
+  letter-spacing: 0.02em;
+  padding: 2px 9px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .ft-ticker-score-live {
