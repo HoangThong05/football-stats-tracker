@@ -9,7 +9,10 @@ import com.hoangthong.footballtracker.dto.MatchDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -33,13 +36,35 @@ public class MatchesService {
         this.client = client;
     }
 
+    /**
+     * Goi football-data.org va doi loi ha tang thanh 503 co thong diep doc duoc.
+     *
+     * Khong bat thi RestClientException chui thang ra ngoai thanh 500 tran trui, frontend
+     * chi hien "Loi 500" - nguoi dung tuong web hong trong khi that ra chi la nguon du lieu
+     * dang chan (goi free gioi han 10 request/phut, vuot la 429).
+     *
+     * Co y KHONG tra ve danh sach rong nhu StandingsService: rong nghia la "khong co tran
+     * nao", sai han voi "chua lay duoc". Dau mua giai ma bao khong co tran la danh lua.
+     */
+    private MatchesApiResponse fetchMatches(String competitionCode, LocalDate from, LocalDate to) {
+        try {
+            return client.getMatches(competitionCode, from, to);
+        } catch (RestClientException ex) {
+            log.warn("Khong lay duoc tran cua giai {} ({} -> {}): {}", competitionCode, from, to, ex.getMessage());
+            throw new ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "Nguon du lieu dang qua tai hoac tam gian doan. Thu lai sau it phut.",
+                    ex);
+        }
+    }
+
     /** Lich thi dau: hom nay -> 14 ngay toi, sap xep tran gan nhat len dau. */
     @Cacheable(value = CacheConfig.MATCHES_CACHE, key = "'UPCOMING:' + #competitionCode")
     public List<MatchDto> getUpcoming(String competitionCode) {
         log.info("CACHE MISS -> goi football-data.org lay lich thi dau giai: {}", competitionCode);
 
         LocalDate today = LocalDate.now();
-        MatchesApiResponse response = client.getMatches(competitionCode, today, today.plusDays(WINDOW_DAYS));
+        MatchesApiResponse response = fetchMatches(competitionCode, today, today.plusDays(WINDOW_DAYS));
 
         return response.matches().stream()
                 .filter(m -> UPCOMING_STATUSES.contains(m.status()))
@@ -54,7 +79,7 @@ public class MatchesService {
         log.info("CACHE MISS -> goi football-data.org lay ket qua giai: {}", competitionCode);
 
         LocalDate today = LocalDate.now();
-        MatchesApiResponse response = client.getMatches(competitionCode, today.minusDays(WINDOW_DAYS), today);
+        MatchesApiResponse response = fetchMatches(competitionCode, today.minusDays(WINDOW_DAYS), today);
 
         return response.matches().stream()
                 .filter(m -> "FINISHED".equals(m.status()))

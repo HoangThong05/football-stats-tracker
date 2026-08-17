@@ -16,6 +16,22 @@ import { shortTeamName } from '../utils'
 /** Con it hon so ngay nay thi coi nhu giai sap da, khong hien the nghi mua nua. */
 const HIDE_WHEN_STARTED = true
 
+/*
+ * Nho ket qua theo giai, song suot phien lam viec.
+ *
+ * Mua giai da khep lai thi vo dich va vua pha luoi khong bao gio doi nua, nen goi
+ * lai la phi. Quan trong hon: goi free cua football-data.org chi cho 10 request/phut,
+ * ma the nay ton 2 request moi giai - bam qua vai giai la vuot tran, API tra 429 va
+ * cac endpoint khac (lich thi dau) gay theo.
+ */
+const recapCache = new Map()
+
+/*
+ * Cho mot chut roi moi goi. Bam luot qua nhieu giai thi cac lan goi dang do bi huy,
+ * chi giai nguoi dung dung lai moi that su ton request.
+ */
+const FETCH_DELAY_MS = 600
+
 function daysUntil(dateStr) {
   const start = new Date(`${dateStr}T00:00:00`)
   if (Number.isNaN(start.getTime())) return null
@@ -51,28 +67,41 @@ export default function SeasonBreak({ league, seasonStart, onSelectTeam }) {
       return undefined
     }
 
+    const cacheKey = `${league}-${lastSeason}`
+    const cached = recapCache.get(cacheKey)
+    if (cached) {
+      setChampion(cached.champion)
+      setTopScorer(cached.topScorer)
+      return undefined
+    }
+
+    // Xoa du lieu giai truoc de khong hien nham vo dich cua giai vua roi khoi
+    setChampion(null)
+    setTopScorer(null)
+
     let cancelled = false
-
-    /*
-     * Hai lenh goi nay deu di qua cache 30 phut cua backend, va mua giai cu thi
-     * khong bao gio doi nua -> thuc te chi ton request o lan dau tien.
-     */
-    fetch(`${API_BASE}/standings/${league}?season=${lastSeason}`)
-      .then((res) => (res.ok ? res.json() : []))
-      .then((rows) => {
-        if (!cancelled) setChampion(rows.find((r) => r.position === 1) ?? null)
+    const timer = setTimeout(() => {
+      Promise.all([
+        fetch(`${API_BASE}/standings/${league}?season=${lastSeason}`)
+          .then((res) => (res.ok ? res.json() : []))
+          .then((rows) => rows.find((r) => r.position === 1) ?? null)
+          .catch(() => null),
+        fetch(`${API_BASE}/scorers/${league}?season=${lastSeason}`)
+          .then((res) => (res.ok ? res.json() : []))
+          .then((list) => list[0] ?? null)
+          .catch(() => null),
+      ]).then(([champ, scorer]) => {
+        if (cancelled) return
+        // Ca hai deu rong thi rat co the dang bi chan request -> dung nho, de lan sau thu lai
+        if (champ || scorer) recapCache.set(cacheKey, { champion: champ, topScorer: scorer })
+        setChampion(champ)
+        setTopScorer(scorer)
       })
-      .catch(() => {})
-
-    fetch(`${API_BASE}/scorers/${league}?season=${lastSeason}`)
-      .then((res) => (res.ok ? res.json() : []))
-      .then((list) => {
-        if (!cancelled) setTopScorer(list[0] ?? null)
-      })
-      .catch(() => {})
+    }, FETCH_DELAY_MS)
 
     return () => {
       cancelled = true
+      clearTimeout(timer)
     }
   }, [league, lastSeason, isBreak])
 

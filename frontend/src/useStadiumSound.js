@@ -18,42 +18,26 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  */
 
 /*
- * Cac ten file duoc chap nhan, thu theo thu tu. Bo file nao vao public/ cung duoc,
- * mien la mot trong nhung ten nay.
+ * MOT ten file duy nhat.
  *
- * decodeAudioData nhan dang theo NOI DUNG chu khong theo duoi file, nen .m4a/.mp4
- * (audio AAC) giai ma binh thuong. Nhung neu la MP4 co ca luong HINH thi nguoi dung
- * phai tai ca video ve chi de lay tieng - nen uu tien dinh dang chi co audio.
+ * Ban truoc thu 5 duoi (.mp3/.m4a/.ogg/.wav/.mp4) cung luc cho "tien", nhung chi co
+ * dung 1 file ton tai -> 4 lan 404 do loe trong Console moi lan bam nut, va 4 request
+ * thua. Tien cho ai do doi file mot lan khong bu duoc rac do.
+ *
+ * Muon dung dinh dang khac thi doi ten file thanh siuuu.mp3 la xong: decodeAudioData
+ * nhan dang theo NOI DUNG chu khong theo duoi file, nen AAC/OGG/WAV deu giai ma duoc
+ * du mang duoi .mp3.
  */
-const SAMPLE_URLS = ['/siuuu.mp3', '/siuuu.m4a', '/siuuu.ogg', '/siuuu.wav', '/siuuu.mp4']
+const SAMPLE_URL = '/siuuu.mp3'
 
-/**
- * Tra ve AudioBuffer dau tien giai ma duoc theo thu tu uu tien, khong co thi null.
- *
- * Ban HET cung luc roi moi cho theo thu tu, chu khong thu tuan tu: file thuc te
- * co the nam o cuoi danh sach, tuan tu thi phai cho 4 lan 404 xong xuoi moi bat dau
- * tai no - nguoi dung bam nut xong ngoi cho cham cang moi ra tieng.
- *
- * .catch ngay trong map la bat buoc: neu vong lap tra ve som, nhung promise chua
- * duoc await se thanh unhandled rejection.
- */
+/** Tra ve AudioBuffer neu co file, khong co thi null. */
 function loadSample(ctx) {
-  const attempts = SAMPLE_URLS.map((url) =>
-    fetch(url)
-      .then((res) => (res.ok ? res.arrayBuffer() : Promise.reject(new Error('404'))))
-      // File khong ton tai: Vercel co the tra ve index.html kem ma 200, luc do
-      // decodeAudioData nem loi -> roi vao catch, coi nhu ten nay khong dung.
-      .then((buf) => ctx.decodeAudioData(buf))
-      .catch(() => null),
-  )
-
-  return (async () => {
-    for (const attempt of attempts) {
-      const buffer = await attempt
-      if (buffer) return buffer
-    }
-    return null
-  })()
+  return fetch(SAMPLE_URL)
+    .then((res) => (res.ok ? res.arrayBuffer() : Promise.reject(new Error('404'))))
+    // File khong ton tai: Vercel co the tra ve index.html kem ma 200, luc do
+    // decodeAudioData nem loi -> van roi vao catch, van coi nhu khong co file.
+    .then((buf) => ctx.decodeAudioData(buf))
+    .catch(() => null)
 }
 
 /*
