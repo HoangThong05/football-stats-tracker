@@ -1761,59 +1761,10 @@ tr[role='button']:hover img,
 
 /* ---------- Footer ---------- */
 .ft-footer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 8px;
+  padding-bottom: 10px;
   color: var(--bs-secondary-color);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-align: center;
-}
-
-.ft-footer-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-align: left;
-}
-
-.ft-footer-mark {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
-  font-size: 1.2rem;
-  background: var(--ft-stage-grad);
-  border: 1px solid var(--ft-stage-border);
-}
-
-.ft-footer-name {
-  font-weight: 800;
-  font-size: 0.98rem;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  color: var(--bs-body-color);
-}
-
-.ft-footer-tagline {
-  font-size: 0.76rem;
-  line-height: 1.3;
-}
-
-/* Dong ban quyen + ghi cong nguon: nho va nhat hon han khoi thuong hieu */
-.ft-footer-fine {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px 8px;
-  font-size: 0.72rem;
-  opacity: 0.75;
-}
-
-.ft-footer a {
-  color: inherit;
 }
 
 /* ---------- Hieu ung xuat hien nhe khi doi tab ---------- */

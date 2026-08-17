@@ -656,38 +656,7 @@ export default function App() {
           )}
 
           <footer className="ft-footer mt-5 pt-4 border-top">
-            <div className="ft-footer-brand">
-              {/*
-                Emoji chu khong phai <Football3D>: component do keo ca goi three.js ve.
-                Mot qua bong trang tri o chan trang khong dang gia do.
-              */}
-              <span className="ft-footer-mark" aria-hidden="true">
-                ⚽
-              </span>
-              <div>
-                <div className="ft-footer-name">Football Stats Tracker</div>
-                <div className="ft-footer-tagline">{t("footer_tagline")}</div>
-              </div>
-            </div>
-
-            <div className="ft-footer-fine">
-              <span>© {new Date().getFullYear()} Football Stats Tracker</span>
-              <span aria-hidden="true">·</span>
-              {/*
-                Giu dan nguon: goi mien phi cua football-data.org yeu cau ghi cong
-                va dan lien ket ve trang ho.
-              */}
-              <span>
-                {t("footer_data_from")}{" "}
-                <a
-                  href="https://www.football-data.org"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  football-data.org
-                </a>
-              </span>
-            </div>
+            © {new Date().getFullYear()} Football Stats Tracker
           </footer>
         </div>
 
