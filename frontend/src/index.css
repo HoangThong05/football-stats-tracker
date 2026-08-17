@@ -966,6 +966,28 @@ body,
   background: transparent;
 }
 
+/*
+ * Huy hieu dem tren tab (hien dung cho tab Du doan).
+ * Dung mau danger chu khong dung accent: day la viec SAP HET HAN, khac han
+ * mau vang vang lam mau trang thai "dang chon" cua chinh thanh tab nay.
+ */
+.ft-tab-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  margin-left: 5px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-family: var(--ft-num-font);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: middle;
+}
+
 /* ---------- Dropdown chon mua giai (canh tab chon view) ---------- */
 .ft-season-badge {
   appearance: none;

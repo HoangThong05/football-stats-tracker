@@ -10,6 +10,7 @@ import {
 import { LEAGUES, VIEWS } from "./constants";
 import { LanguageContext, translations } from "./i18n";
 import { useSlidingIndicator } from "./useSlidingIndicator";
+import { usePendingPredictions } from "./usePendingPredictions";
 import Loading from "./components/Loading";
 import AuthPanel from "./components/AuthPanel";
 import AdminUsers from "./components/AdminUsers";
@@ -78,6 +79,10 @@ export default function App() {
   // Vien truot trong thanh chon che do xem. Do lai khi doi tab HOAC doi ngon ngu
   // (nhan tieng Anh dai ngan khac tieng Viet -> nut rong khac -> vien phai chinh theo).
   const viewTabsRef = useSlidingIndicator(`${view}-${lang}`);
+
+  // So tran sap da ma chua du doan -> huy hieu tren tab "Du doan"
+  const { count: pendingPredictions, refresh: refreshPendingPredictions } =
+    usePendingPredictions(league, token);
 
   // Bootstrap 5.3 doi giao dien toi khi <html data-bs-theme="dark">
   useEffect(() => {
@@ -576,6 +581,15 @@ export default function App() {
                       onClick={() => setView(v.key)}
                     >
                       {t(v.nameKey)}
+                      {/* Chi tab Du doan moi co huy hieu, va chi khi that su con tran chua doan */}
+                      {v.key === "predict" && pendingPredictions > 0 && (
+                        <span
+                          className="ft-tab-badge"
+                          title={t("predict_pending_hint")}
+                        >
+                          {pendingPredictions}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -639,7 +653,11 @@ export default function App() {
                     <PredictionsView
                       matches={data}
                       token={token}
-                      onRefresh={loadViewData}
+                      onRefresh={() => {
+                        loadViewData();
+                        // Dat xong mot du doan -> huy hieu phai giam ngay, khong doi doi giai
+                        refreshPendingPredictions();
+                      }}
                       onSelectMatch={goToMatch}
                     />
                   )}

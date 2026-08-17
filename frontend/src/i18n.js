@@ -24,6 +24,7 @@ export const translations = {
     view_scorers: 'Vua phá lưới',
     view_compare: 'So sánh đội',
     view_predict: 'Dự đoán',
+    predict_pending_hint: 'Số trận sắp đá mà bạn chưa dự đoán. Hết hạn khi bóng lăn.',
 
     loading: 'Đang tải dữ liệu...',
     error_prefix: 'Không tải được dữ liệu:',
@@ -303,6 +304,7 @@ export const translations = {
     view_scorers: 'Top Scorers',
     view_compare: 'Compare Teams',
     view_predict: 'Predict',
+    predict_pending_hint: 'Upcoming matches you have not predicted yet. Locks at kick-off.',
 
     loading: 'Loading data...',
     error_prefix: 'Failed to load data:',
