@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -58,34 +59,49 @@ public class MatchesService {
         }
     }
 
+    /**
+     * matches: du lieu tra ve nguyen JSON body.
+     * fetchedAt: luc THUC SU goi football-data.org, gan vao header (xem MatchesController).
+     *
+     * Vi ca ban ghi nay nam trong cache, moc thoi gian dong bang lai - cac lan doc cache
+     * sau van tra dung gio goi that, dung thu can de hien "Cap nhat luc HH:mm".
+     * Khong boc vao body vi frontend dang doc thang mang tu response.json().
+     */
+    public record Result(List<MatchDto> matches, Instant fetchedAt) {
+    }
+
     /** Lich thi dau: hom nay -> 14 ngay toi, sap xep tran gan nhat len dau. */
     @Cacheable(value = CacheConfig.MATCHES_CACHE, key = "'UPCOMING:' + #competitionCode")
-    public List<MatchDto> getUpcoming(String competitionCode) {
+    public Result getUpcoming(String competitionCode) {
         log.info("CACHE MISS -> goi football-data.org lay lich thi dau giai: {}", competitionCode);
 
         LocalDate today = LocalDate.now();
         MatchesApiResponse response = fetchMatches(competitionCode, today, today.plusDays(WINDOW_DAYS));
 
-        return response.matches().stream()
+        List<MatchDto> matches = response.matches().stream()
                 .filter(m -> UPCOMING_STATUSES.contains(m.status()))
                 .sorted(Comparator.comparing(MatchesApiResponse.Match::utcDate))
                 .map(MatchesService::toDto)
                 .toList();
+
+        return new Result(matches, Instant.now());
     }
 
     /** Ket qua: 14 ngay qua -> hom nay, tran moi da xong len dau. */
     @Cacheable(value = CacheConfig.MATCHES_CACHE, key = "'RESULTS:' + #competitionCode")
-    public List<MatchDto> getResults(String competitionCode) {
+    public Result getResults(String competitionCode) {
         log.info("CACHE MISS -> goi football-data.org lay ket qua giai: {}", competitionCode);
 
         LocalDate today = LocalDate.now();
         MatchesApiResponse response = fetchMatches(competitionCode, today.minusDays(WINDOW_DAYS), today);
 
-        return response.matches().stream()
+        List<MatchDto> matches = response.matches().stream()
                 .filter(m -> "FINISHED".equals(m.status()))
                 .sorted(Comparator.comparing(MatchesApiResponse.Match::utcDate).reversed())
                 .map(MatchesService::toDto)
                 .toList();
+
+        return new Result(matches, Instant.now());
     }
 
     /** Chi tiet 1 tran: gio da/hiep 1, san van dong, trong tai, ten giai day du. */

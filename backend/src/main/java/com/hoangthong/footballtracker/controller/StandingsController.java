@@ -1,5 +1,6 @@
 package com.hoangthong.footballtracker.controller;
 
+import com.hoangthong.footballtracker.config.ApiHeaders;
 import com.hoangthong.footballtracker.dto.StandingRow;
 import com.hoangthong.footballtracker.service.StandingsService;
 import org.springframework.http.ResponseEntity;
@@ -35,9 +36,9 @@ public class StandingsController {
             @PathVariable String code, @RequestParam(required = false) Integer season) {
         StandingsService.Result result = service.getStandings(code.toUpperCase(), season);
         return ResponseEntity.ok()
-                .header("X-Season-Label", result.seasonLabel() != null ? result.seasonLabel() : "")
-                // Ngay khai mac mua giai (ISO yyyy-MM-dd) - frontend dung de dem nguoc luc trai mua
-                .header("X-Season-Start", result.seasonStart() != null ? result.seasonStart() : "")
+                .header(ApiHeaders.SEASON_LABEL, result.seasonLabel() != null ? result.seasonLabel() : "")
+                .header(ApiHeaders.SEASON_START, result.seasonStart() != null ? result.seasonStart() : "")
+                .header(ApiHeaders.DATA_FETCHED_AT, result.fetchedAt().toString())
                 .body(result.rows());
     }
 }

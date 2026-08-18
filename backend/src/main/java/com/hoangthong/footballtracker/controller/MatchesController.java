@@ -1,10 +1,12 @@
 package com.hoangthong.footballtracker.controller;
 
 import com.hoangthong.footballtracker.dto.DayMatchDto;
+import com.hoangthong.footballtracker.config.ApiHeaders;
 import com.hoangthong.footballtracker.dto.MatchDetailDto;
 import com.hoangthong.footballtracker.dto.MatchDto;
 import com.hoangthong.footballtracker.service.DayMatchesService;
 import com.hoangthong.footballtracker.service.MatchesService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,14 +35,27 @@ public class MatchesController {
 
     /** Cac tran trong 14 ngay toi, tran gan nhat truoc. */
     @GetMapping("/{code}/upcoming")
-    public List<MatchDto> getUpcoming(@PathVariable String code) {
-        return service.getUpcoming(code.toUpperCase());
+    public ResponseEntity<List<MatchDto>> getUpcoming(@PathVariable String code) {
+        return withFetchedAt(service.getUpcoming(code.toUpperCase()));
     }
 
     /** Ket qua 14 ngay qua, tran moi nhat truoc. */
     @GetMapping("/{code}/results")
-    public List<MatchDto> getResults(@PathVariable String code) {
-        return service.getResults(code.toUpperCase());
+    public ResponseEntity<List<MatchDto>> getResults(@PathVariable String code) {
+        return withFetchedAt(service.getResults(code.toUpperCase()));
+    }
+
+    /**
+     * Tra ve danh sach tran, kem gio lay du lieu o header.
+     *
+     * Du lieu di qua cache 30 phut nen co the tre toi nua tieng so voi thuc te. Frontend
+     * dung moc nay hien "Cap nhat luc HH:mm" - nguoi dung so ti so voi TV thay lech thi
+     * biet ngay la do do tre, khong phai web sai.
+     */
+    private static ResponseEntity<List<MatchDto>> withFetchedAt(MatchesService.Result result) {
+        return ResponseEntity.ok()
+                .header(ApiHeaders.DATA_FETCHED_AT, result.fetchedAt().toString())
+                .body(result.matches());
     }
 
     /** Chi tiet 1 tran theo id (football-data.org matchId), vi du /api/matches/12345. */

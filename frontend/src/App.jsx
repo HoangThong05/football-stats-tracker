@@ -32,6 +32,7 @@ import StatueDrawer from "./components/StatueDrawer";
 import PitchBackdrop from "./components/PitchBackdrop";
 import LiveTicker from "./components/LiveTicker";
 import SeasonBreak from "./components/SeasonBreak";
+import DataFreshness from "./components/DataFreshness";
 
 export default function App() {
   const [league, setLeague] = useState("PL");
@@ -42,6 +43,7 @@ export default function App() {
   const [season, setSeason] = useState(null);
   const [autoSeasonYear, setAutoSeasonYear] = useState(null);
   const [seasonStart, setSeasonStart] = useState(null);
+  const [fetchedAt, setFetchedAt] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
@@ -195,6 +197,9 @@ export default function App() {
           // Ngay khai mac mua giai, dung de dem nguoc luc trai mua (xem SeasonBreak)
           setSeasonStart(res.headers.get("X-Season-Start") || null);
         }
+        // Gio backend THUC SU goi nguon du lieu. Chi bang xep hang / lich / ket qua
+        // moi gan header nay; cac view khac tra null va dong "cap nhat" se an di.
+        setFetchedAt(res.headers.get("X-Data-Fetched-At") || null);
         return res.json();
       })
       .then((data) => setData(data))
@@ -668,6 +673,9 @@ export default function App() {
                       onSelectMatch={goToMatch}
                     />
                   )}
+
+                  {/* Tu an o cac view backend khong gan header (vd So sanh doi, Du doan) */}
+                  <DataFreshness fetchedAt={fetchedAt} />
                 </div>
               )}
             </>

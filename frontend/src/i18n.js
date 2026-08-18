@@ -191,6 +191,10 @@ export const translations = {
     break_top_scorer: 'Vua phá lưới',
     break_goals: 'bàn',
 
+    freshness_updated_at: '🕘 Cập nhật lúc',
+    freshness_just_now: 'vừa xong',
+    freshness_minutes_ago: 'phút trước',
+
     season_label_prefix: 'Mùa',
     season_current_suffix: 'hiện tại',
 
@@ -470,6 +474,10 @@ export const translations = {
     break_champion: 'Champions',
     break_top_scorer: 'Top scorer',
     break_goals: 'goals',
+
+    freshness_updated_at: '🕘 Updated at',
+    freshness_just_now: 'just now',
+    freshness_minutes_ago: 'min ago',
 
     season_label_prefix: 'Season',
     season_current_suffix: 'current',
