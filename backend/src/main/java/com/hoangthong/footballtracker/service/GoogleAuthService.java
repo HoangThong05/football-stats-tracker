@@ -122,6 +122,11 @@ public class GoogleAuthService {
 
         User user = userRepository.findByEmail(email).orElseGet(() -> createGoogleUser(email));
 
+        // Khoa tai khoan phai chan CA duong Google, khong thi khoa xong van vao duoc bang nut kia
+        if (!user.isEnabled()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "account_disabled");
+        }
+
         String role = user.getRole().name();
         return new AuthResponse(jwtService.generateToken(user.getEmail(), role), user.getEmail(), role);
     }

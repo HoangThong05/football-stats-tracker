@@ -47,6 +47,11 @@ class MatchesRangeApiTest {
     @MockBean
     private DayMatchesService dayMatchesService;
 
+    // JwtAuthFilter can UserRepository de kiem tai khoan con hoat dong khong.
+    // Cac test o day deu goi endpoint cong khai nen khong can gia lap du lieu gi.
+    @MockBean
+    private com.hoangthong.footballtracker.repository.UserRepository userRepository;
+
     @Test
     void chuoi_ISO_tren_URL_duoc_chuyen_dung_thanh_Instant() throws Exception {
         Instant from = Instant.parse("2026-08-02T17:00:00Z");

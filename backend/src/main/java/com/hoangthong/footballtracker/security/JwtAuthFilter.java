@@ -1,5 +1,6 @@
 package com.hoangthong.footballtracker.security;
 
+import com.hoangthong.footballtracker.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -27,9 +28,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
-    public JwtAuthFilter(JwtService jwtService) {
+    public JwtAuthFilter(JwtService jwtService, UserRepository userRepository) {
         this.jwtService = jwtService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -47,10 +50,29 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String email = claims.getSubject();
                 String role = claims.get("role", String.class);
 
+                /*
+                 * Tra database xem tai khoan con hoat dong khong.
+                 *
+                 * Khong the chi kiem luc dang nhap: token song 24 gio, nen nguoi bi khoa
+                 * van dung tiep binh thuong den het ngay hom do - nhu vay khong con goi la
+                 * khoa nua. Vai tro cung the: vua bi thu quyen admin ma token cu van co
+                 * ROLE_ADMIN ben trong.
+                 *
+                 * Doi lai la mot truy van moi request CO TOKEN (request cong khai khong
+                 * vao nhanh nay). Tim theo email da co chi muc duy nhat nen rat nhe, va
+                 * doi lai su dung dan la xung dang.
+                 */
+                var user = userRepository.findByEmail(email).orElse(null);
+                if (user == null || !user.isEnabled()) {
+                    SecurityContextHolder.clearContext();
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
+                // Lay vai tro tu DB chu khong tu token, de thu quyen co hieu luc ngay
                 // Spring Security quy uoc quyen bat dau bang "ROLE_"; hasRole("ADMIN") -> "ROLE_ADMIN".
-                var authorities = role == null
-                        ? List.<SimpleGrantedAuthority>of()
-                        : List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                role = user.getRole().name();
+                var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
                 var auth = new UsernamePasswordAuthenticationToken(email, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(auth);

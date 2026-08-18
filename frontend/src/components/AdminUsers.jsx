@@ -29,30 +29,36 @@ export default function AdminUsers({ token, onBack, currentEmail }) {
    * Backend con chan mot lan nua (khong tu ha quyen minh, khong ha admin cuoi cung).
    * Kiem tra o day chi de an nut cho do nham - khong duoc coi day la lop bao ve.
    */
-  const roleErrors = {
+  const serverErrors = {
     cannot_demote_self: t('admin_err_self'),
+    cannot_disable_self: t('admin_err_disable_self'),
     last_admin: t('admin_err_last_admin'),
   }
 
-  const changeRole = (user) => {
-    const next = user.role === 'ADMIN' ? 'USER' : 'ADMIN'
+  /** Dung chung cho ca doi vai tro lan khoa/mo - hai loi goi chi khac duong dan va body. */
+  const patchUser = (user, path, body) => {
     setChangingId(user.id)
     setError(null)
 
-    fetch(`${API_BASE}/admin/users/${user.id}/role`, {
+    fetch(`${API_BASE}/admin/users/${user.id}/${path}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
-      body: JSON.stringify({ role: next }),
+      body: JSON.stringify(body),
     })
       .then(async (res) => {
         const data = await res.json().catch(() => ({}))
-        if (!res.ok) throw new Error(roleErrors[data.message] || data.message || `Loi ${res.status}`)
+        if (!res.ok) throw new Error(serverErrors[data.message] || data.message || `Loi ${res.status}`)
         return data
       })
       .then((updated) => setUsers((list) => list.map((u) => (u.id === updated.id ? updated : u))))
       .catch((err) => setError(err.message))
       .finally(() => setChangingId(null))
   }
+
+  const changeRole = (user) =>
+    patchUser(user, 'role', { role: user.role === 'ADMIN' ? 'USER' : 'ADMIN' })
+
+  const toggleEnabled = (user) => patchUser(user, 'enabled', { enabled: !user.enabled })
 
   return (
     <div className="ft-fade">
@@ -87,7 +93,7 @@ export default function AdminUsers({ token, onBack, currentEmail }) {
               {users.map((u) => {
                 const isSelf = u.email === currentEmail
                 return (
-                  <tr key={u.id}>
+                  <tr key={u.id} className={u.enabled ? undefined : 'ft-admin-row-disabled'}>
                     <td>{u.id}</td>
                     <td className="fw-medium">
                       {u.email}
@@ -97,24 +103,32 @@ export default function AdminUsers({ token, onBack, currentEmail }) {
                       <span className={u.role === 'ADMIN' ? 'badge text-bg-danger' : 'badge text-bg-secondary'}>
                         {u.role}
                       </span>
+                      {!u.enabled && (
+                        <span className="badge text-bg-warning ms-1">{t('admin_locked')}</span>
+                      )}
                     </td>
                     <td className="text-secondary small">
                       {new Date(u.createdAt).toLocaleString(lang === 'en' ? 'en-GB' : 'vi-VN')}
                     </td>
                     <td className="text-end">
-                      {/* Chinh minh thi khong hien nut - ha quyen minh la tu khoa minh ra ngoai */}
+                      {/* Chinh minh thi khong hien nut nao - ha quyen hay khoa minh deu la tu chan minh */}
                       {!isSelf && (
-                        <button
-                          className="btn btn-sm btn-outline-secondary"
-                          onClick={() => changeRole(u)}
-                          disabled={changingId != null}
-                        >
-                          {changingId === u.id
-                            ? t('auth_submitting')
-                            : u.role === 'ADMIN'
-                              ? t('admin_demote')
-                              : t('admin_promote')}
-                        </button>
+                        <div className="d-inline-flex gap-1">
+                          <button
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => changeRole(u)}
+                            disabled={changingId != null}
+                          >
+                            {u.role === 'ADMIN' ? t('admin_demote') : t('admin_promote')}
+                          </button>
+                          <button
+                            className={`btn btn-sm ${u.enabled ? 'btn-outline-danger' : 'btn-outline-success'}`}
+                            onClick={() => toggleEnabled(u)}
+                            disabled={changingId != null}
+                          >
+                            {u.enabled ? t('admin_lock') : t('admin_unlock')}
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>

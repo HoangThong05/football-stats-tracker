@@ -28,6 +28,8 @@ export default function AuthPanel({ onSuccess }) {
     email_not_found: t('auth_email_not_found'),
     token_invalid: t('auth_token_invalid'),
     token_expired: t('auth_token_expired'),
+    // Dung ca hai duong dang nhap: mat khau va Google deu tra ma nay khi bi khoa
+    account_disabled: t('auth_account_disabled'),
   }
 
   const switchMode = (next) => {
@@ -184,9 +186,13 @@ export default function AuthPanel({ onSuccess }) {
         </button>
       </form>
 
-      {/* Chi hien o man dang nhap/dang ky - man dat lai mat khau thi khong lien quan */}
+      {/* Chi hien o man dang nhap/dang ky - man dat lai mat khau thi khong lien quan.
+          Nut Google tra ve MA loi tho nen phai qua errMap, khong hien thang cho nguoi dung. */}
       {(mode === 'login' || mode === 'register') && (
-        <GoogleLoginButton onSuccess={onSuccess} onError={setError} />
+        <GoogleLoginButton
+          onSuccess={onSuccess}
+          onError={(code) => setError(errMap[code] || code)}
+        />
       )}
 
       <div className="text-center small mt-3">

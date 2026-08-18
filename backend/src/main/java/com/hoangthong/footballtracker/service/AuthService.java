@@ -45,6 +45,14 @@ public class AuthService {
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials");
         }
+        /*
+         * Bao ro la bi khoa, khong gop chung vao "sai thong tin dang nhap".
+         * Nguoi dung go dung mat khau ma cu bi bao sai thi se ngoi thu lai mai va
+         * cuoi cung di dat lai mat khau - trong khi van de khong nam o mat khau.
+         */
+        if (!user.isEnabled()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "account_disabled");
+        }
         return toAuthResponse(user);
     }
 

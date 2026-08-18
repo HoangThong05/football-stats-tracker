@@ -1190,6 +1190,11 @@ body,
   opacity: 0.8;
 }
 
+/* Hang cua tai khoan bi khoa: mo di de luot qua la nhan ra ngay */
+.ft-admin-row-disabled > td {
+  opacity: 0.55;
+}
+
 /* ---------- Nut dang nhap bang Google ---------- */
 .ft-google-login {
   margin-top: 16px;

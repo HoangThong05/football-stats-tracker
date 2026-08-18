@@ -57,13 +57,7 @@ public class AdminService {
     }
 
     public List<UserSummaryDto> listUsers() {
-        return userRepository.findAll().stream()
-                .map(u -> new UserSummaryDto(
-                        u.getId(),
-                        u.getEmail(),
-                        u.getRole().name(),
-                        u.getCreatedAt().toString()))
-                .toList();
+        return userRepository.findAll().stream().map(AdminService::toDto).toList();
     }
 
     /** So lieu tong quan + tinh trang han muc API, cho trang quan tri. */
@@ -142,7 +136,33 @@ public class AdminService {
         userRepository.save(target);
         log.info("ADMIN {} doi vai tro cua {} thanh {}", actingEmail, target.getEmail(), role);
 
+        return toDto(target);
+    }
+
+    /**
+     * Khoa hoac mo tai khoan.
+     *
+     * Khong cho tu khoa CHINH MINH - bam nham la mat quyen vao ngay lap tuc, va vi
+     * chinh minh khong bao gio bi khoa nen luon con it nhat mot admin dang nhap duoc.
+     * Nho vay khong can them chot "admin cuoi cung" rieng cho viec khoa.
+     */
+    public UserSummaryDto setEnabled(long userId, boolean enabled, String actingEmail) {
+        User target = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user_not_found"));
+
+        if (target.getEmail().equals(actingEmail) && !enabled) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "cannot_disable_self");
+        }
+
+        target.setEnabled(enabled);
+        userRepository.save(target);
+        log.info("ADMIN {} {} tai khoan {}", actingEmail, enabled ? "mo" : "khoa", target.getEmail());
+
+        return toDto(target);
+    }
+
+    private static UserSummaryDto toDto(User u) {
         return new UserSummaryDto(
-                target.getId(), target.getEmail(), target.getRole().name(), target.getCreatedAt().toString());
+                u.getId(), u.getEmail(), u.getRole().name(), u.getCreatedAt().toString(), u.isEnabled());
     }
 }

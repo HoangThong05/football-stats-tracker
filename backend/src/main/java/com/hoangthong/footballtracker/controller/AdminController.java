@@ -73,4 +73,18 @@ public class AdminController {
             Principal actingUser) {
         return adminService.changeRole(id, body.get("role"), actingUser.getName());
     }
+
+    /**
+     * Khoa / mo tai khoan. Body: { "enabled": true } hoac { "enabled": false }.
+     *
+     * Khac voi xoa: du lieu cua nguoi do (du doan, diem, phong) van con nguyen,
+     * chi la ho khong dang nhap duoc nua. Mo lai la moi thu tro ve nhu cu.
+     */
+    @PatchMapping("/users/{id}/enabled")
+    public UserSummaryDto setEnabled(
+            @PathVariable long id,
+            @RequestBody Map<String, Boolean> body,
+            Principal actingUser) {
+        return adminService.setEnabled(id, Boolean.TRUE.equals(body.get("enabled")), actingUser.getName());
+    }
 }

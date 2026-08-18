@@ -33,6 +33,18 @@ public class User {
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
+    /**
+     * Tai khoan bi khoa thi khong dang nhap duoc va moi request kem token deu bi tu choi.
+     *
+     * Kieu Boolean (cho phep null) chu KHONG phai boolean nguyen thuy, va coi null la
+     * "khong bi khoa": Hibernate chay che do update se them cot nay vao bang DA CO SAN
+     * du lieu. Khai bao NOT NULL ma khong co gia tri mac dinh thi Postgres tu choi thang
+     * lenh ALTER TABLE, app khong khoi dong duoc. De null thi cac dong cu doc ra la
+     * binh thuong, khong ai bi khoa oan.
+     */
+    @Column
+    private Boolean enabled;
+
     protected User() {
         // JPA can
     }
@@ -64,6 +76,15 @@ public class User {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    /** null = tai khoan cu, co truoc khi co tinh nang khoa -> coi nhu binh thuong. */
+    public boolean isEnabled() {
+        return enabled == null || enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Column

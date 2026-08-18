@@ -88,6 +88,7 @@ export default function GoogleLoginButton({ onSuccess, onError }) {
                 return data
               })
               .then((data) => onSuccess(data.token, data.email, data.role))
+              // Tra ve MA loi tho; AuthPanel doi sang cau tieng Viet qua errMap cua no
               .catch((err) => onError?.(err.message))
           },
         })
