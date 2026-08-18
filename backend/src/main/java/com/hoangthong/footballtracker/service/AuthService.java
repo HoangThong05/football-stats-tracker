@@ -81,9 +81,9 @@ public class AuthService {
         String resetLink = appUrl + "/reset-password?token=" + token;
         emailService.sendAsync(
                 email,
-                "Dat lai mat khau - Football Stats Tracker",
-                "Bam vao link sau de dat lai mat khau (het han sau 1 gio):\n\n" + resetLink +
-                "\n\nNeu ban khong yeu cau dat lai mat khau, hay bo qua email nay."
+                "Đặt lại mật khẩu - Football Stats Tracker",
+                "Bấm vào liên kết sau để đặt lại mật khẩu (hết hạn sau 1 giờ):\n\n" + resetLink +
+                "\n\nNếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này."
         );
     }
 

@@ -108,16 +108,16 @@ public class MatchNotificationService {
 
     private boolean sendMatchEmail(User user, FavoriteTeam follow, MatchFixture match) {
         String kickoff = VN_FORMAT.format(match.getUtcDate());
-        String subject = "⚽ " + follow.getTeamName() + " sap thi dau!";
+        String subject = "⚽ " + follow.getTeamName() + " sắp thi đấu!";
         String body = """
-                Xin chao,
+                Xin chào,
 
-                Doi ban theo doi - %s - sap co tran dau:
+                Đội bạn theo dõi - %s - sắp có trận đấu:
 
                   %s  vs  %s
-                  Thoi gian: %s (gio Viet Nam)
+                  Thời gian: %s (giờ Việt Nam)
 
-                Dung bo lo nhe!
+                Đừng bỏ lỡ nhé!
 
                 -- Football Stats Tracker
                 """.formatted(follow.getTeamName(), match.getHomeTeam(), match.getAwayTeam(), kickoff);
