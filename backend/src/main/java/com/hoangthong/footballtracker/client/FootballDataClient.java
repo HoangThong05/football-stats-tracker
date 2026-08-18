@@ -34,9 +34,11 @@ public class FootballDataClient {
     private static final int LOW_QUOTA_THRESHOLD = 2;
 
     private final RestClient restClient;
+    private final ApiQuotaTracker quotaTracker;
 
-    public FootballDataClient(RestClient footballDataRestClient) {
+    public FootballDataClient(RestClient footballDataRestClient, ApiQuotaTracker quotaTracker) {
         this.restClient = footballDataRestClient;
+        this.quotaTracker = quotaTracker;
     }
 
     /** @param season nam bat dau mua giai (vd 2025 = mua 2025/26), null = "mua hien tai" theo football-data.org. */
@@ -132,6 +134,9 @@ public class FootballDataClient {
         }
         try {
             int remaining = Integer.parseInt(value.trim());
+            // Ngoai ghi log, nho lai de trang quan tri xem duoc (xem ApiQuotaTracker)
+            quotaTracker.record(remaining);
+
             if (remaining <= LOW_QUOTA_THRESHOLD) {
                 log.warn("Sap het quota football-data.org: con {} request trong phut nay. "
                         + "Vuot qua, API se giu cham cac request tiep theo (~10-15s).", remaining);

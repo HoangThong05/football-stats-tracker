@@ -1,5 +1,6 @@
 package com.hoangthong.footballtracker.repository;
 
+import com.hoangthong.footballtracker.entity.Role;
 import com.hoangthong.footballtracker.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,4 +13,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
     Optional<User> findByResetToken(String resetToken);
+
+    /** Dem theo vai tro - dung de chan viec ha quyen nguoi ADMIN cuoi cung. */
+    long countByRole(Role role);
 }

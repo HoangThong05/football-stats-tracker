@@ -523,7 +523,11 @@ export default function App() {
               onBack={() => setShowFavorites(false)}
             />
           ) : showAdmin ? (
-            <AdminUsers token={token} onBack={() => setShowAdmin(false)} />
+            <AdminUsers
+              token={token}
+              currentEmail={userEmail}
+              onBack={() => setShowAdmin(false)}
+            />
           ) : showLeaderboard ? (
             <LeaderboardView
               token={token}

@@ -1146,6 +1146,50 @@ body,
   transform: scale(0.94);
 }
 
+/* ---------- Bang van hanh cua trang Quan tri ---------- */
+.ft-admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
+  gap: 10px;
+}
+
+.ft-admin-stat {
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color-translucent);
+}
+
+/* Han muc sap can -> to do de dap vao mat truoc khi cham tran */
+.ft-admin-stat-danger {
+  border-color: rgba(220, 38, 38, 0.55);
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.ft-admin-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.ft-admin-stat-danger .ft-admin-stat-value {
+  color: #dc2626;
+}
+
+.ft-admin-stat-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--bs-secondary-color);
+}
+
+.ft-admin-stat-hint {
+  margin-top: 2px;
+  font-size: 0.66rem;
+  color: var(--bs-secondary-color);
+  opacity: 0.8;
+}
+
 /* ---------- Nut dang nhap bang Google ---------- */
 .ft-google-login {
   margin-top: 16px;
