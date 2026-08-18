@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { API_BASE } from '../api'
 import { useTranslation } from '../i18n'
 import GoogleLoginButton from './GoogleLoginButton'
@@ -21,6 +21,20 @@ export default function AuthPanel({ onSuccess }) {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  /*
+   * Gui xong thi thay han form bang man xac nhan, khong con nut de bam nham.
+   * Moi lan bam la backend sinh token moi de len token cu -> bam hai lan thi link
+   * trong thu DAU TIEN chet. Nguoi dung hay mo thu den truoc, bam vao, gap bao loi
+   * "link khong hop le" trong khi thu dung dang nam ngay duoi.
+   */
+  const [sentTo, setSentTo] = useState(null)
+  const [resendIn, setResendIn] = useState(0)
+
+  useEffect(() => {
+    if (resendIn <= 0) return undefined
+    const id = setTimeout(() => setResendIn((s) => s - 1), 1000)
+    return () => clearTimeout(id)
+  }, [resendIn])
 
   const errMap = {
     invalid_credentials: t('auth_invalid_credentials'),
@@ -35,8 +49,36 @@ export default function AuthPanel({ onSuccess }) {
     setMode(next)
     setError(null)
     setSuccess(null)
+    setSentTo(null)
+    setResendIn(0)
     setPassword('')
     setConfirmPassword('')
+  }
+
+  const sendForgot = async () => {
+    setError(null)
+    setSubmitting(true)
+    try {
+      const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(errMap[body.message] || body.message || `Error ${res.status}`)
+      }
+      /*
+       * Bao da gui ma KHONG noi email do co ton tai hay khong. Noi ra thi ai cung
+       * do duoc email nao da dang ky, chi bang cach go thu tung dia chi vao o nay.
+       */
+      setSentTo(email)
+      setResendIn(60)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const submit = async (e) => {
@@ -44,6 +86,10 @@ export default function AuthPanel({ onSuccess }) {
     setError(null)
     setSuccess(null)
 
+    if (mode === 'forgot') {
+      await sendForgot()
+      return
+    }
     if (mode === 'register' && password !== confirmPassword) {
       setError(t('auth_password_mismatch'))
       return
@@ -69,23 +115,6 @@ export default function AuthPanel({ onSuccess }) {
         const data = await res.json()
         onSuccess(data.token, data.email, data.role)
 
-      } else if (mode === 'forgot') {
-        const res = await fetch(`${API_BASE}/auth/forgot-password`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
-        })
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}))
-          throw new Error(errMap[body.message] || body.message || `Error ${res.status}`)
-        }
-        /*
-         * Bao thanh cong ma KHONG noi email do co ton tai hay khong.
-         * Noi ra thi ai cung do duoc email nao da dang ky tren he thong, chi bang cach
-         * go thu tung dia chi vao o nay.
-         */
-        setSuccess(t('auth_forgot_sent').replace('{email}', email))
-
       } else if (mode === 'reset') {
         const res = await fetch(`${API_BASE}/auth/reset-password`, {
           method: 'POST',
@@ -104,6 +133,35 @@ export default function AuthPanel({ onSuccess }) {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const forgotSent = mode === 'forgot' && sentTo
+
+  if (forgotSent) {
+    return (
+      <div className="ft-card p-4 text-center" style={{ maxWidth: 400 }}>
+        <div className="ft-auth-icon d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+          style={{ width: 56, height: 56, background: 'var(--ft-accent-soft)', fontSize: '1.6rem' }}>
+          ✉️
+        </div>
+        <h4 className="fw-bold mb-2">{t('auth_forgot_sent_title')}</h4>
+        <p className="mb-1">{t('auth_forgot_sent_short').replace('{email}', sentTo)}</p>
+        <p className="text-secondary small mb-4">{t('auth_forgot_sent_spam')}</p>
+
+        {error && <div className="alert alert-danger py-2 small">{error}</div>}
+
+        <button type="button" className="btn btn-success w-100 fw-semibold py-2 mb-2"
+          onClick={() => switchMode('login')}>
+          {t('auth_login_now')}
+        </button>
+        <button type="button" className="btn btn-link btn-sm p-0"
+          disabled={resendIn > 0 || submitting} onClick={sendForgot}>
+          {resendIn > 0
+            ? t('auth_forgot_resend_wait').replace('{s}', resendIn)
+            : t('auth_forgot_resend')}
+        </button>
+      </div>
+    )
   }
 
   const icon = { login: '👋', register: '🎉', forgot: '🔑', reset: '🔒' }[mode]
