@@ -71,8 +71,21 @@ export default function AuthPanel({ onSuccess }) {
         onSuccess(data.token, data.email, data.role)
 
       } else if (mode === 'forgot') {
-        // Khong gui email, hien huong dan lien he admin
-        setSuccess(t('auth_forgot_guide_msg').replace('{email}', email))
+        const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        })
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}))
+          throw new Error(errMap[body.message] || body.message || `Error ${res.status}`)
+        }
+        /*
+         * Bao thanh cong ma KHONG noi email do co ton tai hay khong.
+         * Noi ra thi ai cung do duoc email nao da dang ky tren he thong, chi bang cach
+         * go thu tung dia chi vao o nay.
+         */
+        setSuccess(t('auth_forgot_sent').replace('{email}', email))
 
       } else if (mode === 'reset') {
         const res = await fetch(`${API_BASE}/auth/reset-password`, {

@@ -64,7 +64,14 @@ export default function App() {
   const [userEmail, setUserEmail] = useState(initialSession.email);
   const [userRole, setUserRole] = useState(initialSession.role);
   const [sessionExpired, setSessionExpired] = useState(false);
-  const [showAuthForm, setShowAuthForm] = useState(false);
+  /*
+   * Mo san hop thoai khi URL co ?token= - do la nguoi dung vua bam link dat lai mat khau
+   * trong email. Khong co dong nay thi ho vao trang chu, khong thay form dau ca, va
+   * link coi nhu vo dung.
+   */
+  const [showAuthForm, setShowAuthForm] = useState(
+    () => new URLSearchParams(window.location.search).has("token"),
+  );
   const [showAdmin, setShowAdmin] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const [theme, setTheme] = useState(

@@ -6,6 +6,8 @@ import com.hoangthong.footballtracker.entity.User;
 import com.hoangthong.footballtracker.repository.UserRepository;
 import com.hoangthong.footballtracker.security.JwtService;
 import com.hoangthong.footballtracker.service.EmailService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,8 @@ import java.util.UUID;
 
 @Service
 public class AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -56,9 +60,20 @@ public class AuthService {
         return toAuthResponse(user);
     }
 
+    /**
+     * Gui link dat lai mat khau.
+     *
+     * KHONG bao khi email chua dang ky - cu im lang ket thuc nhu binh thuong.
+     * Bao ra thi bat ky ai cung do duoc email nao da co tai khoan, chi bang cach go
+     * thu tung dia chi vao o "Quen mat khau" va xem cai nao bao loi.
+     */
     public void forgotPassword(String email, String appUrl) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "email_not_found"));
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            log.info("Yeu cau dat lai mat khau cho email chua dang ky: {}", email);
+            return;
+        }
+
         String token = UUID.randomUUID().toString();
         user.setResetToken(token);
         user.setResetTokenExpiry(Instant.now().plusSeconds(3600));
