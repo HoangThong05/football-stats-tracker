@@ -24,7 +24,13 @@ public class WebCorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of(allowedOrigin, "https://*.vercel.app"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        /*
+         * PHAI liet ke du moi phuong thuc dang dung. Thieu mot cai thi trinh duyet chan
+         * ngay o buoc preflight - request khong bao gio toi duoc backend, va thong bao
+         * loi chi noi ve CORS chu khong he chi ra phuong thuc nao bi thieu.
+         * PATCH tung bi bo sot, lam vo hai nut doi vai tro va khoa tai khoan.
+         */
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         /*
          * Mac dinh trinh duyet chi cho JS doc mot so header "don gian"; header tu dat

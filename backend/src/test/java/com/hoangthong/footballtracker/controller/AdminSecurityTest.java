@@ -21,8 +21,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.Optional;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -114,6 +117,22 @@ class AdminSecurityTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[1].role").value("ADMIN"));
+    }
+
+    /**
+     * Preflight cho PATCH phai duoc chap nhan.
+     *
+     * Bo sot PATCH trong danh sach phuong thuc cua CORS tung lam vo hai nut doi vai tro
+     * va khoa tai khoan: trinh duyet chan ngay o buoc preflight, request khong bao gio
+     * toi backend, va thong bao loi chi noi ve CORS chu khong chi ra thieu phuong thuc nao.
+     */
+    @Test
+    void preflight_PATCH_tu_frontend_duoc_chap_nhan() throws Exception {
+        mockMvc.perform(options("/api/admin/users/1/enabled")
+                        .header("Origin", "http://localhost:5173")
+                        .header("Access-Control-Request-Method", "PATCH"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Methods", containsString("PATCH")));
     }
 
     @Test
