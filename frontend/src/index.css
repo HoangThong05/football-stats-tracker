@@ -1146,29 +1146,40 @@ body,
   transform: scale(0.94);
 }
 
-.ft-statue-modal {
+/* ---------- Hop thoai dung chung (dang nhap, tuong 3D) ---------- */
+.ft-modal {
   position: fixed;
   inset: 0;
   z-index: 1060; /* tren ca navbar va menu tai khoan */
   display: grid;
   place-items: center;
   padding: 16px;
+  /* Noi dung cao hon man hinh (form dang ky) thi cuon trong hop thoai */
+  overflow-y: auto;
 }
 
-.ft-statue-modal-backdrop {
+.ft-modal-backdrop {
   position: absolute;
   inset: 0;
   background: rgba(3, 8, 5, 0.62);
   backdrop-filter: blur(3px);
 }
 
-.ft-statue-modal-panel {
+.ft-modal-panel {
   position: relative;
   width: 100%;
+  margin: auto;
+}
+
+.ft-modal-md {
+  max-width: 440px;
+}
+
+.ft-modal-lg {
   max-width: 640px;
 }
 
-.ft-statue-modal-close {
+.ft-modal-close {
   position: absolute;
   top: -14px;
   right: -10px;
@@ -1186,7 +1197,7 @@ body,
   box-shadow: var(--ft-shadow-rest);
 }
 
-.ft-statue-modal-close:hover {
+.ft-modal-close:hover {
   background: var(--ft-accent-soft);
   color: var(--ft-accent-strong);
 }

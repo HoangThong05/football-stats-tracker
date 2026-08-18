@@ -29,6 +29,7 @@ import Profile from "./components/Profile";
 import TodayMatches from "./components/TodayMatches";
 import Football3D from "./components/Football3D";
 import StatueDrawer from "./components/StatueDrawer";
+import Modal from "./components/Modal";
 import PitchBackdrop from "./components/PitchBackdrop";
 import LiveTicker from "./components/LiveTicker";
 import SeasonBreak from "./components/SeasonBreak";
@@ -502,12 +503,6 @@ export default function App() {
             </div>
           )}
 
-          {showAuthForm && !userEmail && (
-            <div className="mb-4 ft-fade">
-              <AuthPanel onSuccess={handleAuthSuccess} />
-            </div>
-          )}
-
           {selectedTeamId != null ? (
             <TeamDetail
               teamId={selectedTeamId}
@@ -692,6 +687,20 @@ export default function App() {
           khong duoc tai - do la ly do chinh de cat no di, ngoai chuyen no xoay lien
           tuc gay xao nhang khi dang doc so lieu.
         */}
+        {/*
+          Dang nhap nam trong hop thoai chu khong chen giua trang: chen vao thi form
+          day bang xep hang xuong duoi va nguoi dung mat cho dang doc.
+        */}
+        {showAuthForm && !userEmail && (
+          <Modal
+            onClose={() => setShowAuthForm(false)}
+            label={t("nav_login")}
+            size="md"
+          >
+            <AuthPanel onSuccess={handleAuthSuccess} />
+          </Modal>
+        )}
+
         <StatueDrawer />
       </>
     </LanguageContext.Provider>
