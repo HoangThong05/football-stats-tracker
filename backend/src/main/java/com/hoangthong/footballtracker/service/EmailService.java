@@ -1,5 +1,6 @@
 package com.hoangthong.footballtracker.service;
 
+import com.hoangthong.footballtracker.client.BrevoMailClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,11 +19,14 @@ public class EmailService {
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
     private final JavaMailSender mailSender;
+    private final BrevoMailClient brevoMailClient;
     private final String from;
 
     public EmailService(JavaMailSender mailSender,
+                        BrevoMailClient brevoMailClient,
                         @Value("${spring.mail.username:}") String from) {
         this.mailSender = mailSender;
+        this.brevoMailClient = brevoMailClient;
         this.from = from;
     }
 
@@ -44,8 +48,15 @@ public class EmailService {
 
     public boolean send(String to, String subject, String body) {
         if (!isConfigured()) {
-            log.info("[EMAIL BO QUA - chua cau hinh SMTP] To: {} | {}", to, subject);
+            log.info("[EMAIL BO QUA - chua cau hinh dia chi gui] To: {} | {}", to, subject);
             return false;
+        }
+        /*
+         * Uu tien Brevo (HTTP 443). SMTP chi con dung khi chay local - tren Render
+         * no luon that bai vi cong 587 bi chan.
+         */
+        if (brevoMailClient.isConfigured()) {
+            return brevoMailClient.send(from, to, subject, body);
         }
         try {
             SimpleMailMessage message = new SimpleMailMessage();
