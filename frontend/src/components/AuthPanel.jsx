@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { API_BASE } from '../api'
 import { useTranslation } from '../i18n'
+import GoogleLoginButton from './GoogleLoginButton'
 
 export default function AuthPanel({ onSuccess }) {
   const { t } = useTranslation()
@@ -182,6 +183,11 @@ export default function AuthPanel({ onSuccess }) {
           }[mode]}
         </button>
       </form>
+
+      {/* Chi hien o man dang nhap/dang ky - man dat lai mat khau thi khong lien quan */}
+      {(mode === 'login' || mode === 'register') && (
+        <GoogleLoginButton onSuccess={onSuccess} onError={setError} />
+      )}
 
       <div className="text-center small mt-3">
         {mode === 'login' && (

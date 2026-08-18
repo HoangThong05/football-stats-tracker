@@ -61,6 +61,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+        <!--
+            Xac minh ID token cua Google. Mang theo Nimbus JOSE + NimbusJwtDecoder:
+            tu tai va cache bo khoa cong khai cua Google, tu kiem chu ky RS256.
+            KHONG tu viet phan nay - tu giai ma va so khop khoa la cho rat de sai
+            theo kieu khong lo ra ngay, ma sai o day nghia la ai cung dang nhap duoc.
+            Phien ban do Spring Boot parent quan ly.
+        -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-jose</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>

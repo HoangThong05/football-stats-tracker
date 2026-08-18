@@ -52,6 +52,7 @@ export const translations = {
     auth_signup_now: 'Đăng ký ngay',
     auth_has_account: 'Đã có tài khoản?',
     auth_login_now: 'Đăng nhập',
+    auth_or: 'hoặc',
     auth_show_password: 'Hiện mật khẩu',
     auth_hide_password: 'Ẩn mật khẩu',
 
@@ -336,6 +337,7 @@ export const translations = {
     auth_signup_now: 'Sign up now',
     auth_has_account: 'Already have an account?',
     auth_login_now: 'Log in',
+    auth_or: 'or',
     auth_show_password: 'Show password',
     auth_hide_password: 'Hide password',
 

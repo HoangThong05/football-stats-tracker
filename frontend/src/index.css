@@ -1146,6 +1146,38 @@ body,
   transform: scale(0.94);
 }
 
+/* ---------- Nut dang nhap bang Google ---------- */
+.ft-google-login {
+  margin-top: 16px;
+}
+
+/* Duong ke ngang co chu "hoac" nam giua */
+.ft-google-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+.ft-google-divider::before,
+.ft-google-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--bs-border-color-translucent);
+}
+
+/*
+ * Google tu dung nut ben trong mot iframe, ta khong to mau hay doi kieu chu duoc.
+ * Chi can can giua no lai cho khop voi cac nut con lai cua bang dang nhap.
+ */
+.ft-google-button {
+  display: flex;
+  justify-content: center;
+}
+
 /* ---------- Hop thoai dung chung (dang nhap, tuong 3D) ---------- */
 .ft-modal {
   position: fixed;
