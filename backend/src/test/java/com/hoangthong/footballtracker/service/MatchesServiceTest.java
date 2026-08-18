@@ -51,7 +51,7 @@ class MatchesServiceTest {
                 match(2, "2026-08-21T14:00:00Z", "TIMED", null, null),
                 match(3, "2026-08-19T14:00:00Z", "FINISHED", 2, 1));
 
-        List<MatchDto> result = service.getUpcoming("PL");
+        List<MatchDto> result = service.getUpcoming("PL").matches();
 
         assertThat(result).extracting(MatchDto::id).containsExactly(1L, 2L);
     }
@@ -63,7 +63,7 @@ class MatchesServiceTest {
                 match(2, "2026-08-20T14:00:00Z", "SCHEDULED", null, null),
                 match(3, "2026-08-22T14:00:00Z", "TIMED", null, null));
 
-        List<MatchDto> result = service.getUpcoming("PL");
+        List<MatchDto> result = service.getUpcoming("PL").matches();
 
         assertThat(result).extracting(MatchDto::id).containsExactly(2L, 3L, 1L);
     }
@@ -75,7 +75,7 @@ class MatchesServiceTest {
                 match(2, "2026-05-10T14:00:00Z", "FINISHED", 3, 2),
                 match(3, "2026-05-20T14:00:00Z", "SCHEDULED", null, null));
 
-        List<MatchDto> result = service.getResults("PL");
+        List<MatchDto> result = service.getResults("PL").matches();
 
         assertThat(result).extracting(MatchDto::id).containsExactly(2L, 1L);
         assertThat(result.get(0).homeScore()).isEqualTo(3);
@@ -86,7 +86,7 @@ class MatchesServiceTest {
     void tran_chua_da_thi_ti_so_la_null() {
         stubMatches("PL", match(1, "2026-08-20T14:00:00Z", "SCHEDULED", null, null));
 
-        MatchDto dto = service.getUpcoming("PL").get(0);
+        MatchDto dto = service.getUpcoming("PL").matches().get(0);
 
         assertThat(dto.homeScore()).isNull();
         assertThat(dto.awayScore()).isNull();
@@ -100,7 +100,7 @@ class MatchesServiceTest {
                 team(1, "A"), team(2, "B"), null);
         stubMatches("PL", khongCoScore);
 
-        List<MatchDto> result = service.getUpcoming("PL");
+        List<MatchDto> result = service.getUpcoming("PL").matches();
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).homeScore()).isNull();
@@ -110,7 +110,7 @@ class MatchesServiceTest {
     void khong_co_tran_nao_thi_tra_danh_sach_rong() {
         stubMatches("PL");
 
-        assertThat(service.getUpcoming("PL")).isEmpty();
-        assertThat(service.getResults("PL")).isEmpty();
+        assertThat(service.getUpcoming("PL").matches()).isEmpty();
+        assertThat(service.getResults("PL").matches()).isEmpty();
     }
 }

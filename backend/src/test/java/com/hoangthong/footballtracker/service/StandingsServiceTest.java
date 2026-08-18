@@ -9,6 +9,7 @@ import com.hoangthong.footballtracker.dto.StandingRow;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -121,13 +122,24 @@ class StandingsServiceTest {
      */
     @Test
     void season_tro_toi_tuong_lai_nhung_bang_co_du_lieu_that_thi_lui_lai_1_nam() {
+        /*
+         * Ngay khai mac phai TINH TU HOM NAY, khong duoc ghi cung.
+         *
+         * Ban dau test viet thang "2026-08-16" va da chay tot - cho den dung ngay
+         * 16/08/2026 thi moc do thanh qua khu, nhanh lui nam khong con chay, test do.
+         * Lay thang 8 cua NAM SAU thi luon nam o tuong lai du chay vao thoi diem nao.
+         */
+        int nextYear = LocalDate.now().getYear() + 1;
+
         Team barca = team(81, "FC Barcelona");
         StandingBlock total = new StandingBlock("LEAGUE", "TOTAL", List.of(entry(1, barca, 94)));
         StandingsApiResponse.Season futureSeason =
-                new StandingsApiResponse.Season("2026-08-16", "2027-05-24", 1);
+                new StandingsApiResponse.Season(nextYear + "-08-16", (nextYear + 1) + "-05-24", 1);
         when(client.getStandings("PD", null)).thenReturn(new StandingsApiResponse(null, List.of(total), futureSeason));
 
-        assertThat(service.getStandings("PD", null).seasonLabel()).isEqualTo("2025/26");
+        // Lui 1 nam so voi mua ma API bao -> vd API noi 2027/28 thi that ra la 2026/27
+        String expected = (nextYear - 1) + "/" + String.valueOf(nextYear).substring(2);
+        assertThat(service.getStandings("PD", null).seasonLabel()).isEqualTo(expected);
     }
 
     @Test
