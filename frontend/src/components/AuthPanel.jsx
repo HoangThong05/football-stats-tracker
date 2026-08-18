@@ -25,7 +25,6 @@ export default function AuthPanel({ onSuccess }) {
   const errMap = {
     invalid_credentials: t('auth_invalid_credentials'),
     email_exists: t('auth_email_exists'),
-    email_not_found: t('auth_email_not_found'),
     token_invalid: t('auth_token_invalid'),
     token_expired: t('auth_token_expired'),
     // Dung ca hai duong dang nhap: mat khau va Google deu tra ma nay khi bi khoa
