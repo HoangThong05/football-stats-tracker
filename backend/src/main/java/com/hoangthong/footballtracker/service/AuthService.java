@@ -79,7 +79,7 @@ public class AuthService {
         user.setResetTokenExpiry(Instant.now().plusSeconds(3600));
         userRepository.save(user);
         String resetLink = appUrl + "/reset-password?token=" + token;
-        emailService.send(
+        emailService.sendAsync(
                 email,
                 "Dat lai mat khau - Football Stats Tracker",
                 "Bam vao link sau de dat lai mat khau (het han sau 1 gio):\n\n" + resetLink +

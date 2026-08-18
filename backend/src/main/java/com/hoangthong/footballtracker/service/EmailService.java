@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 /**
@@ -27,6 +28,18 @@ public class EmailService {
 
     public boolean isConfigured() {
         return from != null && !from.isBlank();
+    }
+
+    /**
+     * Gui o luong nen, tra ve ngay lap tuc.
+     *
+     * Dung cho quen mat khau: nguoi dung khong can - va khong nen - phai cho SMTP xong.
+     * Cho o day thi thoi gian phan hoi lo luon email nao co that (gui that thi lau,
+     * khong co thi tra ve tuc thi), dung cai ma man hinh kia co tinh giau di.
+     */
+    @Async
+    public void sendAsync(String to, String subject, String body) {
+        send(to, subject, body);
     }
 
     public boolean send(String to, String subject, String body) {
