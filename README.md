@@ -33,7 +33,7 @@ Premier League · La Liga · Bundesliga · Serie A · Ligue 1 · Champions Leagu
 - Owner can delete the room; members can leave
 
 ### 👤 Accounts
-- Register / login with JWT (BCrypt hashing)
+- Register / login with JWT (BCrypt hashing), or **sign in with Google** — the ID token is verified server-side against Google's public keys, checking signature, audience and `email_verified`
 - **USER** and **ADMIN** roles; admin dashboard lists all users
 - Follow favourite teams
 - Light / dark theme, Vietnamese / English
@@ -54,9 +54,11 @@ Premier League · La Liga · Bundesliga · Serie A · Ligue 1 · Champions Leagu
 - **91 tests** (JUnit 5 + Mockito + MockMvc — no database or network needed)
 - **Dockerfile** for the backend
 
-### ⚠️ Known limitation: squad data
+### ⚠️ A note on squad data
 
-Squads come from football-data.org, which returns them **only for Premier League, Bundesliga and Ligue 1** — La Liga and Serie A come back empty, and the app shows a notice instead. This source also carries no player photos or shirt numbers, so squad entries show name, position, nationality and age only.
+Squads come from football-data.org, and their completeness follows the season: between seasons some leagues come back empty or partial, filling in as the new campaign approaches. When a squad is missing the app shows a notice rather than an empty section.
+
+This source carries no player photos or shirt numbers either, so squad entries show name, position, nationality and age only.
 
 An API-Football integration exists as a fallback but is **currently inactive**. `API_FOOTBALL_KEY` still has to be set for the app to start, though any non-empty value works.
 
@@ -173,6 +175,7 @@ VITE_API_BASE_URL=https://your-backend.onrender.com/api
 |-----|-------------|
 | `FOOTBALL_DATA_API_KEY` | API key from football-data.org |
 | `API_FOOTBALL_KEY` | Required to boot; the integration is inactive, so any value works |
+| `GOOGLE_CLIENT_ID` | OAuth client ID for Google sign-in. Leave unset to hide the button — the app still boots |
 | `JWT_SECRET` | Random string, 32+ characters |
 | `DATABASE_URL` | `jdbc:postgresql://...` from Neon |
 | `DATABASE_USERNAME` | Neon username |
