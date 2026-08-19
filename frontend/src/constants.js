@@ -15,7 +15,6 @@ export const VIEWS = [
   { key: 'results', nameKey: 'view_results' },
   { key: 'scorers', nameKey: 'view_scorers' },
   { key: 'compare', nameKey: 'view_compare' },
-  { key: 'players', nameKey: 'view_players' },
   { key: 'predict', nameKey: 'view_predict' },
 ]
 

@@ -19,7 +19,6 @@ import LeaderboardView from "./components/LeaderboardView";
 import MyPredictionsHistory from "./components/MyPredictionsHistory";
 import StandingsTable from "./components/StandingsTable";
 import CompareTeams from "./components/CompareTeams";
-import PlayerSearch from "./components/PlayerSearch";
 import ScorersTable from "./components/ScorersTable";
 import TeamDetail from "./components/TeamDetail";
 import MatchDetail from "./components/MatchDetail";
@@ -191,16 +190,6 @@ export default function App() {
   }, []);
 
   const loadViewData = () => {
-    /*
-     * Tab cau thu tu goi API rieng theo tu khoa nguoi dung go, khong dung duong
-     * endpointFor() chung. Khong chan o day thi no se goi /matches/{league}/players
-     * - mot duong dan khong ton tai - va tra ve loi 404.
-     */
-    if (view === "players") {
-      setLoading(false);
-      setError(null);
-      return undefined;
-    }
     setLoading(true);
     setError(null);
 
@@ -697,9 +686,6 @@ export default function App() {
                       rows={data}
                       onSelectTeam={setSelectedTeamId}
                     />
-                  )}
-                  {view === "players" && (
-                    <PlayerSearch league={league} onSelectTeam={setSelectedTeamId} />
                   )}
                   {view === "predict" && (
                     <PredictionsView
