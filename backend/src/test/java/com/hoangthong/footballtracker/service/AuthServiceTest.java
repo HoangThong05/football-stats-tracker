@@ -43,7 +43,7 @@ class AuthServiceTest {
     void dang_ky_thanh_cong_thi_tra_ve_role_USER() {
         when(userRepository.existsByEmail("moi@example.com")).thenReturn(false);
         when(passwordEncoder.encode("123456")).thenReturn("hashed");
-        when(jwtService.generateToken("moi@example.com", "USER")).thenReturn("token-abc");
+        when(jwtService.generateToken("moi@example.com", "USER", 0)).thenReturn("token-abc");
 
         AuthResponse response = authService.register(new AuthRequest("moi@example.com", "123456"));
 
@@ -71,7 +71,7 @@ class AuthServiceTest {
 
         when(userRepository.findByEmail("admin@example.com")).thenReturn(Optional.of(admin));
         when(passwordEncoder.matches("123456", "hashed")).thenReturn(true);
-        when(jwtService.generateToken("admin@example.com", "ADMIN")).thenReturn("token-admin");
+        when(jwtService.generateToken("admin@example.com", "ADMIN", 0)).thenReturn("token-admin");
 
         AuthResponse response = authService.login(new AuthRequest("admin@example.com", "123456"));
 

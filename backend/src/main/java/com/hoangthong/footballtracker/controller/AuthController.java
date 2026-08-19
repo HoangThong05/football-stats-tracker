@@ -4,6 +4,7 @@ import com.hoangthong.footballtracker.dto.AuthRequest;
 import com.hoangthong.footballtracker.dto.AuthResponse;
 import com.hoangthong.footballtracker.service.AuthService;
 import com.hoangthong.footballtracker.service.GoogleAuthService;
+import com.hoangthong.footballtracker.security.JwtAuthFilter;
 import com.hoangthong.footballtracker.service.RateLimiterService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +36,8 @@ public class AuthController {
     private static final int LOGIN_PER_IP = 30;
     private static final int REGISTER_PER_IP = 5;
     private static final int RESET_PER_IP = 20;
+    private static final int CHANGE_PER_EMAIL = 10;
+    private static final int CHANGE_PER_IP = 20;
 
     private final AuthService authService;
     private final GoogleAuthService googleAuthService;
@@ -118,6 +121,25 @@ public class AuthController {
         limit("forgot:ip:" + clientIp(http), FORGOT_PER_IP, HOUR);
         limit("forgot:email:" + normalize(body.get("email")), FORGOT_PER_EMAIL, HOUR);
         authService.forgotPassword(body.get("email"), frontendUrl);
+    }
+
+    /**
+     * Doi mat khau khi dang dang nhap. Tra ve token MOI - token cu vua bi vo hieu,
+     * frontend phai thay vao cho cu neu khong chinh nguoi vua doi cung bi dang xuat.
+     */
+    @PostMapping("/change-password")
+    public AuthResponse changePassword(@RequestBody java.util.Map<String, String> body,
+                                       org.springframework.security.core.Authentication auth,
+                                       HttpServletRequest http) {
+        limit("change:ip:" + clientIp(http), CHANGE_PER_IP, QUARTER_HOUR);
+        limit("change:email:" + normalize(auth.getName()), CHANGE_PER_EMAIL, QUARTER_HOUR);
+
+        // JwtAuthFilter gan quyen nay khi token duoc cap qua nut Google
+        boolean viaGoogle = auth.getAuthorities().stream()
+                .anyMatch(a -> JwtAuthFilter.GOOGLE_SESSION.equals(a.getAuthority()));
+
+        return authService.changePassword(
+                auth.getName(), body.get("currentPassword"), body.get("newPassword"), viaGoogle);
     }
 
     @PostMapping("/reset-password")

@@ -78,7 +78,7 @@ class AdminSecurityTest {
     @Test
     void user_thuong_goi_api_admin_thi_bi_chan_403() throws Exception {
         coNguoiDung("an@example.com", Role.USER, true);
-        String tokenUser = jwtService.generateToken("an@example.com", "USER");
+        String tokenUser = jwtService.generateToken("an@example.com", "USER", 0);
 
         mockMvc.perform(get("/api/admin/users").header("Authorization", "Bearer " + tokenUser))
                 .andExpect(status().isForbidden());
@@ -88,7 +88,7 @@ class AdminSecurityTest {
     @Test
     void tai_khoan_bi_khoa_thi_token_cu_cung_khong_dung_duoc() throws Exception {
         coNguoiDung("admin@example.com", Role.ADMIN, false);
-        String token = jwtService.generateToken("admin@example.com", "ADMIN");
+        String token = jwtService.generateToken("admin@example.com", "ADMIN", 0);
 
         mockMvc.perform(get("/api/admin/users").header("Authorization", "Bearer " + token))
                 .andExpect(status().isForbidden());
@@ -98,10 +98,51 @@ class AdminSecurityTest {
     @Test
     void token_ghi_ADMIN_nhung_DB_da_ha_xuong_USER_thi_bi_chan() throws Exception {
         coNguoiDung("cuu-admin@example.com", Role.USER, true);
-        String tokenCu = jwtService.generateToken("cuu-admin@example.com", "ADMIN");
+        String tokenCu = jwtService.generateToken("cuu-admin@example.com", "ADMIN", 0);
 
         mockMvc.perform(get("/api/admin/users").header("Authorization", "Bearer " + tokenCu))
                 .andExpect(status().isForbidden());
+    }
+
+    /**
+     * Doi mat khau xong thi token phat truoc do phai chet ngay.
+     *
+     * Day moi la phan lam cho viec doi mat khau co y nghia: khong co no thi ke da trom
+     * duoc token van dung tiep den khi token het han, dung luc nan nhan tuong minh vua
+     * khoa cua lai.
+     */
+    @Test
+    void doi_mat_khau_xong_thi_token_phat_truoc_do_het_hieu_luc() throws Exception {
+        User u = new User("admin@example.com", "hash");
+        u.setRole(Role.ADMIN);
+        u.setEnabled(true);
+        String tokenCu = jwtService.generateToken("admin@example.com", "ADMIN", u.getTokenVersion());
+
+        // Token con dung truoc khi doi mat khau
+        when(userRepository.findByEmail("admin@example.com")).thenReturn(Optional.of(u));
+        mockMvc.perform(get("/api/admin/users").header("Authorization", "Bearer " + tokenCu))
+                .andExpect(status().isOk());
+
+        u.bumpTokenVersion();
+
+        mockMvc.perform(get("/api/admin/users").header("Authorization", "Bearer " + tokenCu))
+                .andExpect(status().isForbidden());
+    }
+
+    /** Token phat truoc khi co tinh nang nay khong co claim "tv" -> khong duoc da ai ra ngoai. */
+    @Test
+    void token_cu_khong_co_claim_doi_van_dung_duoc_binh_thuong() throws Exception {
+        coNguoiDung("admin@example.com", Role.ADMIN, true);
+        String tokenKhongCoClaim = io.jsonwebtoken.Jwts.builder()
+                .subject("admin@example.com")
+                .claim("role", "ADMIN")
+                .expiration(new java.util.Date(System.currentTimeMillis() + 3600_000))
+                .signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor(
+                        "test-secret-key-phai-dai-toi-thieu-32-ky-tu!!".getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+                .compact();
+
+        mockMvc.perform(get("/api/admin/users").header("Authorization", "Bearer " + tokenKhongCoClaim))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -111,7 +152,7 @@ class AdminSecurityTest {
                 new UserSummaryDto(1, "an@example.com", "USER", "2026-07-09T00:00:00Z", true),
                 new UserSummaryDto(2, "admin@example.com", "ADMIN", "2026-07-09T00:00:00Z", true)));
 
-        String tokenAdmin = jwtService.generateToken("admin@example.com", "ADMIN");
+        String tokenAdmin = jwtService.generateToken("admin@example.com", "ADMIN", 0);
 
         mockMvc.perform(get("/api/admin/users").header("Authorization", "Bearer " + tokenAdmin))
                 .andExpect(status().isOk())

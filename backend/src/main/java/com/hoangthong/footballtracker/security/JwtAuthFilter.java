@@ -27,6 +27,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
 
+    /** Quyen danh dau phien dang nhap bang Google. Khong bat dau bang "ROLE_" nen khong
+     *  anh huong toi hasRole() o SecurityConfig. */
+    public static final String GOOGLE_SESSION = "GOOGLE_SESSION";
+
     private final JwtService jwtService;
     private final UserRepository userRepository;
 
@@ -69,10 +73,33 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     return;
                 }
 
+                /*
+                 * Token phat truoc lan doi mat khau gan nhat thi khong con gia tri.
+                 * Nho vay doi mat khau moi that su da duoc ke dang cam token cu ra ngoai,
+                 * chu khong phai doi xong ma no van dung tiep den khi token het han.
+                 */
+                if (JwtService.tokenVersionOf(claims) != user.getTokenVersion()) {
+                    SecurityContextHolder.clearContext();
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 // Lay vai tro tu DB chu khong tu token, de thu quyen co hieu luc ngay
                 // Spring Security quy uoc quyen bat dau bang "ROLE_"; hasRole("ADMIN") -> "ROLE_ADMIN".
                 role = user.getRole().name();
-                var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                var authorities = new java.util.ArrayList<SimpleGrantedAuthority>();
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+                /*
+                 * Danh dau phien nay dang nhap bang nut Google.
+                 *
+                 * Man doi mat khau dua vao day de biet co nen hoi "mat khau hien tai" khong.
+                 * Hoi theo kieu tai khoan (tao bang Google hay khong) la sai: tai khoan
+                 * dang ky bang mat khau tu lau roi sau nay dang nhap bang Google van bi hoi
+                 * mat khau ma nguoi dung khong he go lan nao trong phien do.
+                 */
+                if (JwtService.viaGoogle(claims)) {
+                    authorities.add(new SimpleGrantedAuthority(GOOGLE_SESSION));
+                }
 
                 var auth = new UsernamePasswordAuthenticationToken(email, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(auth);

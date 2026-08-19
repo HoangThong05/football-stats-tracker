@@ -28,11 +28,23 @@ public class JwtService {
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(String email, String role) {
+    /** Ten claim chua doi token. Doc bang {@link #tokenVersionOf(Claims)}. */
+    private static final String CLAIM_TOKEN_VERSION = "tv";
+
+    /** Phien nay dang nhap bang nut Google hay bang mat khau. */
+    private static final String CLAIM_VIA_GOOGLE = "g";
+
+    public String generateToken(String email, String role, int tokenVersion) {
+        return generateToken(email, role, tokenVersion, false);
+    }
+
+    public String generateToken(String email, String role, int tokenVersion, boolean viaGoogle) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .subject(email)
                 .claim("role", role)
+                .claim(CLAIM_TOKEN_VERSION, tokenVersion)
+                .claim(CLAIM_VIA_GOOGLE, viaGoogle)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(expirationMs)))
                 .signWith(key)
@@ -43,6 +55,22 @@ public class JwtService {
      * Tra ve toan bo claims (email o subject, role o claim "role") neu token hop le;
      * nem ngoai le neu het han/sai chu ky.
      */
+    /**
+     * Doi token ghi trong claim.
+     *
+     * Token phat truoc khi co tinh nang nay khong co claim "tv" -> tra 0, khop voi
+     * tokenVersion mac dinh cua user, nen khong ai bi da ra ngoai luc trien khai.
+     */
+    public static int tokenVersionOf(Claims claims) {
+        Integer version = claims.get(CLAIM_TOKEN_VERSION, Integer.class);
+        return version == null ? 0 : version;
+    }
+
+    /** null (token doi cu) = khong phai phien Google. */
+    public static boolean viaGoogle(Claims claims) {
+        return Boolean.TRUE.equals(claims.get(CLAIM_VIA_GOOGLE, Boolean.class));
+    }
+
     public Claims parseClaims(String token) {
         return Jwts.parser()
                 .verifyWith(key)

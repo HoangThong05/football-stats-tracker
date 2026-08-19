@@ -94,14 +94,59 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "token_expired");
         }
         user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setHasPassword(true);
+        // Nguoi dat lai mat khau thuong la vi nghi bi lo -> da moi phien cu ra ngoai
+        user.bumpTokenVersion();
         user.setResetToken(null);
         user.setResetTokenExpiry(null);
         userRepository.save(user);
     }
 
+    /**
+     * Doi mat khau khi dang dang nhap. Tra ve token MOI vi token cu vua bi vo hieu.
+     *
+     * Tai khoan Google chua tung tu dat mat khau thi khong doi "mat khau hien tai":
+     * ho khong he biet chuoi ngau nhien sinh luc tao tai khoan, hoi cung vo ich.
+     * Dang o trong phien dang nhap da du chung minh danh tinh.
+     */
+    public AuthResponse changePassword(String email, String currentPassword, String newPassword,
+                                      boolean sessionViaGoogle) {
+        if (newPassword == null || newPassword.length() < 6) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "password_too_short");
+        }
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials"));
+
+        /*
+         * Bo qua buoc hoi mat khau cu neu phien nay dang nhap bang Google: nguoi dung
+         * vua chung minh minh lam chu hop thu do voi Google, ma chu hop thu thi dang nao
+         * cung dat lai duoc mat khau qua email. Hoi them chi lam kho chu khong chan duoc ai.
+         */
+        boolean phaiHoiMatKhauCu = user.hasPassword() && !sessionViaGoogle;
+        if (phaiHoiMatKhauCu
+                && (currentPassword == null || !passwordEncoder.matches(currentPassword, user.getPasswordHash()))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "wrong_current_password");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setHasPassword(true);
+        // Da moi thiet bi khac ra ngoai. Ke ma phai doi mat khau vi nghi bi lo thi
+        // de token cu song tiep chinh la de nguyen cai lo do.
+        user.bumpTokenVersion();
+        /*
+         * Huy luon link dat lai mat khau dang treo (neu co). Vua tu doi duoc mat khau
+         * nghia la khong can den no nua, ma de do thi ai cam duoc link cu van vao duoc.
+         */
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+        userRepository.save(user);
+
+        return toAuthResponse(user);
+    }
+
     private AuthResponse toAuthResponse(User user) {
         String role = user.getRole().name();
-        String token = jwtService.generateToken(user.getEmail(), role);
-        return new AuthResponse(token, user.getEmail(), role);
+        String token = jwtService.generateToken(user.getEmail(), role, user.getTokenVersion());
+        return new AuthResponse(token, user.getEmail(), role, user.hasPassword(), false);
     }
 }

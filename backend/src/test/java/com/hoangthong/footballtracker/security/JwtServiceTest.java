@@ -18,7 +18,7 @@ class JwtServiceTest {
 
     @Test
     void token_chua_email_o_subject_va_role_o_claim() {
-        String token = jwtService.generateToken("an@example.com", "ADMIN");
+        String token = jwtService.generateToken("an@example.com", "ADMIN", 0);
 
         Claims claims = jwtService.parseClaims(token);
 
@@ -28,7 +28,7 @@ class JwtServiceTest {
 
     @Test
     void role_USER_cung_duoc_nhung_vao_token() {
-        String token = jwtService.generateToken("binh@example.com", "USER");
+        String token = jwtService.generateToken("binh@example.com", "USER", 0);
 
         assertThat(jwtService.parseClaims(token).get("role", String.class)).isEqualTo("USER");
     }
@@ -37,7 +37,7 @@ class JwtServiceTest {
     void token_het_han_thi_nem_ngoai_le() {
         // expirationMs am => token sinh ra da het han ngay lap tuc
         JwtService expiredService = new JwtService(SECRET, -1000L);
-        String token = expiredService.generateToken("an@example.com", "USER");
+        String token = expiredService.generateToken("an@example.com", "USER", 0);
 
         assertThatThrownBy(() -> expiredService.parseClaims(token))
                 .isInstanceOf(ExpiredJwtException.class);
@@ -45,7 +45,7 @@ class JwtServiceTest {
 
     @Test
     void token_ky_bang_secret_khac_thi_bi_tu_choi() {
-        String token = jwtService.generateToken("an@example.com", "USER");
+        String token = jwtService.generateToken("an@example.com", "USER", 0);
         JwtService kePhaHoai = new JwtService("secret-khac-hoan-toan-cung-dai-32-ky-tu!!!!", ONE_HOUR);
 
         assertThatThrownBy(() -> kePhaHoai.parseClaims(token))
@@ -54,7 +54,7 @@ class JwtServiceTest {
 
     @Test
     void token_bi_sua_doi_thi_bi_tu_choi() {
-        String token = jwtService.generateToken("an@example.com", "USER");
+        String token = jwtService.generateToken("an@example.com", "USER", 0);
         String tokenGia = token.substring(0, token.length() - 2) + "xx";
 
         assertThatThrownBy(() -> jwtService.parseClaims(tokenGia))

@@ -9,10 +9,15 @@ import { useTranslation } from '../i18n'
  * tra ve token moi. Phai giao token do cho App qua onTokenRenewed, khong thi nguoi
  * vua doi mat khau se bi dang xuat ngay tai cho.
  *
- * hasPassword = false: tai khoan tao bang Google, chua tu dat mat khau bao gio ->
- * khong hoi "mat khau hien tai" vi ho khong the biet no.
+ * Chi hoi "mat khau hien tai" khi CA HAI dieu sau dung:
+ *   - tai khoan da tung tu dat mat khau (hasPassword)
+ *   - phien nay dang nhap bang mat khau, khong phai bang nut Google (!viaGoogle)
+ *
+ * Thieu ve viaGoogle la sai o cho: mot tai khoan dang ky bang email tu lau, nay dang
+ * nhap bang nut Google, van bi doi mat khau ma nguoi dung khong he go lan nao trong
+ * phien do - va rat co the khong con nho.
  */
-export default function ChangePassword({ token, hasPassword, onTokenRenewed }) {
+export default function ChangePassword({ token, hasPassword, viaGoogle, onTokenRenewed }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
@@ -22,6 +27,8 @@ export default function ChangePassword({ token, hasPassword, onTokenRenewed }) {
   const [error, setError] = useState(null)
   const [done, setDone] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+
+  const hoiMatKhauCu = hasPassword && !viaGoogle
 
   const errMap = {
     wrong_current_password: t('pw_wrong_current'),
@@ -58,7 +65,7 @@ export default function ChangePassword({ token, hasPassword, onTokenRenewed }) {
         throw new Error(errMap[body.message] || body.message || `Error ${res.status}`)
       }
       const data = await res.json()
-      onTokenRenewed(data.token, data.email, data.role, data.hasPassword)
+      onTokenRenewed(data.token, data.email, data.role, data.hasPassword, data.viaGoogle)
       reset()
       setOpen(false)
       setDone(true)
@@ -73,9 +80,9 @@ export default function ChangePassword({ token, hasPassword, onTokenRenewed }) {
     <div className="ft-card p-3 mb-3">
       <div className="d-flex justify-content-between align-items-center">
         <div>
-          <h4 className="h6 mb-1">🔒 {hasPassword ? t('pw_title') : t('pw_title_set')}</h4>
+          <h4 className="h6 mb-1">🔒 {hoiMatKhauCu ? t('pw_title') : t('pw_title_set')}</h4>
           <p className="text-secondary small mb-0">
-            {hasPassword ? t('pw_subtitle') : t('pw_subtitle_set')}
+            {hoiMatKhauCu ? t('pw_subtitle') : t('pw_subtitle_set')}
           </p>
         </div>
         <button type="button" className="btn btn-sm btn-outline-secondary flex-shrink-0"
@@ -90,7 +97,7 @@ export default function ChangePassword({ token, hasPassword, onTokenRenewed }) {
 
       {open && (
         <form onSubmit={submit} className="d-flex flex-column gap-3 mt-3">
-          {hasPassword && (
+          {hoiMatKhauCu && (
             <div>
               <label className="form-label small fw-medium">{t('pw_current')}</label>
               <input type={show ? 'text' : 'password'} className="form-control"
@@ -105,7 +112,7 @@ export default function ChangePassword({ token, hasPassword, onTokenRenewed }) {
               <input type={show ? 'text' : 'password'} className="form-control"
                 placeholder={t('auth_password_placeholder_register')}
                 value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-                required minLength={6} autoFocus={!hasPassword} />
+                required minLength={6} autoFocus={!hoiMatKhauCu} />
               <button type="button" className="btn btn-outline-secondary" tabIndex={-1}
                 onClick={() => setShow((v) => !v)}>
                 {show ? '🙈' : '👁️'}

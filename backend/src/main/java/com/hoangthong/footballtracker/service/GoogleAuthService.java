@@ -128,7 +128,10 @@ public class GoogleAuthService {
         }
 
         String role = user.getRole().name();
-        return new AuthResponse(jwtService.generateToken(user.getEmail(), role), user.getEmail(), role);
+        // viaGoogle = true: phien nay chung minh danh tinh bang Google, khong phai bang
+        // mat khau -> man doi mat khau se khong hoi "mat khau hien tai".
+        String token = jwtService.generateToken(user.getEmail(), role, user.getTokenVersion(), true);
+        return new AuthResponse(token, user.getEmail(), role, user.hasPassword(), true);
     }
 
     private void verifyIssuer(Jwt jwt) {
@@ -167,6 +170,9 @@ public class GoogleAuthService {
     private User createGoogleUser(String email) {
         log.info("Tao tai khoan moi tu dang nhap Google: {}", email);
         User user = new User(email, passwordEncoder.encode(UUID.randomUUID().toString()));
+        // Danh dau chua tu dat mat khau, de man doi mat khau khong hoi "mat khau hien tai"
+        // - chuoi ngau nhien tren kia thi chu tai khoan lam sao ma biet.
+        user.setHasPassword(false);
         return userRepository.save(user);
     }
 }

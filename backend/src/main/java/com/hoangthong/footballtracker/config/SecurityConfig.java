@@ -43,6 +43,9 @@ public class SecurityConfig {
                         // request forward se bi chinh Security chan lai (chua dang nhap) -> tra ve
                         // 403 rong thay vi ma loi that su (401 kem thong bao).
                         .requestMatchers("/error").permitAll()
+                        // PHAI dung TRUOC dong /api/auth/** duoi day: Spring lay luat khop
+                        // dau tien, dat sau thi permitAll nuot mat va principal se la null.
+                        .requestMatchers("/api/auth/change-password").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/standings/**", "/api/matches/**", "/api/teams/**", "/api/scorers/**").permitAll()
                         // Xem lich du doan + BXH du doan la cong khai; GUI du doan (POST /api/predictions)

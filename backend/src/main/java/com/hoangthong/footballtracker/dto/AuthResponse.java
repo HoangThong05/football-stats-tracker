@@ -1,4 +1,12 @@
 package com.hoangthong.footballtracker.dto;
 
-public record AuthResponse(String token, String email, String role) {
+/**
+ * @param hasPassword false = tai khoan chua bao gio tu dat mat khau (tao bang Google).
+ * @param viaGoogle   true = PHIEN NAY dang nhap bang nut Google, khong phai bang mat khau.
+ *                    Man doi mat khau dua vao day de biet co hoi "mat khau hien tai" khong -
+ *                    hoi theo kieu tai khoan la sai, vi mot tai khoan co the dang nhap
+ *                    duoc ca hai duong.
+ */
+public record AuthResponse(String token, String email, String role,
+                           boolean hasPassword, boolean viaGoogle) {
 }

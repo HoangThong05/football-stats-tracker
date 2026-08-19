@@ -64,6 +64,8 @@ export default function App() {
   const [userEmail, setUserEmail] = useState(initialSession.email);
   const [userRole, setUserRole] = useState(initialSession.role);
   const [hasPassword, setHasPassword] = useState(initialSession.hasPassword);
+  // Phien nay dang nhap bang nut Google -> man doi mat khau khong hoi mat khau cu
+  const [viaGoogle, setViaGoogle] = useState(initialSession.viaGoogle);
   const [sessionExpired, setSessionExpired] = useState(false);
   /*
    * Mo san hop thoai khi URL co ?token= - do la nguoi dung vua bam link dat lai mat khau
@@ -240,15 +242,17 @@ export default function App() {
     else setFavorites([]);
   }, [token]);
 
-  const handleAuthSuccess = (newToken, email, role, hasPwd = true) => {
+  const handleAuthSuccess = (newToken, email, role, hasPwd = true, google = false) => {
     localStorage.setItem("ft_token", newToken);
     localStorage.setItem("ft_email", email);
     localStorage.setItem("ft_role", role);
     localStorage.setItem("ft_has_password", String(hasPwd));
+    localStorage.setItem("ft_via_google", String(google));
     setToken(newToken);
     setUserEmail(email);
     setUserRole(role);
     setHasPassword(hasPwd);
+    setViaGoogle(google);
     setSessionExpired(false);
     setShowAuthForm(false);
   };
@@ -259,13 +263,15 @@ export default function App() {
    * chinh nguoi vua doi mat khau bi da ra ngoai.
    * Khong dong hop thoai / doi trang: nguoi dung dang o giua trang Ho so.
    */
-  const handleTokenRenewed = (newToken, email, role, hasPwd) => {
+  const handleTokenRenewed = (newToken, email, role, hasPwd, google) => {
     localStorage.setItem("ft_token", newToken);
     localStorage.setItem("ft_has_password", String(hasPwd));
+    localStorage.setItem("ft_via_google", String(google));
     setToken(newToken);
     setUserEmail(email);
     setUserRole(role);
     setHasPassword(hasPwd);
+    setViaGoogle(google);
   };
 
   /**
@@ -571,6 +577,7 @@ export default function App() {
               token={token}
               userEmail={userEmail}
               hasPassword={hasPassword}
+              viaGoogle={viaGoogle}
               onTokenRenewed={handleTokenRenewed}
               favorites={favorites}
               onBack={() => setShowProfile(false)}

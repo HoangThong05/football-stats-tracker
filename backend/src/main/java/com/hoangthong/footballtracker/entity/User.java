@@ -45,6 +45,32 @@ public class User {
     @Column
     private Boolean enabled;
 
+    /**
+     * Tang len moi lan doi mat khau, de vo hieu toan bo token da phat truoc do.
+     *
+     * Khong co no thi doi mat khau gan nhu vo nghia ve bao mat: JWT song 24 gio va
+     * khong the thu hoi, nen ke da trom duoc token van dung tiep binh thuong den het
+     * han - dung luc nan nhan tuong minh vua khoa cua lai.
+     *
+     * null = token phat truoc khi co tinh nang nay -> coi la 0, khop voi claim thieu,
+     * nen nguoi dang dang nhap khong bi da ra ngoai luc trien khai.
+     */
+    @Column
+    private Integer tokenVersion;
+
+    /**
+     * false = tai khoan tao bang Google, chua tu dat mat khau bao gio.
+     *
+     * Tai khoan kieu do van co passwordHash (chuoi ngau nhien) nhung chu nhan khong
+     * he biet no. Bat ho nhap "mat khau hien tai" thi khong bao gio dung duoc - phai
+     * cho dat thang mat khau moi, phien dang nhap da la bang chung danh tinh roi.
+     *
+     * null = tai khoan cu, coi nhu CO mat khau (dung voi hau het), truong hop con lai
+     * van con duong quen mat khau de tu dat.
+     */
+    @Column
+    private Boolean hasPassword;
+
     protected User() {
         // JPA can
     }
@@ -85,6 +111,25 @@ public class User {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    /** null = token doi cu, coi la 0. */
+    public int getTokenVersion() {
+        return tokenVersion == null ? 0 : tokenVersion;
+    }
+
+    /** Goi sau moi lan doi mat khau: moi token da phat deu het gia tri. */
+    public void bumpTokenVersion() {
+        this.tokenVersion = getTokenVersion() + 1;
+    }
+
+    /** null = tai khoan cu, coi nhu da co mat khau. */
+    public boolean hasPassword() {
+        return hasPassword == null || hasPassword;
+    }
+
+    public void setHasPassword(boolean hasPassword) {
+        this.hasPassword = hasPassword;
     }
 
     @Column
