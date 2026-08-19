@@ -43,6 +43,7 @@ export default function AuthPanel({ onSuccess }) {
     token_expired: t('auth_token_expired'),
     // Dung ca hai duong dang nhap: mat khau va Google deu tra ma nay khi bi khoa
     account_disabled: t('auth_account_disabled'),
+    rate_limited: t('auth_rate_limited'),
   }
 
   const switchMode = (next) => {
