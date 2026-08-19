@@ -63,6 +63,7 @@ export default function App() {
   const [token, setToken] = useState(initialSession.token);
   const [userEmail, setUserEmail] = useState(initialSession.email);
   const [userRole, setUserRole] = useState(initialSession.role);
+  const [hasPassword, setHasPassword] = useState(initialSession.hasPassword);
   const [sessionExpired, setSessionExpired] = useState(false);
   /*
    * Mo san hop thoai khi URL co ?token= - do la nguoi dung vua bam link dat lai mat khau
@@ -239,15 +240,32 @@ export default function App() {
     else setFavorites([]);
   }, [token]);
 
-  const handleAuthSuccess = (newToken, email, role) => {
+  const handleAuthSuccess = (newToken, email, role, hasPwd = true) => {
     localStorage.setItem("ft_token", newToken);
     localStorage.setItem("ft_email", email);
     localStorage.setItem("ft_role", role);
+    localStorage.setItem("ft_has_password", String(hasPwd));
     setToken(newToken);
     setUserEmail(email);
     setUserRole(role);
+    setHasPassword(hasPwd);
     setSessionExpired(false);
     setShowAuthForm(false);
+  };
+
+  /*
+   * Doi mat khau xong, backend vo hieu MOI token cu roi cap token moi. Phai thay
+   * vao localStorage ngay - khong thi request tiep theo van gui token da chet va
+   * chinh nguoi vua doi mat khau bi da ra ngoai.
+   * Khong dong hop thoai / doi trang: nguoi dung dang o giua trang Ho so.
+   */
+  const handleTokenRenewed = (newToken, email, role, hasPwd) => {
+    localStorage.setItem("ft_token", newToken);
+    localStorage.setItem("ft_has_password", String(hasPwd));
+    setToken(newToken);
+    setUserEmail(email);
+    setUserRole(role);
+    setHasPassword(hasPwd);
   };
 
   /**
@@ -552,6 +570,8 @@ export default function App() {
             <Profile
               token={token}
               userEmail={userEmail}
+              hasPassword={hasPassword}
+              onTokenRenewed={handleTokenRenewed}
               favorites={favorites}
               onBack={() => setShowProfile(false)}
               onSelectTeam={goToTeam}

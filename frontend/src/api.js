@@ -42,12 +42,15 @@ export function loadSavedSession() {
   const token = localStorage.getItem('ft_token')
   if (isTokenExpired(token)) {
     clearSavedSession()
-    return { token: null, email: null, role: null }
+    return { token: null, email: null, role: null, hasPassword: true }
   }
   return {
     token,
     email: localStorage.getItem('ft_email'),
     role: localStorage.getItem('ft_role'),
+    // Thieu khoa nay = phien luu tu ban cu -> coi nhu co mat khau (dung voi hau het).
+    // Doan sai thi man doi mat khau chi hoi thua 1 o, khong khoa ai ra ngoai.
+    hasPassword: localStorage.getItem('ft_has_password') !== 'false',
   }
 }
 
@@ -55,4 +58,5 @@ export function clearSavedSession() {
   localStorage.removeItem('ft_token')
   localStorage.removeItem('ft_email')
   localStorage.removeItem('ft_role')
+  localStorage.removeItem('ft_has_password')
 }
