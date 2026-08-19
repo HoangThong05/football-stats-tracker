@@ -21,8 +21,11 @@ public class TeamService {
 
     private final FootballDataClient client;
     private final TeamSquadService squadService;
+    private final PlayerIndexService playerIndexService;
 
-    public TeamService(FootballDataClient client, TeamSquadService squadService) {
+    public TeamService(FootballDataClient client, TeamSquadService squadService,
+                       PlayerIndexService playerIndexService) {
+        this.playerIndexService = playerIndexService;
         this.client = client;
         this.squadService = squadService;
     }
@@ -48,7 +51,7 @@ public class TeamService {
             squad = squadService.getSquad(teamId, response.name(), response.shortName());
         }
 
-        return new TeamDetailDto(
+        TeamDetailDto dto = new TeamDetailDto(
                 response.id(),
                 response.name(),
                 response.crest(),
@@ -59,6 +62,22 @@ public class TeamService {
                 coachName,
                 squad
         );
+
+        /*
+         * Tien the ghi doi hinh vao chi muc tim kiem. Du lieu da nam san trong tay,
+         * khong ton them request nao. Nam trong nhanh @Cacheable nen chi chay khi
+         * cache truot chu khong phai moi lan mo trang.
+         *
+         * Khong biet ma giai o day (mot doi co the du nhieu giai) -> de null, job lam am
+         * se dien vao sau. Loi ghi chi muc khong duoc lam hong trang doi bong.
+         */
+        try {
+            playerIndexService.indexTeam(dto, null);
+        } catch (Exception e) {
+            log.warn("Khong ghi duoc chi muc cau thu cho doi {}: {}", teamId, e.getMessage());
+        }
+
+        return dto;
     }
 
     /**

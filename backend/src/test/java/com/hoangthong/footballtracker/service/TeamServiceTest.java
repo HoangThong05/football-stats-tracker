@@ -28,7 +28,8 @@ class TeamServiceTest {
     void setUp() {
         client = mock(FootballDataClient.class);
         squadService = mock(TeamSquadService.class);
-        service = new TeamService(client, squadService);
+        // Ghi chi muc cau thu chi la viec phu, khong anh huong ket qua tra ve
+        service = new TeamService(client, squadService, mock(PlayerIndexService.class));
     }
 
     private static TeamApiResponse teamWith(List<TeamApiResponse.Player> squad) {
