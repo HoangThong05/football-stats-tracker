@@ -107,6 +107,13 @@ public class PlayerIndexService {
         return repository.findByTeamId(teamId);
     }
 
+    /** So cau thu va so doi da co trong chi muc - de giao dien bao tien do. */
+    public java.util.Map<String, Long> status() {
+        return java.util.Map.of(
+                "players", repository.count(),
+                "teams", repository.countDistinctTeams());
+    }
+
     public long countInLeague(String leagueCode) {
         return repository.countByLeagueCode(leagueCode);
     }

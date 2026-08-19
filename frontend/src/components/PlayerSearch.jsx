@@ -5,6 +5,8 @@ import { shortTeamName } from '../utils'
 
 const MIN_CHARS = 2
 const DEBOUNCE_MS = 300
+// 6 giai x ~20 doi. Chi de uoc luong tien do, khong can chinh xac tuyet doi.
+const EXPECTED_TEAMS = 120
 
 /**
  * Tim cau thu theo ten.
@@ -20,7 +22,18 @@ export default function PlayerSearch({ league, onSelectTeam }) {
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
+  // Da phai noi rong ra cac giai khac moi tim thay
+  const [widened, setWidened] = useState(false)
   const requestId = useRef(0)
+  const [status, setStatus] = useState(null)
+
+  // Chi de giai thich khi khong tim thay: dang thieu du lieu hay that su khong co
+  useEffect(() => {
+    fetch(`${API_BASE}/players/index-status`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then(setStatus)
+      .catch(() => setStatus(null))
+  }, [searched])
 
   useEffect(() => {
     const q = query.trim()
@@ -38,14 +51,29 @@ export default function PlayerSearch({ league, onSelectTeam }) {
        */
       const id = ++requestId.current
       setLoading(true)
-      const url = `${API_BASE}/players/search?q=${encodeURIComponent(q)}` +
-        (allLeagues ? '' : `&league=${league}`)
+      const base = `${API_BASE}/players/search?q=${encodeURIComponent(q)}`
+      const url = allLeagues ? base : `${base}&league=${league}`
 
       fetch(url)
         .then((res) => (res.ok ? res.json() : []))
         .then((data) => {
+          /*
+           * Khong co trong giai dang xem thi thu lai tren tat ca cac giai.
+           * Rat hay gap: nguoi dung dang o Premier League nhung go "Mbappe" - anh ay
+           * da cho Real Madrid. Bao "khong tim thay" luc do la dung ky thuat nhung
+           * vo dung voi nguoi dung, vi cau thu do CO trong du lieu.
+           */
+          if (data.length === 0 && !allLeagues) {
+            return fetch(base)
+              .then((r) => (r.ok ? r.json() : []))
+              .then((all) => ({ rows: all, widened: all.length > 0 }))
+          }
+          return { rows: data, widened: false }
+        })
+        .then(({ rows, widened }) => {
           if (id !== requestId.current) return
-          setResults(data)
+          setResults(rows)
+          setWidened(widened)
           setSearched(true)
         })
         .catch(() => {
@@ -96,8 +124,19 @@ export default function PlayerSearch({ league, onSelectTeam }) {
       {!loading && searched && results.length === 0 && (
         <div className="ft-card p-3">
           <p className="mb-1">{t('players_none')}</p>
-          <p className="text-secondary small mb-0">{t('players_index_note')}</p>
+          <p className="text-secondary small mb-0">
+            {status && status.teams < EXPECTED_TEAMS
+              ? t('players_indexing')
+                  .replace('{teams}', status.teams)
+                  .replace('{total}', EXPECTED_TEAMS)
+                  .replace('{players}', status.players)
+              : t('players_index_note')}
+          </p>
         </div>
+      )}
+
+      {!loading && widened && results.length > 0 && (
+        <p className="text-secondary small">{t('players_widened')}</p>
       )}
 
       {results.length > 0 && (

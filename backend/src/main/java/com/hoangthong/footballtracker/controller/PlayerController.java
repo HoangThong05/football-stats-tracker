@@ -38,6 +38,12 @@ public class PlayerController {
         return service.byTeam(teamId).stream().map(PlayerController::toDto).toList();
     }
 
+    /** Tien do lap chi muc, de giao dien noi ro dang thieu chu khong phai khong co. */
+    @GetMapping("/index-status")
+    public java.util.Map<String, Long> indexStatus() {
+        return service.status();
+    }
+
     private static PlayerSearchDto toDto(IndexedPlayer p) {
         return new PlayerSearchDto(
                 p.getId(),

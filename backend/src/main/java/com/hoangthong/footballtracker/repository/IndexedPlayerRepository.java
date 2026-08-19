@@ -51,4 +51,7 @@ public interface IndexedPlayerRepository extends JpaRepository<IndexedPlayer, Lo
     List<Long> findIndexedTeamIds(@Param("league") String league);
 
     long countByLeagueCode(String leagueCode);
+
+    @Query("SELECT COUNT(DISTINCT p.teamId) FROM IndexedPlayer p")
+    long countDistinctTeams();
 }

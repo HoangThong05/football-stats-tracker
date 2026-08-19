@@ -18,8 +18,9 @@ import java.util.Set;
  * dung chung voi moi thu nguoi dung dang xem. Neu quet ca 6 giai mot luc (khoang 120 doi)
  * thi cham tran ngay, va nguoi dung dang mo trang se an 429 -> ca trang bao loi.
  *
- * Nen moi nhip chi lam mot doi. Chay het 120 doi mat vai tieng, nhung khong ai thay
- * gi ca - va sau lan dau thi du lieu nam trong database, khong phai lam lai.
+ * Nen moi nhip chi lam mot doi, cach nhau 15 giay = 4 request/phut, con chua 6 cho
+ * nguoi dung. Khoang 120 doi -> day trong chung 30 phut, va sau lan dau thi du lieu
+ * nam trong database nen khong phai lam lai.
  */
 @Service
 public class PlayerIndexWarmer {
@@ -47,7 +48,7 @@ public class PlayerIndexWarmer {
 
     @Scheduled(
             initialDelayString = "${app.player-index.initial-delay-ms:120000}",
-            fixedDelayString = "${app.player-index.interval-ms:90000}")
+            fixedDelayString = "${app.player-index.interval-ms:15000}")
     public void indexNextTeam() {
         if (queue.isEmpty()) {
             refillQueue();
