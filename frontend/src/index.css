@@ -2353,3 +2353,14 @@ tr[role='button']:hover img,
   line-height: 17px;
   text-align: center;
 }
+
+/* Cham danh dau tran chua xem trong bang nhac tran */
+.ft-rem-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--ft-accent, #ffc107);
+  vertical-align: middle;
+}

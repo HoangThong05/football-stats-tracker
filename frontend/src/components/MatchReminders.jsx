@@ -11,6 +11,22 @@ import { shortTeamName } from '../utils'
  */
 const BADGE_WINDOW_HOURS = 48
 const REFRESH_MS = 10 * 60 * 1000
+const SEEN_KEY = 'ft_seen_matches'
+
+/*
+ * Cac tran da xem duoc ghi o localStorage chu khong luu tren may chu.
+ *
+ * Day chi la loi nhac, khong phai du lieu: doc tren may nay ma may khac van con bao
+ * thi cung khong sao, doi lai khong phai them bang, them endpoint, them dong bo.
+ */
+function loadSeen() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SEEN_KEY) || '[]')
+    return Array.isArray(raw) ? new Set(raw) : new Set()
+  } catch {
+    return new Set()
+  }
+}
 
 /**
  * Chuong nhac tran: cac tran sap dien ra cua doi dang theo doi.
@@ -18,10 +34,17 @@ const REFRESH_MS = 10 * 60 * 1000
  * Thay cho email nhac tran (da tat qua app.notify.email-enabled). Doc tu database
  * nen khong ton han muc API - goi lai dinh ky thoai mai.
  */
-export default function MatchReminders({ token, onSelectTeam }) {
+export default function MatchReminders({ token, onSelectMatch }) {
   const { t, lang } = useTranslation()
   const [matches, setMatches] = useState([])
   const [open, setOpen] = useState(false)
+  const [seen, setSeen] = useState(loadSeen)
+  /*
+   * Chup lai nhung tran CHUA xem ngay truoc khi danh dau da xem.
+   * Khong co no thi mo bang ra la cham xanh bien mat cung luc - nguoi dung khong kip
+   * thay cai nao la moi.
+   */
+  const [newAtOpen, setNewAtOpen] = useState(new Set())
 
   useEffect(() => {
     if (!token) {
@@ -53,7 +76,23 @@ export default function MatchReminders({ token, onSelectTeam }) {
   }
 
   const soonLimit = Date.now() + BADGE_WINDOW_HOURS * 3600 * 1000
-  const soonCount = matches.filter((m) => new Date(m.utcDate).getTime() <= soonLimit).length
+  const soonCount = matches.filter(
+    (m) => new Date(m.utcDate).getTime() <= soonLimit && !seen.has(m.matchId),
+  ).length
+
+  const markAllSeen = () => {
+    /*
+     * Chi giu id cua cac tran DANG trong danh sach. Tran da da xong thi bo ra,
+     * khong thi danh sach nay phinh mai khong bao gio nho lai.
+     */
+    const ids = matches.map((m) => m.matchId)
+    setSeen(new Set(ids))
+    try {
+      localStorage.setItem(SEEN_KEY, JSON.stringify(ids))
+    } catch {
+      // Trinh duyet chan localStorage (che do rieng tu) -> bo qua, chuong van chay
+    }
+  }
 
   const formatKickoff = (utcDate) => {
     const d = new Date(utcDate)
@@ -76,7 +115,14 @@ export default function MatchReminders({ token, onSelectTeam }) {
     >
       <button
         className="ft-nav-btn ft-nav-btn-icon"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          const next = !open
+          setOpen(next)
+          if (next) {
+            setNewAtOpen(new Set(matches.filter((m) => !seen.has(m.matchId)).map((m) => m.matchId)))
+            markAllSeen()
+          }
+        }}
         title={t('rem_title')}
         style={{ position: 'relative' }}
       >
@@ -98,10 +144,11 @@ export default function MatchReminders({ token, onSelectTeam }) {
                   className="ft-user-menu-item"
                   onClick={() => {
                     setOpen(false)
-                    onSelectTeam(m.followedTeamId)
+                    onSelectMatch(m.matchId)
                   }}
                 >
                   <span className="d-block small fw-semibold">
+                    {newAtOpen.has(m.matchId) && <span className="ft-rem-dot" />}
                     {shortTeamName(m.homeTeam)} vs {shortTeamName(m.awayTeam)}
                   </span>
                   <span className="d-block text-secondary" style={{ fontSize: '0.75rem' }}>

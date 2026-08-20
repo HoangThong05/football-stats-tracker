@@ -419,7 +419,7 @@ export default function App() {
 
               <div className="ft-navbar-right">
                 {/* Nhac tran cua doi dang theo doi - thay cho email nhac tran */}
-                <MatchReminders token={token} onSelectTeam={goToTeam} />
+                <MatchReminders token={token} onSelectMatch={goToMatch} />
                 {userEmail ? (
                   <div
                     className="ft-user-menu"
