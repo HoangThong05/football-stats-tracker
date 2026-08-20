@@ -450,7 +450,9 @@ export default function App() {
 
                     {showUserMenu && (
                       <div className="ft-user-menu-panel ft-fade">
-                        <div className="ft-user-menu-header">{userEmail}</div>
+                        <div className="ft-user-menu-header" title={userEmail}>
+                          {userEmail}
+                        </div>
                         <button
                           className="ft-user-menu-item"
                           onClick={() => {

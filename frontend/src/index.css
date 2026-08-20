@@ -661,7 +661,7 @@ body,
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  min-width: 220px;
+  min-width: 240px;
   background: var(--ft-surface);
   border: 1px solid var(--bs-border-color-translucent);
   border-radius: var(--ft-radius);
@@ -680,7 +680,16 @@ body,
   color: var(--bs-secondary-color);
   border-bottom: 1px solid var(--bs-border-color-translucent);
   margin-bottom: 4px;
-  overflow-wrap: anywhere;
+  /*
+   * Gon mot dong, dai qua thi cat bang dau ba cham.
+   *
+   * Truoc day dung overflow-wrap:anywhere - cho phep ngat o BAT KY dau nao, nen
+   * "footballstatstracker@gmail.com" bi be thanh "...gmail.c / om", vua xau vua kho doc.
+   * Dia chi day du van xem duoc: no nam o thuoc tinh title cua chinh dong nay.
+   */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ft-user-menu-item {
@@ -2284,7 +2293,7 @@ tr[role='button']:hover img,
   border-radius: var(--ft-radius);
   border: 1px solid var(--bs-border-color-translucent);
   background: var(--ft-surface);
-  min-width: 220px;
+  min-width: 240px;
   opacity: 0.55;
   filter: grayscale(0.7);
   transition: opacity 0.2s ease, filter 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
