@@ -147,7 +147,7 @@ export const translations = {
 
     standings_search_placeholder: '🔍 Tìm đội bóng...',
     standings_no_match_prefix: 'Không tìm thấy đội nào khớp',
-    standings_empty_season: 'Giải này chưa có bảng xếp hạng cho mùa đã chọn. Nguồn dữ liệu miễn phí không phải lúc nào cũng giữ lại mùa vừa kết thúc — thử chọn mùa khác.',
+    standings_empty_season: 'Chưa có bảng xếp hạng cho mùa này. Bạn thử chọn mùa khác nhé.',
     standings_col_pos: '#',
     standings_col_team: 'Đội',
     standings_col_played: 'Trận',
@@ -478,7 +478,7 @@ export const translations = {
 
     standings_search_placeholder: '🔍 Search teams...',
     standings_no_match_prefix: 'No team matches',
-    standings_empty_season: 'No standings available for the selected season. The free data source does not always keep the season that just ended — try another season.',
+    standings_empty_season: 'No standings for this season yet. Try picking another one.',
     standings_col_pos: '#',
     standings_col_team: 'Team',
     standings_col_played: 'Pld',
