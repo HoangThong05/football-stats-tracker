@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -29,6 +30,19 @@ public class MatchSyncService {
     // Cua so dong bo: 2 ngay truoc (ket qua moi) -> 14 ngay toi (lich sap da).
     private static final int PAST_DAYS = 2;
     private static final int FUTURE_DAYS = 14;
+
+    /*
+     * Cua so coi la "dang co bong lan".
+     *
+     * Lui 3 gio: mot tran keo dai chung 2 tieng, cong bu gio va hiep phu.
+     * Tien 10 phut: bat dau day nhip TRUOC gio bong lan, de phut dau tien da co so lieu
+     * dung thay vi doi den nhip sau moi biet tran da bat dau.
+     */
+    private static final Duration LIVE_LOOKBACK = Duration.ofHours(3);
+    private static final Duration LIVE_LOOKAHEAD = Duration.ofMinutes(10);
+    private static final int MAX_LIVE_PER_TICK = 3;
+    private static final List<String> LIVE_STATUSES =
+            List.of("SCHEDULED", "TIMED", "IN_PLAY", "PAUSED");
 
     private final FootballDataClient client;
     private final MatchFixtureRepository repository;
@@ -60,6 +74,50 @@ public class MatchSyncService {
             }
         }
         log.info("Dong bo tran hoan tat: luu/cap nhat {} tran.", totalSaved);
+    }
+
+    /**
+     * Dong bo DAY HON, nhung chi cho nhung giai dang co tran lan banh.
+     *
+     * Vi sao can: nhip 30 phut o tren du cho lich thi dau, nhung voi ti so dang chay thi
+     * qua thua - doi ghi ban ma bang ti so tren dau trang van hien 0-0 suot hai muoi may
+     * phut. Giao dien da tu goi lai moi 60 giay, chinh du lieu phia sau moi la cho cu.
+     *
+     * Vi sao khong don gian ha nhip 30 phut xuong 2 phut: 6 giai x 30 lan/gio = 180
+     * request moi gio, trong khi han muc la 10 request/PHUT dung chung voi moi thu
+     * nguoi dung dang xem. Loc theo giai dang co bong lan thi thuong chi con 1-2 giai,
+     * tuc 1-2 request moi 2 phut - gan nhu khong dang ke.
+     */
+    @Scheduled(
+            initialDelayString = "${app.sync.live-initial-delay-ms:60000}",
+            fixedDelayString = "${app.sync.live-interval-ms:120000}")
+    public void syncLiveCompetitions() {
+        Instant now = Instant.now();
+        List<String> live = repository.findCompetitionsWithMatchesAround(
+                LIVE_STATUSES, now.minus(LIVE_LOOKBACK), now.plus(LIVE_LOOKAHEAD));
+
+        if (live.isEmpty()) {
+            return; // khong co tran nao - khong ton request nao ca
+        }
+
+        /*
+         * Chan tren so giai moi nhip. Ngay cuoi tuan cao diem co the ca 6 giai cung da,
+         * luc do lay het se an 6/10 request moi 2 phut; nguoi dung dang mo trang se
+         * phai tranh cho. Giai bi bo lai o nhip nay se duoc lay o nhip sau.
+         */
+        List<String> batch = live.size() > MAX_LIVE_PER_TICK ? live.subList(0, MAX_LIVE_PER_TICK) : live;
+
+        LocalDate today = LocalDate.now();
+        int saved = 0;
+        for (String code : batch) {
+            try {
+                // Cua so hep: chi hom qua -> ngay mai, du cho tran dang da
+                saved += syncCompetition(code, today.minusDays(1), today.plusDays(1));
+            } catch (Exception ex) {
+                log.warn("Dong bo truc tiep that bai cho giai {}: {}", code, ex.getMessage());
+            }
+        }
+        log.info("Dong bo truc tiep {} giai {}: cap nhat {} tran.", batch.size(), batch, saved);
     }
 
     private int syncCompetition(String code, LocalDate from, LocalDate to) {

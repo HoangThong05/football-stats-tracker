@@ -20,6 +20,13 @@ public record UpcomingFavoriteDto(
         String homeCrest,
         long awayTeamId,
         String awayTeam,
-        String awayCrest
+        String awayCrest,
+        String status,
+        Integer homeScore,
+        Integer awayScore
 ) {
+    /** Tran da ket thuc -> hien ti so thay vi dem nguoc gio. */
+    public boolean finished() {
+        return "FINISHED".equals(status);
+    }
 }

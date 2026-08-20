@@ -49,10 +49,14 @@ class UpcomingFavoriteServiceTest {
     }
 
     private MatchFixture tran(long id, long home, long away, int gioNua) {
+        return tran(id, home, away, gioNua, "SCHEDULED");
+    }
+
+    private MatchFixture tran(long id, long home, long away, int gioNua, String status) {
         MatchFixture m = new MatchFixture(id);
         m.setCompetition("PL");
         m.setUtcDate(Instant.now().plus(gioNua, ChronoUnit.HOURS));
-        m.setStatus("SCHEDULED");
+        m.setStatus(status);
         m.setHomeTeamId(home);
         m.setHomeTeam("Doi " + home);
         m.setAwayTeamId(away);
@@ -119,6 +123,35 @@ class UpcomingFavoriteServiceTest {
         assertThat(service.listFor("an@example.com")).isEmpty();
         org.mockito.Mockito.verify(matchRepository, org.mockito.Mockito.never())
                 .findByStatusInAndUtcDateBetween(anyList(), any(), any());
+    }
+
+    /** Tran da xong van hien, kem ti so - nguoi theo doi doi quan tam ca ket qua. */
+    @Test
+    void tran_da_ket_thuc_van_nam_trong_danh_sach_kem_ti_so() {
+        theoDoi(ARSENAL);
+        MatchFixture xong = tran(9, ARSENAL, CHELSEA, -20, "FINISHED");
+        xong.setHomeScore(2);
+        xong.setAwayScore(0);
+        coCacTran(xong);
+
+        UpcomingFavoriteDto row = service.listFor("an@example.com").get(0);
+
+        assertThat(row.finished()).isTrue();
+        assertThat(row.homeScore()).isEqualTo(2);
+        assertThat(row.awayScore()).isZero();
+    }
+
+    /** Tran sap da phai nam TREN tran da xong: nguoi ta mo chuong de biet sap toi co gi. */
+    @Test
+    void tran_sap_da_xep_tren_tran_da_xong() {
+        theoDoi(ARSENAL);
+        coCacTran(
+                tran(1, ARSENAL, CHELSEA, -20, "FINISHED"),
+                tran(2, ARSENAL, LIVERPOOL, 30));
+
+        assertThat(service.listFor("an@example.com"))
+                .extracting(UpcomingFavoriteDto::matchId)
+                .containsExactly(2L, 1L);
     }
 
     @Test

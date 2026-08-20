@@ -27,4 +27,21 @@ public interface MatchFixtureRepository extends JpaRepository<MatchFixture, Long
      * dinh ky) nen KHONG ton request nao toi football-data.org.
      */
     List<MatchFixture> findByUtcDateBetweenOrderByUtcDateAsc(Instant from, Instant to);
+
+    /**
+     * Cac giai DANG co tran lan banh, de dong bo day hon rieng cho chung.
+     *
+     * Loc theo GIO BONG LAN chu khong theo status IN_PLAY: status trong DB cung chi
+     * duoc cap nhat sau moi lan dong bo, nen doi no chuyen sang IN_PLAY roi moi dong bo
+     * day len la tu khoa minh lai - khong bao gio thoat ra duoc.
+     */
+    @org.springframework.data.jpa.repository.Query("""
+            SELECT DISTINCT m.competition FROM MatchFixture m
+            WHERE m.status IN :statuses
+              AND m.utcDate BETWEEN :from AND :to
+            """)
+    List<String> findCompetitionsWithMatchesAround(
+            @org.springframework.data.repository.query.Param("statuses") List<String> statuses,
+            @org.springframework.data.repository.query.Param("from") Instant from,
+            @org.springframework.data.repository.query.Param("to") Instant to);
 }

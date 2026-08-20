@@ -75,9 +75,16 @@ export default function MatchReminders({ token, onSelectMatch }) {
     return null
   }
 
+  /*
+   * Con so tren chuong chi dem tran SAP DA, khong dem tran da xong.
+   * Ket qua van nam trong danh sach de xem lai, nhung no khong phai viec can lam gap -
+   * de no keu so do thi con so mat y nghia "sap den gio".
+   */
   const soonLimit = Date.now() + BADGE_WINDOW_HOURS * 3600 * 1000
   const soonCount = matches.filter(
-    (m) => new Date(m.utcDate).getTime() <= soonLimit && !seen.has(m.matchId),
+    (m) => m.status !== 'FINISHED'
+      && new Date(m.utcDate).getTime() <= soonLimit
+      && !seen.has(m.matchId),
   ).length
 
   const markAllSeen = () => {
@@ -149,10 +156,14 @@ export default function MatchReminders({ token, onSelectMatch }) {
                 >
                   <span className="d-block small fw-semibold">
                     {newAtOpen.has(m.matchId) && <span className="ft-rem-dot" />}
-                    {shortTeamName(m.homeTeam)} vs {shortTeamName(m.awayTeam)}
+                    {shortTeamName(m.homeTeam)}
+                    {m.status === 'FINISHED'
+                      ? ` ${m.homeScore ?? '-'} - ${m.awayScore ?? '-'} `
+                      : ' vs '}
+                    {shortTeamName(m.awayTeam)}
                   </span>
                   <span className="d-block text-secondary" style={{ fontSize: '0.75rem' }}>
-                    {formatKickoff(m.utcDate)}
+                    {m.status === 'FINISHED' ? t('rem_finished') : formatKickoff(m.utcDate)}
                   </span>
                   <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
                     ★ {shortTeamName(m.followedTeamName)}

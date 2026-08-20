@@ -28,15 +28,24 @@ import java.util.Map;
 @Service
 public class UpcomingFavoriteService {
 
-    private static final List<String> UPCOMING_STATUSES = List.of("SCHEDULED", "TIMED");
+    private static final List<String> SHOWN_STATUSES =
+            List.of("SCHEDULED", "TIMED", "IN_PLAY", "PAUSED", "FINISHED");
 
     /**
-     * Chi lay tran trong 7 ngay toi.
+     * Nhin toi 7 ngay: du de biet cuoi tuan doi minh da voi ai.
      *
      * Lay het ca mua thi danh sach luon dai va con so tren chuong luon lon - nhin mai
-     * thanh quen, het tac dung nhac nho. Gioi han lai thi no chi keu khi that su sap den.
+     * thanh quen, het tac dung nhac nho.
      */
-    private static final Duration WINDOW = Duration.ofDays(7);
+    private static final Duration AHEAD = Duration.ofDays(7);
+
+    /**
+     * Nhin lui 2 ngay de con thay KET QUA tran vua da.
+     *
+     * Nguoi theo doi mot doi quan tam ket qua khong kem gi lich thi dau - bao tran sap
+     * da roi im bat khi tran da xong la bo do nua cau chuyen.
+     */
+    private static final Duration BEHIND = Duration.ofDays(2);
 
     private final UserRepository userRepository;
     private final FavoriteTeamRepository favoriteRepository;
@@ -66,7 +75,7 @@ public class UpcomingFavoriteService {
 
         Instant now = Instant.now();
         List<MatchFixture> matches = matchRepository.findByStatusInAndUtcDateBetween(
-                UPCOMING_STATUSES, now, now.plus(WINDOW));
+                SHOWN_STATUSES, now.minus(BEHIND), now.plus(AHEAD));
 
         List<UpcomingFavoriteDto> result = new ArrayList<>();
         for (MatchFixture m : matches) {
@@ -92,10 +101,18 @@ public class UpcomingFavoriteService {
                     followedId,
                     followedNames.get(followedId),
                     m.getHomeTeamId(), m.getHomeTeam(), m.getHomeCrest(),
-                    m.getAwayTeamId(), m.getAwayTeam(), m.getAwayCrest()));
+                    m.getAwayTeamId(), m.getAwayTeam(), m.getAwayCrest(),
+                    m.getStatus(), m.getHomeScore(), m.getAwayScore()));
         }
 
-        result.sort(Comparator.comparing(UpcomingFavoriteDto::utcDate));
+        /*
+         * Tran sap da len truoc (gan nhat truoc), tran da xong xuong duoi (moi nhat truoc).
+         * Nguoi mo chuong ra chu yeu de biet sap toi co gi; de tran hom kia nam tren
+         * tran toi nay thi nguoc voi cai ho can.
+         */
+        result.sort(Comparator
+                .comparing(UpcomingFavoriteDto::finished)
+                .thenComparing(r -> r.finished() ? -r.utcDate().getEpochSecond() : r.utcDate().getEpochSecond()));
         return result;
     }
 }
