@@ -61,7 +61,16 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
         onChange={(e) => setQuery(e.target.value)}
       />
 
-      {filtered.length === 0 ? (
+      {/*
+        Phan biet hai truong hop deu ra danh sach rong, nhung ly do khac han nhau:
+        - rows rong: giai/mua nay khong co du lieu (vd mua vua ket thuc, nha cung cap
+          da rut khoi goi mien phi). Bao "khong tim thay doi nao khop """ luc do la
+          vo nghia, vi nguoi dung co go gi vao o tim dau.
+        - rows co nhung loc khong ra: go sai ten doi.
+      */}
+      {rows.length === 0 ? (
+        <div className="alert alert-secondary mb-0">{t('standings_empty_season')}</div>
+      ) : filtered.length === 0 ? (
         <div className="alert alert-secondary">
           {t('standings_no_match_prefix')} “{query}”.
         </div>
