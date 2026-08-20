@@ -2336,3 +2336,20 @@ tr[role='button']:hover img,
     display: none;
   }
 }
+
+/* Huy hieu so tren chuong nhac tran */
+.ft-rem-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #dc3545;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+}

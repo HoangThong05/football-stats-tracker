@@ -19,6 +19,7 @@ import LeaderboardView from "./components/LeaderboardView";
 import MyPredictionsHistory from "./components/MyPredictionsHistory";
 import StandingsTable from "./components/StandingsTable";
 import CompareTeams from "./components/CompareTeams";
+import MatchReminders from "./components/MatchReminders";
 import ScorersTable from "./components/ScorersTable";
 import TeamDetail from "./components/TeamDetail";
 import MatchDetail from "./components/MatchDetail";
@@ -417,6 +418,8 @@ export default function App() {
               </div>
 
               <div className="ft-navbar-right">
+                {/* Nhac tran cua doi dang theo doi - thay cho email nhac tran */}
+                <MatchReminders token={token} onSelectTeam={goToTeam} />
                 {userEmail ? (
                   <div
                     className="ft-user-menu"

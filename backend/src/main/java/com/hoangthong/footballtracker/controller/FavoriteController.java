@@ -24,7 +24,11 @@ public class FavoriteController {
 
     private final FavoriteService favoriteService;
 
-    public FavoriteController(FavoriteService favoriteService) {
+    private final com.hoangthong.footballtracker.service.UpcomingFavoriteService upcomingService;
+
+    public FavoriteController(FavoriteService favoriteService,
+                              com.hoangthong.footballtracker.service.UpcomingFavoriteService upcomingService) {
+        this.upcomingService = upcomingService;
         this.favoriteService = favoriteService;
     }
 
@@ -36,6 +40,17 @@ public class FavoriteController {
     @PostMapping
     public FavoriteTeamDto follow(@AuthenticationPrincipal String email, @RequestBody FollowRequest request) {
         return favoriteService.follow(email, request);
+    }
+
+    /**
+     * Cac tran sap dien ra cua doi dang theo doi - de hien nhac nho NGAY TREN APP.
+     *
+     * Doc tu database nen khong ton han muc API, goi lai bao nhieu lan cung duoc.
+     */
+    @GetMapping("/upcoming")
+    public List<com.hoangthong.footballtracker.dto.UpcomingFavoriteDto> upcoming(
+            @AuthenticationPrincipal String email) {
+        return upcomingService.listFor(email);
     }
 
     @DeleteMapping("/{teamId}")

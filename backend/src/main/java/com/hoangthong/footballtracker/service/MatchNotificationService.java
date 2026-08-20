@@ -42,12 +42,23 @@ public class MatchNotificationService {
     // Bao truoc bao nhieu gio truoc gio bong lan (mac dinh 24h).
     private final long windowHours;
 
+    /*
+     * Nhac tran bang EMAIL - mac dinh TAT.
+     *
+     * Nguoi dung chon xem nhac ngay tren app (chuong o navbar, doc tu
+     * /api/favorites/upcoming) thay vi nhan thu. Giu lai ma o day chu khong xoa:
+     * no da chay dung, chi can dat app.notify.email-enabled=true la bat lai duoc.
+     */
+    private final boolean emailEnabled;
+
     public MatchNotificationService(
             MatchFixtureRepository matchRepository,
             FavoriteTeamRepository favoriteRepository,
             SentNotificationRepository sentRepository,
             EmailService emailService,
-            @org.springframework.beans.factory.annotation.Value("${app.notify.window-hours:24}") long windowHours) {
+            @org.springframework.beans.factory.annotation.Value("${app.notify.window-hours:24}") long windowHours,
+            @org.springframework.beans.factory.annotation.Value("${app.notify.email-enabled:false}") boolean emailEnabled) {
+        this.emailEnabled = emailEnabled;
         this.matchRepository = matchRepository;
         this.favoriteRepository = favoriteRepository;
         this.sentRepository = sentRepository;
@@ -59,6 +70,9 @@ public class MatchNotificationService {
             initialDelayString = "${app.notify.initial-delay-ms:30000}",
             fixedDelayString = "${app.notify.interval-ms:3600000}")
     public void notifyUpcomingMatches() {
+        if (!emailEnabled) {
+            return;
+        }
         Instant now = Instant.now();
         Instant until = now.plus(Duration.ofHours(windowHours));
 
