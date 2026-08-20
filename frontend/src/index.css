@@ -412,6 +412,22 @@ body,
   min-width: 0;
 }
 
+/*
+ * Tu man hinh vua tro len: KHONG cho xuong dong.
+ *
+ * Flex uu tien xuong dong hon la co lai, nen de flex-wrap:wrap thi khoi thuong hieu
+ * giu nguyen be rong con nhom ngon ngu bi day xuong hang duoi - dung cai da xay ra khi
+ * them chuong nhac tran va huy hieu ADMIN. Cam xuong dong thi flex buoc phai co khoi
+ * thuong hieu lai, tuc la phu de bi cat bot: chu nhuong cho, nut giu nguyen.
+ *
+ * Duoi 576px van cho xuong dong: man hinh qua hep, ep mot hang se tran ra ngoai.
+ */
+@media (min-width: 576px) {
+  .ft-navbar-left {
+    flex-wrap: nowrap;
+  }
+}
+
 .ft-navbar-right {
   display: flex;
   align-items: center;
@@ -448,6 +464,9 @@ body,
   line-height: 1.15;
   font-size: 1.02rem;
   white-space: nowrap;
+  /* Phuong an cuoi khi thanh nav qua chat: cat bot ca ten app, van hon la day nut xuong dong */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ft-brand-sub {
