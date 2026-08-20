@@ -75,8 +75,6 @@ export const translations = {
     auth_forgot_resend: 'Chưa nhận được? Gửi lại',
     auth_forgot_resend_wait: 'Gửi lại sau {s} giây',
     auth_or: 'hoặc',
-    auth_show_password: 'Hiện mật khẩu',
-    auth_hide_password: 'Ẩn mật khẩu',
 
     admin_title: '🛡 Quản trị — Danh sách người dùng',
     admin_col_id: '#',
@@ -406,8 +404,6 @@ export const translations = {
     auth_forgot_resend: 'Did not get it? Resend',
     auth_forgot_resend_wait: 'Resend in {s}s',
     auth_or: 'or',
-    auth_show_password: 'Show password',
-    auth_hide_password: 'Hide password',
 
     admin_title: '🛡 Admin — User list',
     admin_col_id: '#',

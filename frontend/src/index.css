@@ -782,14 +782,6 @@ body,
   animation-play-state: paused;
 }
 
-/*
- * Ban sao thu hai phai TAN BIEN khoi cay layout, neu khong ca cum se thanh MOT o flex
- * duy nhat va bang chay hong. Bootstrap 5 khong co lop d-contents nen tu khai bao.
- */
-.ft-ticker-dup {
-  display: contents;
-}
-
 .ft-ticker-item {
   display: inline-flex;
   align-items: center;

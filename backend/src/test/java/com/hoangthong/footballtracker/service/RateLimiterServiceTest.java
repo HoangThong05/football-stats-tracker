@@ -41,14 +41,4 @@ class RateLimiterServiceTest {
 
         assertThat(limiter.tryConsume("a", 1, window)).isTrue();
     }
-
-    @Test
-    void bao_con_bao_lau_moi_het_chan() {
-        RateLimiterService limiter = new RateLimiterService();
-
-        assertThat(limiter.secondsUntilReset("chua-goi-bao-gio")).isZero();
-
-        limiter.tryConsume("a", 1, Duration.ofMinutes(10));
-        assertThat(limiter.secondsUntilReset("a")).isBetween(590L, 600L);
-    }
 }

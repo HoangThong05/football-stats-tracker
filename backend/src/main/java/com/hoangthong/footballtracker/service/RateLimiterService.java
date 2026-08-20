@@ -51,13 +51,4 @@ public class RateLimiterService {
         return w.count() <= limit;
     }
 
-    /** Con bao nhieu giay nua thi cua so hien tai mo lai. 0 neu khong con bi chan. */
-    public long secondsUntilReset(String key) {
-        Window w = counters.getIfPresent(key);
-        if (w == null) {
-            return 0;
-        }
-        long seconds = Duration.between(Instant.now(), w.resetAt()).toSeconds();
-        return Math.max(0, seconds);
-    }
 }

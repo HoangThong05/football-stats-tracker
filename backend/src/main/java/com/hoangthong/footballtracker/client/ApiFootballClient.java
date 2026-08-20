@@ -3,7 +3,6 @@ package com.hoangthong.footballtracker.client;
 import com.hoangthong.footballtracker.client.dto.ApiFootballSquadResponse;
 import com.hoangthong.footballtracker.client.dto.ApiFootballSquadResponse.PlayerInfo;
 import com.hoangthong.footballtracker.client.dto.ApiFootballTeamListResponse;
-import com.hoangthong.footballtracker.client.dto.ApiFootballTeamSearchResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +11,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Client goi API-Football (api-sports.io) de lay du lieu cau thu.
@@ -36,31 +34,6 @@ public class ApiFootballClient {
                 .baseUrl(BASE_URL)
                 .defaultHeader("x-apisports-key", apiKey)
                 .build();
-    }
-
-    /** @deprecated Ten day du/ngan tu football-data.org khong luon khop voi ten
-     * luu tren API-Football (vd "Newcastle United FC" vs "Newcastle") -> dung
-     * getTeamsInLeague() de lay ten chuan truc tiep tu API-Football thay the. */
-    @Deprecated
-    public Optional<Long> searchTeamId(String teamName) {
-        try {
-            ApiFootballTeamSearchResponse response = restClient.get()
-                    .uri("/teams?name={name}", teamName)
-                    .retrieve()
-                    .body(ApiFootballTeamSearchResponse.class);
-
-            if (response == null || response.response() == null || response.response().isEmpty()) {
-                log.warn("API-Football: khong tim thay doi '{}'", teamName);
-                return Optional.empty();
-            }
-            return Optional.of(response.response().get(0).team().id());
-        } catch (HttpClientErrorException.TooManyRequests e) {
-            log.warn("API-Football: bi rate limit (429) khi tim doi '{}', se thu lai o lan sync sau", teamName);
-            return Optional.empty();
-        } catch (Exception e) {
-            log.error("Loi khi tim team '{}' tren API-Football: {}", teamName, e.getMessage());
-            return Optional.empty();
-        }
     }
 
     public List<ApiFootballTeamListResponse.TeamWrapper> getTeamsInLeague(int leagueId, int season) {

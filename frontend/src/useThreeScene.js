@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
  * Bỏ khi người dùng đang tiết kiệm dữ liệu, mạng 2G, hoặc máy ít RAM — những lúc mà
  * 130KB cho một hình trang trí là không đáng.
  */
-export function shouldLoad3D() {
+function shouldLoad3D() {
   const net = navigator.connection
   if (net?.saveData) return false
   if (net?.effectiveType && /(^|-)2g$/.test(net.effectiveType)) return false

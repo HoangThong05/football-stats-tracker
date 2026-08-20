@@ -30,7 +30,7 @@ public class EmailService {
         this.from = from;
     }
 
-    public boolean isConfigured() {
+    private boolean isConfigured() {
         return from != null && !from.isBlank();
     }
 
