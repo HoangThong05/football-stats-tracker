@@ -130,7 +130,7 @@ export default function MyPredictionsHistory({ token, onBack }) {
                         <span className={pointsBadgeClass(h.points)}>+{h.points} {t('myp_points_suffix')}</span>
                       </>
                     ) : (
-                      <span className="badge text-bg-light text-muted border">{t('myp_not_played')}</span>
+                      <span className="badge text-bg-secondary">{t('myp_not_played')}</span>
                     )}
                   </div>
                 </div>
