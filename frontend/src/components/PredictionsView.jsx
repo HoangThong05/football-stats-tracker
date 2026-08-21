@@ -76,10 +76,9 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
 
             return (
               <li key={m.matchId} className="list-group-item py-3">
-                <div className="d-flex align-items-center flex-wrap gap-3">
+                <div className="ft-predict-row">
                   <small
-                    className="text-secondary"
-                    style={{ minWidth: 132 }}
+                    className="text-secondary ft-predict-time"
                     role="button"
                     onClick={() => onSelectMatch(m.matchId)}
                   >
@@ -89,13 +88,13 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
                     )}
                   </small>
 
-                  <div className="d-flex align-items-center justify-content-end gap-2 flex-grow-1" style={{ minWidth: 0 }}>
+                  <div className="ft-predict-home d-flex align-items-center justify-content-end gap-2">
                     <span className="text-truncate fw-medium" title={m.homeTeam}>{shortTeamName(m.homeTeam)}</span>
                     {m.homeCrest && <img src={m.homeCrest} alt="" width="22" height="22" loading="lazy" />}
                   </div>
 
                   {token ? (
-                    <div className="d-flex align-items-center gap-1">
+                    <div className="ft-predict-score d-flex align-items-center gap-1">
                       <input
                         type="number"
                         min="0"
@@ -117,17 +116,19 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
                       />
                     </div>
                   ) : (
-                    <span className="ft-score-badge upcoming text-center">{t('matches_vs')}</span>
+                    <span className="ft-predict-score ft-score-badge upcoming text-center">{t('matches_vs')}</span>
                   )}
 
-                  <div className="d-flex align-items-center gap-2 flex-grow-1" style={{ minWidth: 0 }}>
+                  <div className="ft-predict-away d-flex align-items-center gap-2">
                     {m.awayCrest && <img src={m.awayCrest} alt="" width="22" height="22" loading="lazy" />}
                     <span className="text-truncate fw-medium" title={m.awayTeam}>{shortTeamName(m.awayTeam)}</span>
                   </div>
 
                   {token && (
                     <button
-                      className={already ? 'btn btn-outline-success btn-sm' : 'btn btn-success btn-sm'}
+                      className={already
+                        ? 'ft-predict-btn btn btn-outline-success btn-sm'
+                        : 'ft-predict-btn btn btn-success btn-sm'}
                       onClick={() => submit(m.matchId)}
                       disabled={savingId === m.matchId}
                     >

@@ -2390,3 +2390,57 @@ tr[role='button']:hover img,
   color: var(--ft-accent);
   margin-right: 4px;
 }
+
+/* ---------- Hang du doan ----------
+ * Luoi CO DINH thay vi flex tu co gian.
+ *
+ * Truoc day moi hang la mot flex rieng, hai cot ten deu flex-grow-1 -> o nhap ti so
+ * nam o vi tri khac nhau tuy do dai ten doi, nhin nhu rang cua. Va vi co flex-wrap,
+ * doi ten dai ("Real Sociedad de Fútbol") day nut "Du doan" xuong hang rieng.
+ *
+ * Luoi thi moi hang cung mot khuon: ten dai bi cat bang dau ba cham chu khong the
+ * lam xe hang. Cot nut co be rong co dinh nen "Du doan" va "Cap nhat" khong lech nhau.
+ */
+.ft-predict-row {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr) auto minmax(0, 1fr) 96px;
+  align-items: center;
+  gap: 12px;
+}
+
+.ft-predict-btn {
+  width: 100%;
+  white-space: nowrap;
+}
+
+/* Man hinh hep: gio va nut tach thanh hang rieng, cap dau van thang cot */
+@media (max-width: 767.98px) {
+  .ft-predict-row {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas:
+      'time time time'
+      'home score away'
+      'btn btn btn';
+    row-gap: 8px;
+  }
+
+  .ft-predict-time {
+    grid-area: time;
+  }
+
+  .ft-predict-home {
+    grid-area: home;
+  }
+
+  .ft-predict-score {
+    grid-area: score;
+  }
+
+  .ft-predict-away {
+    grid-area: away;
+  }
+
+  .ft-predict-btn {
+    grid-area: btn;
+  }
+}
