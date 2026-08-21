@@ -144,9 +144,30 @@ public class AuthService {
         return toAuthResponse(user);
     }
 
+    /**
+     * Doi ten hien thi. Ten nay la thu NGUOI KHAC nhin thay o bang xep hang va phong dau.
+     *
+     * Cam ky tu @ de khong ai dat ten trong nhu mot dia chi email cua nguoi khac.
+     */
+    public AuthResponse setDisplayName(String email, String rawName) {
+        String name = rawName == null ? "" : rawName.trim();
+        if (name.length() < 2 || name.length() > 30) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "display_name_length");
+        }
+        if (name.indexOf('@') >= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "display_name_invalid");
+        }
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials"));
+        user.setDisplayName(name);
+        userRepository.save(user);
+        return toAuthResponse(user);
+    }
+
     private AuthResponse toAuthResponse(User user) {
         String role = user.getRole().name();
         String token = jwtService.generateToken(user.getEmail(), role, user.getTokenVersion());
-        return new AuthResponse(token, user.getEmail(), role, user.hasPassword(), false);
+        return new AuthResponse(token, user.getEmail(), role, user.hasPassword(), false,
+                user.displayNameOrFallback());
     }
 }

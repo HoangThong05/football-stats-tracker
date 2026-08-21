@@ -114,7 +114,7 @@ export default function AuthPanel({ onSuccess }) {
           throw new Error(errMap[body.message] || body.message || `Error ${res.status}`)
         }
         const data = await res.json()
-        onSuccess(data.token, data.email, data.role, data.hasPassword, data.viaGoogle)
+        onSuccess(data.token, data.email, data.role, data.hasPassword, data.viaGoogle, data.displayName)
 
       } else if (mode === 'reset') {
         const res = await fetch(`${API_BASE}/auth/reset-password`, {

@@ -67,6 +67,8 @@ export default function App() {
   const [hasPassword, setHasPassword] = useState(initialSession.hasPassword);
   // Phien nay dang nhap bang nut Google -> man doi mat khau khong hoi mat khau cu
   const [viaGoogle, setViaGoogle] = useState(initialSession.viaGoogle);
+  // Ten nguoi khac nhin thay o BXH va trong phong dau
+  const [displayName, setDisplayName] = useState(initialSession.displayName);
   const [sessionExpired, setSessionExpired] = useState(false);
   /*
    * Mo san hop thoai khi URL co ?token= - do la nguoi dung vua bam link dat lai mat khau
@@ -243,17 +245,19 @@ export default function App() {
     else setFavorites([]);
   }, [token]);
 
-  const handleAuthSuccess = (newToken, email, role, hasPwd = true, google = false) => {
+  const handleAuthSuccess = (newToken, email, role, hasPwd = true, google = false, name = null) => {
     localStorage.setItem("ft_token", newToken);
     localStorage.setItem("ft_email", email);
     localStorage.setItem("ft_role", role);
     localStorage.setItem("ft_has_password", String(hasPwd));
     localStorage.setItem("ft_via_google", String(google));
+    if (name) localStorage.setItem("ft_display_name", name);
     setToken(newToken);
     setUserEmail(email);
     setUserRole(role);
     setHasPassword(hasPwd);
     setViaGoogle(google);
+    setDisplayName(name);
     setSessionExpired(false);
     setShowAuthForm(false);
   };
@@ -264,6 +268,11 @@ export default function App() {
    * chinh nguoi vua doi mat khau bi da ra ngoai.
    * Khong dong hop thoai / doi trang: nguoi dung dang o giua trang Ho so.
    */
+  const handleDisplayNameSaved = (name) => {
+    localStorage.setItem("ft_display_name", name);
+    setDisplayName(name);
+  };
+
   const handleTokenRenewed = (newToken, email, role, hasPwd, google) => {
     localStorage.setItem("ft_token", newToken);
     localStorage.setItem("ft_has_password", String(hasPwd));
@@ -569,7 +578,7 @@ export default function App() {
           ) : showLeaderboard ? (
             <LeaderboardView
               token={token}
-              userEmail={userEmail}
+              myName={displayName}
               onBack={() => setShowLeaderboard(false)}
             />
           ) : showMyPredictions ? (
@@ -585,6 +594,8 @@ export default function App() {
               userEmail={userEmail}
               hasPassword={hasPassword}
               viaGoogle={viaGoogle}
+              displayName={displayName}
+              onDisplayNameSaved={handleDisplayNameSaved}
               onTokenRenewed={handleTokenRenewed}
               favorites={favorites}
               onBack={() => setShowProfile(false)}

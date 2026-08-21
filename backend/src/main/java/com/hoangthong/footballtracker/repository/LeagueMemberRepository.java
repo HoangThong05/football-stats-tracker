@@ -29,13 +29,14 @@ public interface LeagueMemberRepository extends JpaRepository<LeagueMember, Long
     @Query("""
         SELECT lm.user.id,
                lm.user.email,
+               lm.user.displayName,
                COALESCE(SUM(p.points), 0),
                COUNT(p),
                COALESCE(SUM(CASE WHEN p.points = 3 THEN 1 ELSE 0 END), 0)
         FROM LeagueMember lm
         LEFT JOIN Prediction p ON p.user = lm.user AND p.points IS NOT NULL
         WHERE lm.league.id = :leagueId
-        GROUP BY lm.user.id, lm.user.email
+        GROUP BY lm.user.id, lm.user.email, lm.user.displayName
         ORDER BY COALESCE(SUM(p.points), 0) DESC
         """)
     List<Object[]> findLeaderboard(@Param("leagueId") Long leagueId);

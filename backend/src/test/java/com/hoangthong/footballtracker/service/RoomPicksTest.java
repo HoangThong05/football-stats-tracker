@@ -121,7 +121,7 @@ class RoomPicksTest {
 
         var picks = service.roomPicks("huy@example.com", 1L).get(0).picks();
 
-        assertThat(picks.get(0).email()).isEqualTo("huy@example.com");
+        assertThat(picks.get(0).name()).isEqualTo("huy");
         assertThat(picks.get(0).points()).isEqualTo(3);
     }
 

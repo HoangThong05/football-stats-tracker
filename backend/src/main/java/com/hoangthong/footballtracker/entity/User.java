@@ -46,6 +46,16 @@ public class User {
     private Boolean enabled;
 
     /**
+     * Ten nguoi khac nhin thay o bang xep hang va trong phong dau.
+     *
+     * Truoc day cac bang do hien EMAIL DAY DU cua moi nguoi, ma bang xep hang du doan la
+     * trang cong khai - ai vao cung doc duoc dia chi email cua nguoi choi. null = chua
+     * dat, khi do dung phan truoc dau @ lam ten (xem displayNameOrFallback()).
+     */
+    @Column(length = 30)
+    private String displayName;
+
+    /**
      * Tang len moi lan doi mat khau, de vo hieu toan bo token da phat truoc do.
      *
      * Khong co no thi doi mat khau gan nhu vo nghia ve bao mat: JWT song 24 gio va
@@ -111,6 +121,31 @@ public class User {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    /** Ten de hien ra ngoai. Chua dat thi lay phan truoc dau @ - khong bao gio lo ca dia chi. */
+    public String displayNameOrFallback() {
+        if (displayName != null && !displayName.isBlank()) {
+            return displayName;
+        }
+        return fallbackName(email);
+    }
+
+    /** Dung chung cho cac truy van chi lay duoc email (BXH gom nhom theo email). */
+    public static String fallbackName(String email) {
+        if (email == null || email.isBlank()) {
+            return "";
+        }
+        int at = email.indexOf('@');
+        return at > 0 ? email.substring(0, at) : email;
     }
 
     /** null = token doi cu, coi la 0. */

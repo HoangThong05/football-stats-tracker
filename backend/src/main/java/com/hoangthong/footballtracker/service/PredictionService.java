@@ -138,7 +138,11 @@ public class PredictionService {
         int rank = 1;
         for (PredictionRepository.LeaderboardRow row : rows) {
             if (rank > MAX_LEADERBOARD_SIZE) break;
-            result.add(new LeaderboardEntryDto(rank++, row.getEmail(), row.getTotalPoints(), row.getTotalPredictions()));
+            // Ten hien thi, chua dat thi lay phan truoc dau @ - khong bao gio tra ca email ra
+            String name = row.getDisplayName() != null && !row.getDisplayName().isBlank()
+                    ? row.getDisplayName()
+                    : com.hoangthong.footballtracker.entity.User.fallbackName(row.getEmail());
+            result.add(new LeaderboardEntryDto(rank++, name, row.getTotalPoints(), row.getTotalPredictions()));
         }
         return result;
     }

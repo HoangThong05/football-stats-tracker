@@ -57,16 +57,20 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
                                           @Param("since") java.time.Instant since);
 
     @Query("SELECT u.email AS email, "
+            + "u.displayName AS displayName, "
             + "COALESCE(SUM(p.points), 0) AS totalPoints, "
             + "COUNT(p) AS totalPredictions "
             + "FROM Prediction p JOIN p.user u "
             + "WHERE p.points IS NOT NULL "
-            + "GROUP BY u.email "
+            + "GROUP BY u.email, u.displayName "
             + "ORDER BY totalPoints DESC")
     List<LeaderboardRow> findLeaderboard();
 
     interface LeaderboardRow {
         String getEmail();
+
+        /** Co the null (chua dat ten) - tang tren tu thay bang phan truoc dau @. */
+        String getDisplayName();
 
         Long getTotalPoints();
 

@@ -42,7 +42,7 @@ export function loadSavedSession() {
   const token = localStorage.getItem('ft_token')
   if (isTokenExpired(token)) {
     clearSavedSession()
-    return { token: null, email: null, role: null, hasPassword: true, viaGoogle: false }
+    return { token: null, email: null, role: null, hasPassword: true, viaGoogle: false, displayName: null }
   }
   return {
     token,
@@ -52,6 +52,7 @@ export function loadSavedSession() {
     // Doan sai thi man doi mat khau chi hoi thua 1 o, khong khoa ai ra ngoai.
     hasPassword: localStorage.getItem('ft_has_password') !== 'false',
     viaGoogle: localStorage.getItem('ft_via_google') === 'true',
+    displayName: localStorage.getItem('ft_display_name'),
   }
 }
 
@@ -61,4 +62,5 @@ export function clearSavedSession() {
   localStorage.removeItem('ft_role')
   localStorage.removeItem('ft_has_password')
   localStorage.removeItem('ft_via_google')
+  localStorage.removeItem('ft_display_name')
 }

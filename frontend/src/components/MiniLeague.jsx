@@ -273,11 +273,11 @@ if (!token) {
                 </thead>
                 <tbody>
                   {leaderboard.entries.map((e) => (
-                    <tr key={e.email}>
+                    <tr key={e.name}>
                       <td className="text-center fw-bold">
                         {e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : e.rank}
                       </td>
-                      <td>{e.email}</td>
+                      <td>{e.name}</td>
                       <td className="text-center ft-num text-secondary d-none d-sm-table-cell">
                         {e.scoredPredictions}
                       </td>
@@ -313,9 +313,9 @@ if (!token) {
 
                   <div className="d-flex flex-column gap-1">
                     {m.picks.map((p) => (
-                      <div key={p.email} className="d-flex align-items-center gap-2 small">
-                        <span className="text-truncate flex-grow-1" style={{ minWidth: 0 }} title={p.email}>
-                          {p.email}
+                      <div key={p.name} className="d-flex align-items-center gap-2 small">
+                        <span className="text-truncate flex-grow-1" style={{ minWidth: 0 }} title={p.name}>
+                          {p.name}
                         </span>
                         <span className="ft-num fw-semibold flex-shrink-0">
                           {p.homeScore} - {p.awayScore}

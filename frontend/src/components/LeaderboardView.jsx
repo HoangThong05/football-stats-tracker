@@ -4,7 +4,7 @@ import { RANK_MEDALS } from '../constants'
 import { useTranslation } from '../i18n'
 import Loading from './Loading'
 
-export default function LeaderboardView({ token, userEmail, onBack }) {
+export default function LeaderboardView({ token, myName, onBack }) {
   const { t } = useTranslation()
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
@@ -58,7 +58,7 @@ export default function LeaderboardView({ token, userEmail, onBack }) {
             </thead>
             <tbody className="ft-stagger">
               {rows.map((r) => (
-                <tr key={r.email} className={r.email === userEmail ? 'table-active' : ''}>
+                <tr key={r.name} className={r.name === myName ? 'table-active' : ''}>
                   <td>
                     {RANK_MEDALS[r.rank] ? (
                       <span className="ft-rank-medal">{RANK_MEDALS[r.rank]}</span>
@@ -67,8 +67,8 @@ export default function LeaderboardView({ token, userEmail, onBack }) {
                     )}
                   </td>
                   <td className="fw-medium">
-                    {r.email}
-                    {r.email === userEmail && <span className="badge text-bg-success ms-2">{t('lb_you')}</span>}
+                    {r.name}
+                    {r.name === myName && <span className="badge text-bg-success ms-2">{t('lb_you')}</span>}
                   </td>
                   <td className="text-center">{r.totalPredictions}</td>
                   <td className="text-center fw-bold fs-6">{r.totalPoints}</td>

@@ -87,7 +87,7 @@ export default function GoogleLoginButton({ onSuccess, onError }) {
                 if (!res.ok) throw new Error(data.message || 'google_login_failed')
                 return data
               })
-              .then((data) => onSuccess(data.token, data.email, data.role, data.hasPassword, data.viaGoogle))
+              .then((data) => onSuccess(data.token, data.email, data.role, data.hasPassword, data.viaGoogle, data.displayName))
               // Tra ve MA loi tho; AuthPanel doi sang cau tieng Viet qua errMap cua no
               .catch((err) => onError?.(err.message))
           },

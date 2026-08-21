@@ -142,6 +142,15 @@ public class AuthController {
                 auth.getName(), body.get("currentPassword"), body.get("newPassword"), viaGoogle);
     }
 
+    /** Doi ten hien thi (ten nguoi khac nhin thay o bang xep hang). */
+    @PostMapping("/display-name")
+    public AuthResponse setDisplayName(@RequestBody java.util.Map<String, String> body,
+                                       java.security.Principal principal,
+                                       HttpServletRequest http) {
+        limit("name:email:" + normalize(principal.getName()), CHANGE_PER_EMAIL, QUARTER_HOUR);
+        return authService.setDisplayName(principal.getName(), body.get("displayName"));
+    }
+
     @PostMapping("/reset-password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void resetPassword(@RequestBody java.util.Map<String, String> body, HttpServletRequest http) {

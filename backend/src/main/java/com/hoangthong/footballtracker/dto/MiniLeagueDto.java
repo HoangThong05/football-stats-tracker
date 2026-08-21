@@ -25,7 +25,8 @@ public class MiniLeagueDto {
     /** 1 hang trong BXH cua phong */
     public record LeagueLeaderboardEntry(
             int rank,
-            String email,
+            /** Ten hien thi, khong phai email - xem ghi chu o LeaderboardEntryDto. */
+            String name,
             long totalPoints,
             /** So luot du doan da duoc cham diem (tran da ket thuc). */
             long scoredPredictions,
@@ -34,7 +35,7 @@ public class MiniLeagueDto {
     ) {}
 
     /** Du doan cua mot thanh vien cho mot tran. */
-    public record MemberPick(String email, int homeScore, int awayScore, Integer points) {}
+    public record MemberPick(String name, int homeScore, int awayScore, Integer points) {}
 
     /**
      * Mot tran kem du doan cua ca phong.

@@ -153,8 +153,9 @@ class PredictionServiceTest {
         List<LeaderboardEntryDto> result = service.getLeaderboard();
 
         assertThat(result).extracting(LeaderboardEntryDto::rank).containsExactly(1, 2);
-        assertThat(result).extracting(LeaderboardEntryDto::email)
-                .containsExactly("top@example.com", "nhi@example.com");
+        // Chua dat ten hien thi -> lay phan truoc dau @, KHONG tra ca dia chi email ra
+        assertThat(result).extracting(LeaderboardEntryDto::name)
+                .containsExactly("top", "nhi");
         assertThat(result.get(0).totalPoints()).isEqualTo(15L);
     }
 
@@ -162,6 +163,10 @@ class PredictionServiceTest {
         return new PredictionRepository.LeaderboardRow() {
             public String getEmail() {
                 return email;
+            }
+
+            public String getDisplayName() {
+                return null;
             }
 
             public Long getTotalPoints() {

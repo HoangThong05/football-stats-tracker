@@ -4,13 +4,15 @@ import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import Badges from './Badges'
 import ChangePassword from './ChangePassword'
+import DisplayName from './DisplayName'
 import PredictionPointsChart from './PredictionPointsChart'
 
 /**
  * Trang tong hop ca nhan: huy hieu, bieu do diem, doi yeu thich, phong Mini League.
  * Gop lai nhung gi truoc day nam rai rac o cac tab rieng (Lich su / Yeu thich / Mini League).
  */
-export default function Profile({ token, userEmail, hasPassword, viaGoogle, favorites, onBack,
+export default function Profile({ token, userEmail, hasPassword, viaGoogle, displayName,
+  onDisplayNameSaved, favorites, onBack,
   onSelectTeam, onGoToMiniLeague, onTokenRenewed }) {
   const { t } = useTranslation()
   const [leagues, setLeagues] = useState([])
@@ -34,6 +36,8 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, favo
 
       <h3 className="h5 mb-1">{t('profile_title')}</h3>
       <p className="text-secondary small mb-3">{userEmail}</p>
+
+      <DisplayName token={token} displayName={displayName} onSaved={onDisplayNameSaved} />
 
       <ChangePassword token={token} hasPassword={hasPassword} viaGoogle={viaGoogle}
         onTokenRenewed={onTokenRenewed} />

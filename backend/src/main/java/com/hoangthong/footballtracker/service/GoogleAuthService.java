@@ -131,7 +131,8 @@ public class GoogleAuthService {
         // viaGoogle = true: phien nay chung minh danh tinh bang Google, khong phai bang
         // mat khau -> man doi mat khau se khong hoi "mat khau hien tai".
         String token = jwtService.generateToken(user.getEmail(), role, user.getTokenVersion(), true);
-        return new AuthResponse(token, user.getEmail(), role, user.hasPassword(), true);
+        return new AuthResponse(token, user.getEmail(), role, user.hasPassword(), true,
+                user.displayNameOrFallback());
     }
 
     private void verifyIssuer(Jwt jwt) {

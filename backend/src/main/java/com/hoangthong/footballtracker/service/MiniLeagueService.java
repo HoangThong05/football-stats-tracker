@@ -75,7 +75,8 @@ public class MiniLeagueService {
                     m.getHomeScore(), m.getAwayScore(), m.getStatus(),
                     new java.util.ArrayList<>()));
             row.picks().add(new MiniLeagueDto.MemberPick(
-                    p.getUser().getEmail(), p.getPredictedHomeScore(), p.getPredictedAwayScore(), p.getPoints()));
+                    p.getUser().displayNameOrFallback(),
+                    p.getPredictedHomeScore(), p.getPredictedAwayScore(), p.getPoints()));
         }
 
         // Trong moi tran: diem cao len truoc, chua cham diem xuong duoi
@@ -135,12 +136,15 @@ public class MiniLeagueService {
         List<MiniLeagueDto.LeagueLeaderboardEntry> entries = new java.util.ArrayList<>();
         for (int i = 0; i < rows.size(); i++) {
             Object[] row = rows.get(i);
+            String memberName = row[2] != null && !((String) row[2]).isBlank()
+                    ? (String) row[2]
+                    : User.fallbackName((String) row[1]);
             entries.add(new MiniLeagueDto.LeagueLeaderboardEntry(
                     i + 1,
-                    (String) row[1],
-                    ((Number) row[2]).longValue(),
+                    memberName,
                     ((Number) row[3]).longValue(),
-                    ((Number) row[4]).longValue()
+                    ((Number) row[4]).longValue(),
+                    ((Number) row[5]).longValue()
             ));
         }
         return new MiniLeagueDto.LeagueLeaderboardResponse(
