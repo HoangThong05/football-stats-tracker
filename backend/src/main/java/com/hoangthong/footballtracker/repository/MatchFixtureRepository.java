@@ -28,6 +28,28 @@ public interface MatchFixtureRepository extends JpaRepository<MatchFixture, Long
      */
     List<MatchFixture> findByUtcDateBetweenOrderByUtcDateAsc(Instant from, Instant to);
 
+    /** Tran DA XONG cua mot doi, moi nhat truoc. Dung Pageable de gioi han so luong. */
+    @org.springframework.data.jpa.repository.Query("""
+            SELECT m FROM MatchFixture m
+            WHERE (m.homeTeamId = :teamId OR m.awayTeamId = :teamId)
+              AND m.status = 'FINISHED'
+            ORDER BY m.utcDate DESC
+            """)
+    List<MatchFixture> findFinishedByTeam(
+            @org.springframework.data.repository.query.Param("teamId") long teamId,
+            org.springframework.data.domain.Pageable pageable);
+
+    /** Tran SAP DA cua mot doi, gan nhat truoc. */
+    @org.springframework.data.jpa.repository.Query("""
+            SELECT m FROM MatchFixture m
+            WHERE (m.homeTeamId = :teamId OR m.awayTeamId = :teamId)
+              AND m.status IN ('SCHEDULED', 'TIMED', 'IN_PLAY', 'PAUSED')
+            ORDER BY m.utcDate ASC
+            """)
+    List<MatchFixture> findUpcomingByTeam(
+            @org.springframework.data.repository.query.Param("teamId") long teamId,
+            org.springframework.data.domain.Pageable pageable);
+
     /**
      * Cac giai DANG co tran lan banh, de dong bo day hon rieng cho chung.
      *

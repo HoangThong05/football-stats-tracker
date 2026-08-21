@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import Loading from './Loading'
+import TeamMatches from './TeamMatches'
 
 const POSITION_LABELS = {
   Goalkeeper: 'Thủ môn',
@@ -35,7 +36,7 @@ function playerSearchUrl(playerName, teamName) {
   return `https://www.google.com/search?q=${encodeURIComponent(query)}&btnI=1`
 }
 
-export default function TeamDetail({ teamId, onBack, token, favorites, onFavoritesChange }) {
+export default function TeamDetail({ teamId, onBack, token, favorites, onFavoritesChange, onSelectMatch }) {
   const { t } = useTranslation()
   const [team, setTeam] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -161,6 +162,8 @@ export default function TeamDetail({ teamId, onBack, token, favorites, onFavorit
               )}
             </div>
           </div>
+
+          <TeamMatches teamId={teamId} teamName={team.name} onSelectMatch={onSelectMatch} />
 
           {team.squad.length === 0 ? (
             <>

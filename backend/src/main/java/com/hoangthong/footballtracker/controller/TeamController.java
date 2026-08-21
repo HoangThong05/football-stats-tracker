@@ -22,8 +22,20 @@ public class TeamController {
 
     private final TeamService service;
 
-    public TeamController(TeamService service) {
+    private final com.hoangthong.footballtracker.service.TeamMatchesService matchesService;
+
+    public TeamController(TeamService service,
+                          com.hoangthong.footballtracker.service.TeamMatchesService matchesService) {
         this.service = service;
+        this.matchesService = matchesService;
+    }
+
+    /**
+     * Tran da xong / sap da cua doi nay. Doc tu database nen khong ton han muc API.
+     */
+    @GetMapping("/{id}/matches")
+    public com.hoangthong.footballtracker.service.TeamMatchesService.Result getTeamMatches(@PathVariable long id) {
+        return matchesService.forTeam(id);
     }
 
     @GetMapping("/{id}")

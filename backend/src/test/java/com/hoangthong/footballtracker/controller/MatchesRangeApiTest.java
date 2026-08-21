@@ -58,7 +58,8 @@ class MatchesRangeApiTest {
         Instant to = Instant.parse("2026-08-03T17:00:00Z");
         when(dayMatchesService.getMatchesBetween(eq(from), eq(to))).thenReturn(List.of(
                 new DayMatchDto(100, "PL", "2026-08-03T14:00:00Z", "FINISHED", 5,
-                        "Arsenal FC", "https://crest/57.png", "Chelsea FC", "https://crest/61.png", 2, 1)));
+                        57, "Arsenal FC", "https://crest/57.png",
+                        61, "Chelsea FC", "https://crest/61.png", 2, 1)));
 
         mockMvc.perform(get("/api/matches/range")
                         .param("from", "2026-08-02T17:00:00Z")

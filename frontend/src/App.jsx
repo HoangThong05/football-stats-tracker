@@ -546,6 +546,7 @@ export default function App() {
               token={token}
               favorites={favorites}
               onFavoritesChange={() => refreshFavorites(token)}
+              onSelectMatch={goToMatch}
             />
           ) : selectedMatchId != null ? (
             <MatchDetail
