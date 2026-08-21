@@ -551,6 +551,7 @@ export default function App() {
             <MatchDetail
               matchId={selectedMatchId}
               onBack={() => setSelectedMatchId(null)}
+              token={token}
             />
           ) : showFavorites ? (
             <FavoritesList

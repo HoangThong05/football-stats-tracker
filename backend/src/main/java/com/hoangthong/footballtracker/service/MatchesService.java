@@ -137,6 +137,7 @@ public class MatchesService {
                 r.matchday(),
                 r.stage(),
                 r.competition() != null ? r.competition().name() : null,
+                r.competition() != null ? r.competition().code() : null,
                 r.competition() != null ? r.competition().emblem() : null,
                 r.venue(),
                 r.homeTeam().id(),

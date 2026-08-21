@@ -24,7 +24,8 @@ public record MatchDetailApiResponse(
 ) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Competition(long id, String name, String emblem) {
+    /** code = ma giai ("PL", "PD"...). football-data.org co tra ve, truoc day khong doc den. */
+    public record Competition(long id, String name, String code, String emblem) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

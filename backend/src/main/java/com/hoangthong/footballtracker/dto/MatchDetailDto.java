@@ -13,6 +13,8 @@ public record MatchDetailDto(
         Integer matchday,
         String stage,
         String competition,
+        /** Ma giai (PL, PD...) - frontend can de goi bang xep hang lay phong do 2 doi. */
+        String competitionCode,
         String competitionEmblem,
         String venue,
         long homeTeamId,

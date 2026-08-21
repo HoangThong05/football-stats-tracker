@@ -3,6 +3,7 @@ import { normalizeText, shortTeamName } from '../utils'
 import { useTranslation } from '../i18n'
 import { RANK_MEDALS } from '../constants'
 import CountUp from './CountUp'
+import FormDots, { parseForm } from './FormDots'
 
 // Tra ve class huy hieu vi tri theo vung (suat cup chau Au / nguy hiem)
 function posClass(position, total, zones) {
@@ -24,16 +25,6 @@ function rowClass(position, total, zones, isFullTable) {
   if (position === total - zones.bottom) classes.push('ft-zone-edge-bottom')
   if (position > total - zones.bottom) classes.push('ft-zone-danger')
   return classes.join(' ')
-}
-
-/** "W,D,L,W,W" -> mang ky tu, bo qua gia tri la. Tra ve [] neu chua co du lieu. */
-function parseForm(form) {
-  if (!form) return []
-  return form
-    .split(',')
-    .map((s) => s.trim().toUpperCase())
-    .filter((s) => s === 'W' || s === 'D' || s === 'L')
-    .slice(-5)
 }
 
 export default function StandingsTable({ rows, zones, onSelectTeam }) {
@@ -149,7 +140,7 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
                     </td>
                     {hasForm && (
                       <td className="text-center">
-                        <FormDots form={r.form} t={t} />
+                        <FormDots form={r.form} />
                       </td>
                     )}
                   </tr>
@@ -174,23 +165,5 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
         </>
       )}
     </div>
-  )
-}
-
-/** Chuoi 5 tran gan nhat, cu -> moi. Mau la phu tro; chu cai ben trong moi la thong tin chinh. */
-function FormDots({ form, t }) {
-  const results = parseForm(form)
-  if (results.length === 0) return <span className="text-secondary">–</span>
-
-  const label = { W: t('standings_form_win'), D: t('standings_form_draw'), L: t('standings_form_loss') }
-
-  return (
-    <span className="ft-form" role="img" aria-label={results.map((r) => label[r]).join(', ')}>
-      {results.map((r, i) => (
-        <span key={i} className={`ft-form-dot ft-form-${r.toLowerCase()}`} title={label[r]}>
-          {label[r].charAt(0)}
-        </span>
-      ))}
-    </span>
   )
 }

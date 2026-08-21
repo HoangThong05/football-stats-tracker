@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
-import { API_BASE } from '../api'
+import { API_BASE, authHeaders } from '../api'
 import { formatKickoff, shortTeamName } from '../utils'
 import { useTranslation } from '../i18n'
 import Loading from './Loading'
 import HeadToHead from './HeadToHead'
 import Pitch3D from './Pitch3D'
+import FormDots, { parseForm } from './FormDots'
 
-export default function MatchDetail({ matchId, onBack }) {
+export default function MatchDetail({ matchId, onBack, token }) {
   const { t, lang } = useTranslation()
   const [match, setMatch] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -26,6 +27,54 @@ export default function MatchDetail({ matchId, onBack }) {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [matchId])
+
+  /*
+   * Phong do hai doi lay tu BANG XEP HANG cua giai - o do da co san chuoi 5 tran gan
+   * nhat cho tung doi, va endpoint do duoc cache o backend nen khong ton them han muc.
+   */
+  const [form, setForm] = useState({ home: null, away: null })
+
+  useEffect(() => {
+    if (!match?.competitionCode) {
+      setForm({ home: null, away: null })
+      return undefined
+    }
+    let cancelled = false
+    fetch(`${API_BASE}/standings/${match.competitionCode}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((rows) => {
+        if (cancelled) return
+        const of = (id) => rows.find((r) => r.teamId === id)?.form ?? null
+        setForm({ home: of(match.homeTeamId), away: of(match.awayTeamId) })
+      })
+      // Phong do chi la thong tin them: hong thi im lang bo qua
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [match?.competitionCode, match?.homeTeamId, match?.awayTeamId])
+
+  // Du doan cua chinh nguoi dung cho tran nay (neu co)
+  const [myPrediction, setMyPrediction] = useState(null)
+
+  useEffect(() => {
+    if (!token) {
+      setMyPrediction(null)
+      return undefined
+    }
+    let cancelled = false
+    fetch(`${API_BASE}/predictions/mine`, { headers: authHeaders(token) })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((rows) => {
+        if (!cancelled) setMyPrediction(rows.find((r) => r.matchId === matchId) ?? null)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [matchId, token])
+
+  const hasForm = parseForm(form.home).length > 0 || parseForm(form.away).length > 0
 
   const hasFullScore = match && match.homeScore != null && match.awayScore != null
   const hasHalfScore = match && match.homeHalfScore != null && match.awayHalfScore != null
@@ -99,6 +148,41 @@ export default function MatchDetail({ matchId, onBack }) {
                   {match.referees.length > 1 ? t('match_referees') : t('match_referee')}: {match.referees.join(', ')}
                 </div>
               )}
+            </div>
+          )}
+
+          {hasForm && (
+            <div className="border-top pt-3 mt-3">
+              <div className="text-secondary small mb-2">{t('match_form_title')}</div>
+              <div className="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                <div className="d-flex align-items-center gap-2" style={{ minWidth: 0 }}>
+                  <span className="text-truncate small fw-medium">{shortTeamName(match.homeTeam)}</span>
+                  <FormDots form={form.home} />
+                </div>
+                <div className="d-flex align-items-center gap-2" style={{ minWidth: 0 }}>
+                  <FormDots form={form.away} />
+                  <span className="text-truncate small fw-medium">{shortTeamName(match.awayTeam)}</span>
+                </div>
+              </div>
+              <div className="text-secondary mt-1" style={{ fontSize: '0.72rem' }}>
+                {t('standings_form_legend')}
+              </div>
+            </div>
+          )}
+
+          {myPrediction && (
+            <div className="border-top pt-3 mt-3 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+              <span className="small text-secondary">{t('match_my_prediction')}</span>
+              <span className="d-flex align-items-center gap-2">
+                <span className="ft-num fw-bold">
+                  {myPrediction.predictedHomeScore} - {myPrediction.predictedAwayScore}
+                </span>
+                {myPrediction.points != null && (
+                  <span className={myPrediction.points > 0 ? 'badge text-bg-success' : 'badge text-bg-secondary'}>
+                    +{myPrediction.points} {t('myp_points_suffix')}
+                  </span>
+                )}
+              </span>
             </div>
           )}
 
