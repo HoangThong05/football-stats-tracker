@@ -2403,7 +2403,7 @@ tr[role='button']:hover img,
  */
 .ft-predict-row {
   display: grid;
-  grid-template-columns: 132px minmax(0, 1fr) auto minmax(0, 1fr) 96px;
+  grid-template-columns: 150px minmax(0, 1fr) auto minmax(0, 1fr) 96px;
   align-items: center;
   gap: 12px;
 }
@@ -2411,6 +2411,19 @@ tr[role='button']:hover img,
 .ft-predict-btn {
   width: 100%;
   white-space: nowrap;
+}
+
+/*
+ * Gio dau luon nam tron mot dong, vong dau xuong dong duoi.
+ *
+ * De chu tu xuong dong thi cho ngat roi vao dau tuy do dai chuoi - hang nay dau cham
+ * phan cach nam cuoi dong tren, hang kia lai nam dau dong duoi, nhin lon xon.
+ * Tach hai dong co dinh thi bo luon duoc dau cham do.
+ */
+.ft-predict-when {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Man hinh hep: gio va nut tach thanh hang rieng, cap dau van thang cot */

@@ -82,9 +82,11 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
                     role="button"
                     onClick={() => onSelectMatch(m.matchId)}
                   >
-                    {formatKickoff(m.utcDate, lang)}
+                    <span className="d-block ft-predict-when">{formatKickoff(m.utcDate, lang)}</span>
                     {m.matchday != null && (
-                      <span className="text-body-tertiary"> {t('matches_matchday_prefix')} {m.matchday}</span>
+                      <span className="d-block text-body-tertiary">
+                        {t('matchday_label')} {m.matchday}
+                      </span>
                     )}
                   </small>
 
