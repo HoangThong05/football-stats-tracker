@@ -4,7 +4,7 @@ import { createContext, useContext } from 'react'
 // du lieu dong tu backend (ten doi, ten giai, ten cau thu...) giu nguyen, khong dich.
 export const translations = {
   vi: {
-    app_subtitle: 'Bảng xếp hạng · Lịch thi đấu · Kết quả · Vua phá lưới',
+    app_subtitle: '6 giải hàng đầu châu Âu',
     theme_toggle_title: 'Chuyển giao diện sáng/tối',
     lang_toggle_title: 'Chuyển ngôn ngữ',
     nav_today: '📅 Hôm nay',
@@ -342,7 +342,7 @@ export const translations = {
   },
 
   en: {
-    app_subtitle: 'Standings · Fixtures · Results · Top Scorers',
+    app_subtitle: "Europe's top 6 leagues",
     theme_toggle_title: 'Toggle light/dark theme',
     lang_toggle_title: 'Switch language',
     nav_today: '📅 Today',
