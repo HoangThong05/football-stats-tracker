@@ -36,6 +36,26 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
     List<Prediction> findScoredByUserIdOrderByMatchDateAsc(@Param("userId") Long userId);
 
     /** Bang xep hang: tong diem + so lan du doan cua tung nguoi (chi tinh du doan da cham diem). */
+    /**
+     * Du doan cua NHIEU nguoi cho cac tran DA LAN BANH, dung cho man "ca phong doan gi".
+     *
+     * Chan bang utcDate < :now ngay trong truy van chu khong loc o tang tren: du doan
+     * cua tran chua da la thong tin phai giau: lo ra thi ai vao sau cu chep cua nguoi
+     * vao truoc, hong ca tro choi.
+     */
+    @Query("""
+            SELECT p FROM Prediction p
+            JOIN FETCH p.match m
+            JOIN FETCH p.user u
+            WHERE p.user.id IN :userIds
+              AND m.utcDate < :now
+              AND m.utcDate >= :since
+            ORDER BY m.utcDate DESC
+            """)
+    List<Prediction> findRevealedForUsers(@Param("userIds") java.util.Collection<Long> userIds,
+                                          @Param("now") java.time.Instant now,
+                                          @Param("since") java.time.Instant since);
+
     @Query("SELECT u.email AS email, "
             + "COALESCE(SUM(p.points), 0) AS totalPoints, "
             + "COUNT(p) AS totalPredictions "

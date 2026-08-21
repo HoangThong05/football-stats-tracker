@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
+import { shortTeamName } from '../utils'
 
 function translateError(code, t) {
   const key = `ml_err_${code}`
@@ -9,10 +10,12 @@ function translateError(code, t) {
 }
 
 export default function MiniLeague({ token, onBack  }) {
-  const { t } = useTranslation()
+  const { t, lang } = useTranslation()
   const [leagues, setLeagues] = useState([])
   const [selected, setSelected] = useState(null)
   const [leaderboard, setLeaderboard] = useState(null)
+  // Du doan cua ca phong - backend chi tra ve tran DA lan banh
+  const [picks, setPicks] = useState([])
   const [newName, setNewName] = useState('')
   const [joinCode, setJoinCode] = useState('')
   const [loading, setLoading] = useState(false)
@@ -36,8 +39,15 @@ export default function MiniLeague({ token, onBack  }) {
 
   async function fetchLeaderboard(id) {
     setLeaderboard(null)
+    setPicks([])
     const res = await fetch(`${API_BASE}/leagues/${id}/leaderboard`, { headers: authHeaders(token) })
     if (res.ok) setLeaderboard(await res.json())
+
+    // Phan phu: hong thi bang diem van hien binh thuong
+    fetch(`${API_BASE}/leagues/${id}/picks`, { headers: authHeaders(token) })
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setPicks)
+      .catch(() => {})
   }
 
   async function refreshAndSelect(targetId) {
@@ -281,6 +291,51 @@ if (!token) {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {picks.length > 0 && (
+            <div className="mt-4">
+              <h6 className="fw-bold mb-1">👀 {t('ml_picks_title')}</h6>
+              <p className="text-secondary small mb-3">{t('ml_picks_note')}</p>
+
+              {picks.map((m) => (
+                <div key={m.matchId} className="ft-card p-3 mb-2">
+                  <div className="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
+                    <span className="fw-semibold small">
+                      {shortTeamName(m.homeTeam)} {m.actualHomeScore ?? '-'} - {m.actualAwayScore ?? '-'}{' '}
+                      {shortTeamName(m.awayTeam)}
+                    </span>
+                    <span className="text-secondary" style={{ fontSize: '0.75rem' }}>
+                      {m.competition} · {new Date(m.utcDate).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-GB')}
+                    </span>
+                  </div>
+
+                  <div className="d-flex flex-column gap-1">
+                    {m.picks.map((p) => (
+                      <div key={p.email} className="d-flex align-items-center gap-2 small">
+                        <span className="text-truncate flex-grow-1" style={{ minWidth: 0 }} title={p.email}>
+                          {p.email}
+                        </span>
+                        <span className="ft-num fw-semibold flex-shrink-0">
+                          {p.homeScore} - {p.awayScore}
+                        </span>
+                        <span
+                          className={`badge flex-shrink-0 ${
+                            p.points === 3 ? 'text-bg-success'
+                              : p.points === 1 ? 'text-bg-warning'
+                                : p.points === 0 ? 'text-bg-secondary'
+                                  : 'text-bg-light'
+                          }`}
+                          style={{ minWidth: 34 }}
+                        >
+                          {p.points == null ? '…' : `+${p.points}`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

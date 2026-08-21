@@ -33,6 +33,28 @@ public class MiniLeagueDto {
             long exactScores
     ) {}
 
+    /** Du doan cua mot thanh vien cho mot tran. */
+    public record MemberPick(String email, int homeScore, int awayScore, Integer points) {}
+
+    /**
+     * Mot tran kem du doan cua ca phong.
+     *
+     * CHI tra ve cho tran DA LAN BANH - xem ghi chu o PredictionRepository.findRevealedForUsers.
+     */
+    public record RoomMatchPicks(
+            long matchId,
+            String competition,
+            Instant utcDate,
+            String homeTeam,
+            String homeCrest,
+            String awayTeam,
+            String awayCrest,
+            Integer actualHomeScore,
+            Integer actualAwayScore,
+            String status,
+            List<MemberPick> picks
+    ) {}
+
     /** BXH day du cua phong */
     public record LeagueLeaderboardResponse(
             Long leagueId,

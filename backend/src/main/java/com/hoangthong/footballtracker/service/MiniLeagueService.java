@@ -24,13 +24,66 @@ public class MiniLeagueService {
     private final MiniLeagueRepository leagueRepo;
     private final LeagueMemberRepository memberRepo;
     private final UserRepository userRepo;
+    private final com.hoangthong.footballtracker.repository.PredictionRepository predictionRepo;
+
+    /** Chi hien du doan cua cac tran trong 14 ngay gan day - du de theo doi vong dau vua qua. */
+    private static final java.time.Duration PICKS_WINDOW = java.time.Duration.ofDays(14);
 
     public MiniLeagueService(MiniLeagueRepository leagueRepo,
                               LeagueMemberRepository memberRepo,
-                              UserRepository userRepo) {
+                              UserRepository userRepo,
+                              com.hoangthong.footballtracker.repository.PredictionRepository predictionRepo) {
         this.leagueRepo = leagueRepo;
         this.memberRepo = memberRepo;
         this.userRepo = userRepo;
+        this.predictionRepo = predictionRepo;
+    }
+
+    /**
+     * Du doan cua CA PHONG cho tung tran, chi gom tran DA LAN BANH.
+     *
+     * Day la phan thu vi nhat khi choi voi ban be: bang diem cho biet ai hon, con cai nay
+     * cho thay ho choi kieu gi. Nhung phai giau den khi bong lan - xem ghi chu o
+     * PredictionRepository.findRevealedForUsers.
+     */
+    public List<MiniLeagueDto.RoomMatchPicks> roomPicks(String email, Long leagueId) {
+        User user = getUser(email);
+        MiniLeague league = leagueRepo.findById(leagueId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "league_not_found"));
+        if (!memberRepo.existsByLeagueAndUser(league, user)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not_a_member");
+        }
+
+        List<Long> memberIds = memberRepo.findByLeague(league).stream()
+                .map(m -> m.getUser().getId())
+                .toList();
+        if (memberIds.isEmpty()) {
+            return List.of();
+        }
+
+        java.time.Instant now = java.time.Instant.now();
+        var predictions = predictionRepo.findRevealedForUsers(memberIds, now, now.minus(PICKS_WINDOW));
+
+        // Giu nguyen thu tu tran moi nhat truoc ma truy van da sap xep
+        var byMatch = new java.util.LinkedHashMap<Long, MiniLeagueDto.RoomMatchPicks>();
+        for (var p : predictions) {
+            var m = p.getMatch();
+            var row = byMatch.computeIfAbsent(m.getId(), id -> new MiniLeagueDto.RoomMatchPicks(
+                    m.getId(), m.getCompetition(), m.getUtcDate(),
+                    m.getHomeTeam(), m.getHomeCrest(),
+                    m.getAwayTeam(), m.getAwayCrest(),
+                    m.getHomeScore(), m.getAwayScore(), m.getStatus(),
+                    new java.util.ArrayList<>()));
+            row.picks().add(new MiniLeagueDto.MemberPick(
+                    p.getUser().getEmail(), p.getPredictedHomeScore(), p.getPredictedAwayScore(), p.getPoints()));
+        }
+
+        // Trong moi tran: diem cao len truoc, chua cham diem xuong duoi
+        for (var row : byMatch.values()) {
+            row.picks().sort(java.util.Comparator.comparing(
+                    (MiniLeagueDto.MemberPick pk) -> pk.points() == null ? -1 : pk.points()).reversed());
+        }
+        return List.copyOf(byMatch.values());
     }
 
     @Transactional

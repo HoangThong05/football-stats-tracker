@@ -46,6 +46,17 @@ public class MiniLeagueController {
         return service.leaderboard(email, id);
     }
 
+    /**
+     * Du doan cua ca phong cho cac tran DA LAN BANH.
+     * Tran chua da khong bao gio nam trong ket qua - de khong ai chep duoc cua nhau.
+     */
+    @GetMapping("/{id}/picks")
+    public java.util.List<MiniLeagueDto.RoomMatchPicks> roomPicks(
+            @AuthenticationPrincipal String email,
+            @PathVariable Long id) {
+        return service.roomPicks(email, id);
+    }
+
     @DeleteMapping("/{id}/leave")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void leave(
