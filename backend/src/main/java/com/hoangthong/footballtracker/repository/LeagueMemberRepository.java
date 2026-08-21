@@ -20,9 +20,18 @@ public interface LeagueMemberRepository extends JpaRepository<LeagueMember, Long
 
     boolean existsByLeagueAndUser(MiniLeague league, User user);
 
-    /** Tong diem du doan cua tung thanh vien trong phong (dung cho BXH). */
+    /**
+     * BXH phong: tong diem, so luot da cham diem, va so lan trung CHINH XAC ti so (3 diem).
+     *
+     * Chi co tong diem thi khong phan biet duoc nguoi doan nhieu ma trung it voi nguoi
+     * doan it ma trung nhieu - hai kieu choi khac han nhau.
+     */
     @Query("""
-        SELECT lm.user.id, lm.user.email, COALESCE(SUM(p.points), 0)
+        SELECT lm.user.id,
+               lm.user.email,
+               COALESCE(SUM(p.points), 0),
+               COUNT(p),
+               COALESCE(SUM(CASE WHEN p.points = 3 THEN 1 ELSE 0 END), 0)
         FROM LeagueMember lm
         LEFT JOIN Prediction p ON p.user = lm.user AND p.points IS NOT NULL
         WHERE lm.league.id = :leagueId

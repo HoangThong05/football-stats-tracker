@@ -85,7 +85,9 @@ public class MiniLeagueService {
             entries.add(new MiniLeagueDto.LeagueLeaderboardEntry(
                     i + 1,
                     (String) row[1],
-                    ((Number) row[2]).longValue()
+                    ((Number) row[2]).longValue(),
+                    ((Number) row[3]).longValue(),
+                    ((Number) row[4]).longValue()
             ));
         }
         return new MiniLeagueDto.LeagueLeaderboardResponse(

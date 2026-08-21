@@ -26,7 +26,11 @@ public class MiniLeagueDto {
     public record LeagueLeaderboardEntry(
             int rank,
             String email,
-            long totalPoints
+            long totalPoints,
+            /** So luot du doan da duoc cham diem (tran da ket thuc). */
+            long scoredPredictions,
+            /** So lan doan dung chinh xac ti so (3 diem). */
+            long exactScores
     ) {}
 
     /** BXH day du cua phong */

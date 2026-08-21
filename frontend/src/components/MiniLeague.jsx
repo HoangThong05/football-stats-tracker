@@ -157,6 +157,16 @@ if (!token) {
         </div>
       )}
 
+      <div className="ft-card p-3 mb-4">
+        <h5 className="h6 fw-bold mb-2">🏆 {t('ml_intro_title')}</h5>
+        <p className="mb-2 small">{t('ml_intro_what')}</p>
+        <ol className="mb-0 small text-secondary ps-3">
+          <li>{t('ml_intro_step1')}</li>
+          <li>{t('ml_intro_step2')}</li>
+          <li>{t('ml_intro_step3')}</li>
+        </ol>
+      </div>
+
       <div className="row g-3 mb-4">
         <div className="col-12 col-md-6">
           <div className="ft-card p-4 h-100">
@@ -246,6 +256,8 @@ if (!token) {
                   <tr>
                     <th className="text-center" style={{ width: 60 }}>{t('ml_col_rank')}</th>
                     <th>{t('ml_col_member')}</th>
+                    <th className="text-center d-none d-sm-table-cell">{t('ml_col_played')}</th>
+                    <th className="text-center d-none d-sm-table-cell">{t('ml_col_exact')}</th>
                     <th className="text-center">{t('ml_col_points')}</th>
                   </tr>
                 </thead>
@@ -256,6 +268,12 @@ if (!token) {
                         {e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : e.rank}
                       </td>
                       <td>{e.email}</td>
+                      <td className="text-center ft-num text-secondary d-none d-sm-table-cell">
+                        {e.scoredPredictions}
+                      </td>
+                      <td className="text-center ft-num text-secondary d-none d-sm-table-cell">
+                        {e.exactScores}
+                      </td>
                       <td className="text-center fw-bold" style={{ color: 'var(--ft-accent-strong)' }}>
                         {e.totalPoints} đ
                       </td>
