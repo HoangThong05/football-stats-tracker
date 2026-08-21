@@ -47,6 +47,17 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
   // Chi hien cot phong do khi thuc su co du lieu (dau mua giai se chua co)
   const hasForm = rows.some((r) => parseForm(r.form).length > 0)
 
+  /*
+   * Mua giai da khoi tranh chua?
+   *
+   * Chua doi nao da tran nao thi nguon du lieu tra ve vi tri 1 cho TAT CA cac doi -
+   * cu the la ca 20 doi deu deo huy chuong vang, va vung "du cup chau Au" / "xuong hang"
+   * deu duoc to mau trong khi chua co gi de xep hang. Cung nguyen tac voi cot phong do
+   * o tren: chua co so lieu thi dung ve.
+   */
+  const seasonStarted = rows.some((r) => r.playedGames > 0)
+  const activeZones = seasonStarted ? zones : null
+
   // Moc de ve thanh diem: doi dan dau = thanh day. Tranh chia 0 luc dau mua.
   const maxPoints = rows.reduce((max, r) => Math.max(max, r.points), 0)
 
@@ -76,6 +87,9 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
         </div>
       ) : (
         <>
+          {!seasonStarted && (
+            <p className="text-secondary small mb-2">{t('standings_not_started')}</p>
+          )}
           <div className="ft-card table-responsive ft-sticky-head">
             <table className="table table-hover align-middle ft-standings">
               <thead>
@@ -99,14 +113,14 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
                     key={r.teamId}
                     role="button"
                     onClick={() => onSelectTeam(r.teamId)}
-                    className={rowClass(r.position, rows.length, zones, isFullTable)}
+                    className={rowClass(r.position, rows.length, activeZones, isFullTable)}
                   >
                     <td>
-                      <span className={posClass(r.position, rows.length, zones)}>{r.position}</span>
+                      <span className={posClass(r.position, rows.length, activeZones)}>{r.position}</span>
                     </td>
                     <td className="ft-team-cell">
                       <div className="d-flex align-items-center gap-2">
-                        {RANK_MEDALS[r.position] && (
+                        {seasonStarted && RANK_MEDALS[r.position] && (
                           <span className="ft-rank-medal" aria-hidden="true">
                             {RANK_MEDALS[r.position]}
                           </span>
@@ -144,7 +158,7 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
             </table>
           </div>
 
-          {zones && !q && (
+          {activeZones && !q && (
             <div className="ft-legend d-flex gap-4 mt-2 ps-1 text-secondary flex-wrap">
               <span>
                 <span className="dot" style={{ background: 'var(--ft-accent)' }} />

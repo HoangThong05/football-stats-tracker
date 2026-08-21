@@ -2384,3 +2384,9 @@ tr[role='button']:hover img,
   background: var(--ft-accent, #ffc107);
   vertical-align: middle;
 }
+
+/* Dau sao truoc gio dau: danh dau tran co doi nguoi dung theo doi */
+.ft-day-star {
+  color: var(--ft-accent);
+  margin-right: 4px;
+}

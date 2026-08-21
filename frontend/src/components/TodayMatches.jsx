@@ -25,7 +25,7 @@ function dayRange(offset) {
  * Tran dau cua MOI giai trong 1 ngay, nhom theo giai.
  * Doc tu DB (MatchSyncService dong bo moi 30 phut) nen ti so co the tre toi 30 phut.
  */
-export default function TodayMatches({ onBack, onSelectMatch }) {
+export default function TodayMatches({ onBack, onSelectMatch, favorites = [] }) {
   const { t, lang } = useTranslation()
   const [offset, setOffset] = useState(0)
   const [matches, setMatches] = useState([])
@@ -56,6 +56,18 @@ export default function TodayMatches({ onBack, onSelectMatch }) {
     name: l.name,
     matches: matches.filter((m) => m.competition === l.code),
   })).filter((g) => g.matches.length > 0)
+
+  /*
+   * Tran cua doi dang theo doi duoc gom rieng len dau trang.
+   *
+   * VAN GIU CHUNG trong nhom giai ben duoi chu khong cat ra: mot tran bien mat khoi
+   * giai cua no la kho hieu hon nhieu so voi viec no xuat hien hai lan. Dau ★ o duoi
+   * cho biet vi sao no duoc dua len tren.
+   */
+  const followedIds = new Set(favorites.map((f) => f.teamId))
+  const myMatches = followedIds.size
+    ? matches.filter((m) => followedIds.has(m.homeTeamId) || followedIds.has(m.awayTeamId))
+    : []
 
   const dayLabel =
     offset === 0
@@ -124,13 +136,56 @@ export default function TodayMatches({ onBack, onSelectMatch }) {
 
       {!loading &&
         !error &&
-        groups.map((g) => (
+        <>
+          {myMatches.length > 0 && (
+            <div className="mb-3">
+              <div className="ft-day-league">★ {t('today_my_teams')}</div>
+              <div className="ft-card">
+                <ul className="list-group list-group-flush">
+                  {myMatches.map((m) => {
+                    const hasScore = m.homeScore != null && m.awayScore != null
+                    return (
+                      <li
+                        key={`mine-${m.id}`}
+                        className="list-group-item d-flex align-items-center flex-wrap gap-2 py-3"
+                        role="button"
+                        onClick={() => onSelectMatch(m.id)}
+                      >
+                        <small className="text-secondary ft-num" style={{ minWidth: 52 }}>
+                          {timeOf(m.utcDate)}
+                        </small>
+                        <div className="d-flex align-items-center justify-content-end gap-2 flex-grow-1"
+                          style={{ minWidth: 0 }}>
+                          <span className="text-truncate fw-medium" title={m.homeTeam}>
+                            {shortTeamName(m.homeTeam)}
+                          </span>
+                          {m.homeCrest && <img src={m.homeCrest} alt="" width="22" height="22" loading="lazy" />}
+                        </div>
+                        <span className={hasScore ? 'ft-score-badge played text-center' : 'ft-score-badge upcoming text-center'}>
+                          {hasScore ? `${m.homeScore} - ${m.awayScore}` : t('matches_vs')}
+                        </span>
+                        <div className="d-flex align-items-center gap-2 flex-grow-1" style={{ minWidth: 0 }}>
+                          {m.awayCrest && <img src={m.awayCrest} alt="" width="22" height="22" loading="lazy" />}
+                          <span className="text-truncate fw-medium" title={m.awayTeam}>
+                            {shortTeamName(m.awayTeam)}
+                          </span>
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {groups.map((g) => (
           <div key={g.code} className="mb-3">
             <div className="ft-day-league">{g.name}</div>
             <div className="ft-card">
               <ul className="list-group list-group-flush ft-stagger">
                 {g.matches.map((m) => {
                   const hasScore = m.homeScore != null && m.awayScore != null
+                  const mine = followedIds.has(m.homeTeamId) || followedIds.has(m.awayTeamId)
                   return (
                     <li
                       key={m.id}
@@ -139,6 +194,7 @@ export default function TodayMatches({ onBack, onSelectMatch }) {
                       onClick={() => onSelectMatch(m.id)}
                     >
                       <small className="text-secondary ft-num" style={{ minWidth: 52 }}>
+                        {mine && <span className="ft-day-star" title={t('today_my_teams')}>★</span>}
                         {timeOf(m.utcDate)}
                       </small>
 
@@ -164,7 +220,8 @@ export default function TodayMatches({ onBack, onSelectMatch }) {
               </ul>
             </div>
           </div>
-        ))}
+          ))}
+        </>}
 
       {!loading && !error && groups.length > 0 && (
         <p className="ft-legend text-secondary ps-1">{t('today_sync_note')}</p>

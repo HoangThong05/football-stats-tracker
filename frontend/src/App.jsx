@@ -596,6 +596,7 @@ export default function App() {
             <TodayMatches
               onBack={() => setShowToday(false)}
               onSelectMatch={goToMatch}
+              favorites={favorites}
             />
           ) : (
             <>
