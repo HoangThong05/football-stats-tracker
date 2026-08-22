@@ -43,14 +43,17 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
       {/* Hai cai dat xep canh nhau, cung nhip voi hang "Doi yeu thich / Mini League"
           ben duoi. Xep chong len nhau thi moi dong keo dai het be ngang cho vai chu,
           bo trong khoang giua. */}
-      <div className="row g-3 mb-3">
+      {/* align-items-start: moi the tu cao theo noi dung cua no. Khong co dong nay thi
+          cot mac dinh keo cao bang nhau - mo form doi mat khau la o "Ten hien thi" ben
+          canh phinh ra mot khoang trong to bang. */}
+      <div className="row g-3 mb-3 align-items-start">
         <div className="col-12 col-md-6">
-          <div className="ft-card h-100">
+          <div className="ft-card">
             <DisplayName token={token} displayName={displayName} onSaved={onDisplayNameSaved} />
           </div>
         </div>
         <div className="col-12 col-md-6">
-          <div className="ft-card h-100">
+          <div className="ft-card">
             <ChangePassword token={token} hasPassword={hasPassword} viaGoogle={viaGoogle}
               onTokenRenewed={onTokenRenewed} />
           </div>
