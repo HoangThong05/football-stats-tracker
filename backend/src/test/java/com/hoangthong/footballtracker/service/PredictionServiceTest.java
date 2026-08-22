@@ -173,6 +173,10 @@ class PredictionServiceTest {
                 return null;
             }
 
+            public String getAvatarUrl() {
+                return null;
+            }
+
             public Long getTotalPoints() {
                 return points;
             }

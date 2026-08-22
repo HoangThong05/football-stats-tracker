@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { RANK_MEDALS } from '../constants'
 import { useTranslation } from '../i18n'
+import Avatar from './Avatar'
 import Loading from './Loading'
 
 export default function LeaderboardView({ token, myName, onBack, onSelectUser }) {
@@ -67,9 +68,9 @@ export default function LeaderboardView({ token, myName, onBack, onSelectUser })
                     )}
                   </td>
                   <td className="fw-medium">
-                    <button type="button" className="ft-name-link fw-medium"
-                      onClick={() => onSelectUser(r.userId)}>
-                      {r.name}
+                    <button type="button" className="ft-lb-player" onClick={() => onSelectUser(r.userId)}>
+                      <Avatar name={r.name} src={r.avatarUrl} size={28} />
+                      <span className="ft-name-link fw-medium text-truncate">{r.name}</span>
                     </button>
                     {r.name === myName && <span className="badge text-bg-success ms-2">{t('lb_you')}</span>}
                   </td>

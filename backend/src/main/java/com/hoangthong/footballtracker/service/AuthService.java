@@ -189,11 +189,25 @@ public class AuthService {
         return toAuthResponse(user);
     }
 
+    /**
+     * Dat hoac go anh dai dien. Chuoi rong / null = go anh, quay ve vong tron chu cai.
+     *
+     * Anh da nam san tren Cloudinary roi (trinh duyet tu tai len), o day chi luu lai
+     * duong dan - va chi nhan duong dan Cloudinary, xem {@link ImageUrl}.
+     */
+    public AuthResponse setAvatar(String email, String rawUrl) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials"));
+        user.setAvatarUrl(ImageUrl.clean(rawUrl));
+        userRepository.save(user);
+        return toAuthResponse(user);
+    }
+
     private AuthResponse toAuthResponse(User user) {
         String role = user.getRole().name();
         String token = jwtService.generateToken(user.getEmail(), role, user.getTokenVersion());
         // id null khi doi tuong chua duoc luu (chi xay ra trong test) -> tra 0 thay vi vo loi
         return new AuthResponse(user.getId() == null ? 0 : user.getId(), token, user.getEmail(), role, user.hasPassword(), false,
-                user.displayNameOrFallback());
+                user.displayNameOrFallback(), user.getAvatarUrl());
     }
 }

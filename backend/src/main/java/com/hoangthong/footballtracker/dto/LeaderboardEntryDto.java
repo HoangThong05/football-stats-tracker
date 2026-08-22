@@ -6,5 +6,7 @@ package com.hoangthong.footballtracker.dto;
  *             cua tat ca nguoi choi.
  */
 public record LeaderboardEntryDto(int rank, long userId, String name,
+                                  /** Anh dai dien. null = chua dat. */
+                                  String avatarUrl,
                                   long totalPoints, long totalPredictions) {
 }

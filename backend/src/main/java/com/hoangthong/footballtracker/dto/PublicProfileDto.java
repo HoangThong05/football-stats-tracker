@@ -12,6 +12,8 @@ import java.util.List;
 public record PublicProfileDto(
         long id,
         String name,
+        /** Anh dai dien tren Cloudinary. null = chua dat, giao dien ve vong tron chu cai. */
+        String avatarUrl,
         String joinedAt,
         long totalPoints,
         long totalPredictions,

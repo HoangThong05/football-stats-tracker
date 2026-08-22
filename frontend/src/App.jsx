@@ -77,6 +77,8 @@ export default function App() {
   const [viaGoogle, setViaGoogle] = useState(initialSession.viaGoogle);
   // Ten nguoi khac nhin thay o BXH va trong phong dau
   const [displayName, setDisplayName] = useState(initialSession.displayName);
+  // Anh dai dien - hien o nut goc phai thanh nav, o Cong dong, chat va bang xep hang
+  const [avatarUrl, setAvatarUrl] = useState(initialSession.avatarUrl);
   const [userId, setUserId] = useState(initialSession.userId);
   const [sessionExpired, setSessionExpired] = useState(false);
   /*
@@ -254,13 +256,21 @@ export default function App() {
     else setFavorites([]);
   }, [token]);
 
-  const handleAuthSuccess = (newToken, email, role, hasPwd = true, google = false, name = null, id = null) => {
+  /** Nhan nguyen ca AuthResponse tu backend (dang nhap thuong lan bang Google). */
+  const handleAuthSuccess = (auth) => {
+    const {
+      token: newToken, email, role,
+      hasPassword: hasPwd = true, viaGoogle: google = false,
+      displayName: name = null, avatarUrl: avatar = null, userId: id = null,
+    } = auth;
     localStorage.setItem("ft_token", newToken);
     localStorage.setItem("ft_email", email);
     localStorage.setItem("ft_role", role);
     localStorage.setItem("ft_has_password", String(hasPwd));
     localStorage.setItem("ft_via_google", String(google));
     if (name) localStorage.setItem("ft_display_name", name);
+    if (avatar) localStorage.setItem("ft_avatar_url", avatar);
+    else localStorage.removeItem("ft_avatar_url");
     if (id) localStorage.setItem("ft_user_id", String(id));
     setToken(newToken);
     setUserEmail(email);
@@ -268,6 +278,7 @@ export default function App() {
     setHasPassword(hasPwd);
     setViaGoogle(google);
     setDisplayName(name);
+    setAvatarUrl(avatar);
     setUserId(id);
     setSessionExpired(false);
     setShowAuthForm(false);
@@ -282,6 +293,13 @@ export default function App() {
   const handleDisplayNameSaved = (name) => {
     localStorage.setItem("ft_display_name", name);
     setDisplayName(name);
+  };
+
+  /** url null = vua go anh, quay ve vong tron chu cai dau. */
+  const handleAvatarSaved = (url) => {
+    if (url) localStorage.setItem("ft_avatar_url", url);
+    else localStorage.removeItem("ft_avatar_url");
+    setAvatarUrl(url);
   };
 
   const handleTokenRenewed = (newToken, email, role, hasPwd, google) => {
@@ -320,6 +338,10 @@ export default function App() {
     setToken(null);
     setUserEmail(null);
     setUserRole(null);
+    // Xoa ca ten va anh: nguoi tiep theo dang nhap tren may nay khong thay sot lai
+    // mat nguoi truoc trong khoanh khac truoc khi phien moi kip nap ve
+    setDisplayName(null);
+    setAvatarUrl(null);
     closeAllPages();
   };
 
@@ -487,7 +509,11 @@ export default function App() {
                       title={userEmail}
                     >
                       <span className="ft-user-avatar">
-                        {userEmail.charAt(0).toUpperCase()}
+                        {avatarUrl ? (
+                          <img src={avatarUrl} alt="" width="26" height="26" />
+                        ) : (
+                          userEmail.charAt(0).toUpperCase()
+                        )}
                       </span>
                       {userRole === "ADMIN" && (
                         <span className="ft-user-role">ADMIN</span>
@@ -635,6 +661,7 @@ export default function App() {
             <Forum
               token={token}
               myName={displayName}
+              myAvatar={avatarUrl}
               onBack={() => setShowForum(false)}
               onSelectUser={goToUser}
             />
@@ -648,6 +675,8 @@ export default function App() {
               hasPassword={hasPassword}
               viaGoogle={viaGoogle}
               displayName={displayName}
+              avatarUrl={avatarUrl}
+              onAvatarSaved={handleAvatarSaved}
               onDisplayNameSaved={handleDisplayNameSaved}
               onSelectUser={goToUser}
               onTokenRenewed={handleTokenRenewed}

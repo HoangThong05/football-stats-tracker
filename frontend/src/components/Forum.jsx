@@ -25,7 +25,7 @@ const REFRESH_MS = 20_000
  * Khach chua dang nhap DOC duoc het nhung khong dang/thich/binh luan duoc - de nguoi
  * moi ghe qua thay noi dung that truoc khi quyet dinh co dang ky khong.
  */
-export default function Forum({ token, myName, onBack, onSelectUser }) {
+export default function Forum({ token, myName, myAvatar, onBack, onSelectUser }) {
   const { t, lang } = useTranslation()
   const [posts, setPosts] = useState(null)
   const [text, setText] = useState('')
@@ -174,7 +174,7 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
   const renderComment = (post, c) => (
     <div className="d-flex gap-2">
       <button type="button" className="ft-avatar-btn" onClick={() => onSelectUser(c.authorId)}>
-        <Avatar name={c.authorName} size={28} />
+        <Avatar name={c.authorName} src={c.authorAvatar} size={28} />
       </button>
       <div style={{ minWidth: 0 }}>
         <div className="ft-comment-bubble">
@@ -210,7 +210,7 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
       {token ? (
         <form onSubmit={submitPost} className="ft-card p-3 mb-4">
           <div className="d-flex gap-2">
-            <Avatar name={myName} size={40} />
+            <Avatar name={myName} src={myAvatar} size={40} />
             <textarea
               className="form-control ft-composer"
               rows={2}
@@ -260,7 +260,7 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
           <article key={p.id} className="ft-card ft-post mb-3">
             <header className="d-flex align-items-center gap-2 p-3 pb-2">
               <button type="button" className="ft-avatar-btn" onClick={() => onSelectUser(p.authorId)}>
-                <Avatar name={p.authorName} size={40} />
+                <Avatar name={p.authorName} src={p.authorAvatar} size={40} />
               </button>
               <div className="flex-grow-1" style={{ minWidth: 0 }}>
                 <button type="button" className="ft-name-link fw-semibold d-block text-truncate"
@@ -330,7 +330,7 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
                     </div>
                   )}
                   <div className="d-flex gap-2 align-items-center">
-                    <Avatar name={myName} size={28} />
+                    <Avatar name={myName} src={myAvatar} size={28} />
                     <input
                       className="form-control form-control-sm rounded-pill"
                       maxLength={MAX_COMMENT}

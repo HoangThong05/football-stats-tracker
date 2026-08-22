@@ -56,6 +56,18 @@ public class User {
     private String displayName;
 
     /**
+     * Anh dai dien. null = chua dat -> giao dien tu ve vong tron chu cai dau cua ten.
+     *
+     * Chi luu DUONG DAN tren Cloudinary chu khong luu file: o dia cua Render goi free
+     * la o dia tam, moi lan trien khai lai la sach tron - anh nguoi dung tai len se
+     * bien mat. Xem them ghi chu o frontend/src/cloudinary.js.
+     */
+    // 500 = bang cot image_url cua ForumPost, va bang ImageUrl.MAX_LENGTH ben service.
+    // Khong tham chieu thang hang so do: entity khong nen phu thuoc vao tang service.
+    @Column(length = 500)
+    private String avatarUrl;
+
+    /**
      * Tang len moi lan doi mat khau, de vo hieu toan bo token da phat truoc do.
      *
      * Khong co no thi doi mat khau gan nhu vo nghia ve bao mat: JWT song 24 gio va
@@ -129,6 +141,15 @@ public class User {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    /** null hoac chuoi rong deu luu thanh null - "go anh" va "chua bao gio dat" la mot. */
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = (avatarUrl == null || avatarUrl.isBlank()) ? null : avatarUrl;
     }
 
     /** Ten de hien ra ngoai. Chua dat thi lay phan truoc dau @ - khong bao gio lo ca dia chi. */

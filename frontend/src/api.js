@@ -43,7 +43,7 @@ export function loadSavedSession() {
   if (isTokenExpired(token)) {
     clearSavedSession()
     return { token: null, email: null, role: null, hasPassword: true, viaGoogle: false,
-             displayName: null, userId: null }
+             displayName: null, avatarUrl: null, userId: null }
   }
   return {
     token,
@@ -54,6 +54,7 @@ export function loadSavedSession() {
     hasPassword: localStorage.getItem('ft_has_password') !== 'false',
     viaGoogle: localStorage.getItem('ft_via_google') === 'true',
     displayName: localStorage.getItem('ft_display_name'),
+    avatarUrl: localStorage.getItem('ft_avatar_url'),
     userId: Number(localStorage.getItem('ft_user_id')) || null,
   }
 }
@@ -65,5 +66,6 @@ export function clearSavedSession() {
   localStorage.removeItem('ft_has_password')
   localStorage.removeItem('ft_via_google')
   localStorage.removeItem('ft_display_name')
+  localStorage.removeItem('ft_avatar_url')
   localStorage.removeItem('ft_user_id')
 }

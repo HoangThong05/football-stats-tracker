@@ -142,7 +142,7 @@ public class PredictionService {
             String name = row.getDisplayName() != null && !row.getDisplayName().isBlank()
                     ? row.getDisplayName()
                     : com.hoangthong.footballtracker.entity.User.fallbackName(row.getEmail());
-            result.add(new LeaderboardEntryDto(rank++, row.getUserId(), name,
+            result.add(new LeaderboardEntryDto(rank++, row.getUserId(), name, row.getAvatarUrl(),
                     row.getTotalPoints(), row.getTotalPredictions()));
         }
         return result;

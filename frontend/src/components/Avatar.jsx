@@ -1,13 +1,33 @@
+import { useState } from 'react'
+
 /**
- * Anh dai dien bang chu cai dau cua ten.
+ * Anh dai dien: anh that neu nguoi dung da tai len, khong thi ve vong tron chu cai dau.
  *
- * Khong dung anh that: se phai them cho luu tru, cho nguoi dung tai len, xu ly anh
- * hong/thieu... trong khi mot vong tron co mau da du de phan biet nguoi trong danh sach.
- *
- * Mau suy ra TU TEN nen mot nguoi luon co dung mot mau o moi cho - nho vay mat nhan ra
- * nguoi quen truoc ca khi doc ten.
+ * Mau cua vong tron suy ra TU TEN nen mot nguoi luon co dung mot mau o moi cho - nho vay
+ * mat nhan ra nguoi quen truoc ca khi doc ten.
  */
-export default function Avatar({ name, size = 36 }) {
+export default function Avatar({ name, src, size = 36 }) {
+  /*
+   * Anh hong (link chet, Cloudinary xoa file...) thi lang le quay ve vong tron chu cai.
+   * Khong co dong nay thi trinh duyet hien o anh vo - xau hon han ma khong noi len gi.
+   */
+  const [broken, setBroken] = useState(false)
+
+  if (src && !broken) {
+    return (
+      <img
+        className="ft-avatar ft-avatar-img"
+        src={src}
+        alt=""
+        width={size}
+        height={size}
+        style={{ width: size, height: size }}
+        loading="lazy"
+        onError={() => setBroken(true)}
+      />
+    )
+  }
+
   const label = (name || '?').trim().charAt(0).toUpperCase()
 
   // Bam ten thanh mot so, roi lay so do lam goc mau

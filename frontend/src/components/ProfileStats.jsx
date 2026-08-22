@@ -3,10 +3,12 @@ import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 
 /**
- * Dai so lieu tom tat o dau trang Ho so.
+ * Dai so lieu tom tat, nam trong the dau trang Ho so.
  *
  * Tinh tu /predictions/mine - cung nguon voi trang Lich su, khong them endpoint moi.
  * Chua du doan tran nao thi khong hien gi ca, tranh mot hang toan so 0.
+ *
+ * Khong tu boc .ft-card: no la mot dai nam BEN TRONG the ho so, khong phai the rieng.
  */
 export default function ProfileStats({ token }) {
   const { t } = useTranslation()
@@ -35,20 +37,18 @@ export default function ProfileStats({ token }) {
   const hitRate = scored.length ? Math.round((scored.filter((r) => r.points > 0).length / scored.length) * 100) : 0
 
   const cell = (label, value) => (
-    <div className="col-6 col-md-3">
-      <div className="text-secondary" style={{ fontSize: '0.72rem' }}>{label}</div>
-      <div className="ft-num fw-bold fs-5">{value}</div>
+    <div className="ft-profile-stat">
+      <span className="ft-num fw-bold">{value}</span>
+      <span className="ft-profile-stat-label">{label}</span>
     </div>
   )
 
   return (
-    <div className="ft-card p-3 mb-3">
-      <div className="row g-2 text-center">
-        {cell(t('stats_points'), points)}
-        {cell(t('stats_predicted'), rows.length)}
-        {cell(t('stats_exact'), exact)}
-        {cell(t('stats_hit_rate'), `${hitRate}%`)}
-      </div>
+    <div className="ft-profile-stats">
+      {cell(t('stats_points'), points)}
+      {cell(t('stats_predicted'), rows.length)}
+      {cell(t('stats_exact'), exact)}
+      {cell(t('stats_hit_rate'), `${hitRate}%`)}
     </div>
   )
 }

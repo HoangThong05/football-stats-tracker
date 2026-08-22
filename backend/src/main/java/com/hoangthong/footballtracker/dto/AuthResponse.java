@@ -10,5 +10,7 @@ package com.hoangthong.footballtracker.dto;
 public record AuthResponse(long userId, String token, String email, String role,
                            boolean hasPassword, boolean viaGoogle,
                            /** Ten hien ra cho nguoi khac. Chua dat thi la phan truoc dau @. */
-                           String displayName) {
+                           String displayName,
+                           /** Duong dan anh dai dien tren Cloudinary. null = chua dat. */
+                           String avatarUrl) {
 }

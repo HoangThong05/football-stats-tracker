@@ -80,21 +80,9 @@ public class ForumService {
         postRepo.save(new ForumPost(author, content, cleanImageUrl(imageUrl)));
     }
 
-    /**
-     * Chi nhan duong dan Cloudinary.
-     *
-     * Khong loc thi ai cung dat duoc URL bat ky vao day - bien dien dan thanh cho gan
-     * link di noi khac, va "anh" co the la bat cu thu gi tren mang.
-     */
+    /** Chi nhan duong dan Cloudinary - luat chung voi anh dai dien, xem {@link ImageUrl}. */
     static String cleanImageUrl(String url) {
-        if (url == null || url.isBlank()) {
-            return null;
-        }
-        String trimmed = url.trim();
-        if (!trimmed.startsWith("https://res.cloudinary.com/")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "image_url_invalid");
-        }
-        return trimmed;
+        return ImageUrl.clean(url);
     }
 
     @Transactional
@@ -216,7 +204,8 @@ public class ForumService {
                     .add(new ForumDto.Comment(c.getId(),
                             c.getParent() == null ? null : c.getParent().getId(),
                             c.getAuthor().getId(),
-                            c.getAuthor().displayNameOrFallback(), c.getContent(), c.getCreatedAt()));
+                            c.getAuthor().displayNameOrFallback(), c.getAuthor().getAvatarUrl(),
+                            c.getContent(), c.getCreatedAt()));
         }
 
         boolean viewerIsAdmin = viewer != null && viewer.getRole() == Role.ADMIN;
@@ -247,6 +236,7 @@ public class ForumService {
                     p.getId(),
                     p.getAuthor().getId(),
                     p.getAuthor().displayNameOrFallback(),
+                    p.getAuthor().getAvatarUrl(),
                     p.getContent(),
                     p.getImageUrl(),
                     p.getCreatedAt(),

@@ -2723,3 +2723,209 @@ tr[role='button']:hover img,
     animation: none;
   }
 }
+
+/* ============================================================
+   Trang Ho so - dung theo loi trang ca nhan mang xa hoi
+   ============================================================ */
+
+/* .ft-card da co overflow:hidden -> bia va dai so lieu tu bo goc theo the */
+.ft-profile-hero {
+  padding: 0;
+}
+
+/*
+ * Bia: VE bang chinh gradient + soc cat co cua app, khong tai anh ve.
+ * Cho nguoi dung tu chon anh bia thi phai them mot luong tai len nua, ma mot mang mau
+ * dep san khong hut thoi gian cua ai ca.
+ */
+.ft-profile-cover {
+  height: 132px;
+  background-image: var(--ft-header-stripe), var(--ft-header-grad);
+}
+
+/*
+ * Anh dai dien de len bia (nhu Facebook), ten va nut nam duoi bia.
+ * align-items: flex-end -> ten tut xuong day hang, khong bay lo lung giua avatar.
+ */
+.ft-profile-id {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 0 18px 14px;
+}
+
+.ft-profile-id .ft-avatar-upload {
+  /* Keo hon nua vong tron len tren bia; 104px anh - 54px = 50px con lai o duoi */
+  margin-top: -54px;
+}
+
+.ft-profile-id-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ft-profile-settings-btn {
+  flex-shrink: 0;
+}
+
+.ft-avatar-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/*
+ * Vien trang quanh anh: tach anh khoi bia dam ben duoi. Khong dat width/height o day -
+ * de no om lay anh, vi box-sizing: border-box se an vien vao trong kich thuoc anh.
+ */
+.ft-avatar-upload-ring {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  border-radius: 50%;
+  border: 4px solid var(--ft-surface);
+  background: var(--ft-surface);
+  box-shadow: var(--ft-card-shadow);
+}
+
+/* Nut may anh nam de len goc duoi phai cua anh, dung cho quen nhu o mang xa hoi */
+.ft-avatar-camera {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid var(--ft-surface);
+  border-radius: 50%;
+  background: var(--bs-secondary-bg);
+  color: var(--bs-body-color);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ft-avatar-camera:hover:not(:disabled) {
+  background: var(--ft-accent-soft);
+}
+
+.ft-avatar-camera:disabled {
+  cursor: progress;
+}
+
+/*
+ * Anh that thay cho vong tron chu cai. object-fit: cover la bat buoc - anh nguoi dung
+ * tai len hiem khi vuong, khong co dong nay thi mat bi keo bep hoac keo dai ra.
+ */
+.ft-avatar-img {
+  object-fit: cover;
+}
+
+/* Dai so lieu chia deu duoi phan danh tinh */
+.ft-profile-stats {
+  display: flex;
+  border-top: 1px solid var(--bs-border-color-translucent);
+}
+
+.ft-profile-stat {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  min-width: 0;
+}
+
+.ft-profile-stat + .ft-profile-stat {
+  border-left: 1px solid var(--bs-border-color-translucent);
+}
+
+.ft-profile-stat .ft-num {
+  font-size: 1.3rem;
+  line-height: 1.1;
+}
+
+.ft-profile-stat-label {
+  font-size: 0.7rem;
+  color: var(--bs-secondary-color);
+  text-align: center;
+}
+
+/* Hai o cai dat, chi hien khi bam nut "Cai dat" */
+.ft-profile-settings {
+  border-top: 1px solid var(--bs-border-color-translucent);
+  padding: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+/*
+ * Moi o mot mang nen mo. Khong co no thi hai o xep chong tren dien thoai dinh lien
+ * thanh mot khoi chu, khong biet o nao het o nao bat dau.
+ */
+.ft-profile-settings > * {
+  background: var(--bs-secondary-bg);
+  border-radius: 10px;
+}
+
+@media (min-width: 768px) {
+  .ft-profile-settings {
+    /* align-items: start -> mo form doi mat khau khong lam o ben canh phinh theo */
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+/* Anh + ten thanh MOT nut: bam vao dau cung mo ho so cong khai cua nguoi do */
+.ft-friend-person,
+.ft-lb-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+
+.ft-friend-person:hover .ft-name-link,
+.ft-lb-player:hover .ft-name-link {
+  text-decoration: underline;
+  color: var(--ft-accent-strong);
+}
+
+/* Anh dai dien trong nut tai khoan o thanh nav */
+.ft-user-avatar {
+  overflow: hidden;
+}
+
+.ft-user-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+@media (max-width: 575.98px) {
+  .ft-profile-cover {
+    height: 96px;
+  }
+
+  /* Man hep: nut "Cai dat" xuong hang rieng thay vi bop ten con vai ky tu */
+  .ft-profile-id {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .ft-profile-settings-btn {
+    width: 100%;
+  }
+}

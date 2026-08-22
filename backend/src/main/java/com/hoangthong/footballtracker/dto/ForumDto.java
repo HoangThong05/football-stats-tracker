@@ -8,6 +8,8 @@ public class ForumDto {
     /** Mot binh luan. */
     /** parentId null = binh luan goc; co gia tri = tra loi cho binh luan do. */
     public record Comment(long id, Long parentId, long authorId, String authorName,
+                          /** Anh dai dien cua nguoi viet. null = chua dat. */
+                          String authorAvatar,
                           String content, Instant createdAt) {}
 
     /**
@@ -20,6 +22,8 @@ public class ForumDto {
             long id,
             long authorId,
             String authorName,
+            /** Anh dai dien cua nguoi viet. null = chua dat. */
+            String authorAvatar,
             String content,
             String imageUrl,
             Instant createdAt,

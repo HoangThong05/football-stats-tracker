@@ -58,7 +58,10 @@ public class MiniLeagueDto {
     ) {}
 
     /** Mot tin nhan trong phong. */
-    public record RoomMessageDto(long id, long authorId, String authorName, String content, Instant createdAt) {}
+    public record RoomMessageDto(long id, long authorId, String authorName,
+                                 /** Anh dai dien cua nguoi nhan. null = chua dat. */
+                                 String authorAvatar,
+                                 String content, Instant createdAt) {}
 
     /** BXH day du cua phong */
     public record LeagueLeaderboardResponse(

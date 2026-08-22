@@ -110,7 +110,8 @@ public class FriendshipService {
     }
 
     private static FriendDto toDto(User u, Friendship f) {
-        return new FriendDto(u.getId(), u.displayNameOrFallback(), f.getCreatedAt().toString());
+        return new FriendDto(u.getId(), u.displayNameOrFallback(), u.getAvatarUrl(),
+                f.getCreatedAt().toString());
     }
 
     private User getUser(String email) {

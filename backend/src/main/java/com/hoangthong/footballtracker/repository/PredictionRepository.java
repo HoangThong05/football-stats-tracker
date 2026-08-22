@@ -81,11 +81,13 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
     @Query("SELECT u.id AS userId, "
             + "u.email AS email, "
             + "u.displayName AS displayName, "
+            + "u.avatarUrl AS avatarUrl, "
             + "COALESCE(SUM(p.points), 0) AS totalPoints, "
             + "COUNT(p) AS totalPredictions "
             + "FROM Prediction p JOIN p.user u "
             + "WHERE p.points IS NOT NULL "
-            + "GROUP BY u.id, u.email, u.displayName "
+            // Postgres bat MOI cot khong nam trong ham gop phai co mat o GROUP BY
+            + "GROUP BY u.id, u.email, u.displayName, u.avatarUrl "
             + "ORDER BY totalPoints DESC")
     List<LeaderboardRow> findLeaderboard();
 
@@ -96,6 +98,9 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
 
         /** Co the null (chua dat ten) - tang tren tu thay bang phan truoc dau @. */
         String getDisplayName();
+
+        /** Co the null (chua dat anh) - giao dien ve vong tron chu cai dau. */
+        String getAvatarUrl();
 
         Long getTotalPoints();
 

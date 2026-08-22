@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
+import Avatar from './Avatar'
 import Loading from './Loading'
 
 /**
@@ -54,9 +55,9 @@ export default function PublicProfile({ userId, token, onBack }) {
   }
 
   const stat = (label, value) => (
-    <div className="col-4">
-      <div className="text-secondary" style={{ fontSize: '0.72rem' }}>{label}</div>
-      <div className="ft-num fw-bold fs-5">{value}</div>
+    <div className="ft-profile-stat">
+      <span className="ft-num fw-bold">{value}</span>
+      <span className="ft-profile-stat-label">{label}</span>
     </div>
   )
 
@@ -106,18 +107,27 @@ export default function PublicProfile({ userId, token, onBack }) {
     <div className="ft-fade">
       <button className="btn btn-link ps-0 mb-3" onClick={onBack}>{t('back')}</button>
 
-      <div className="ft-card p-3 mb-3">
-        <div className="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-3">
-          <div style={{ minWidth: 0 }}>
-            <h3 className="h5 mb-1 text-truncate">{profile.name}</h3>
+      <div className="ft-card ft-profile-hero mb-3">
+        <div className="ft-profile-cover" />
+
+        <div className="ft-profile-id">
+          <div className="ft-avatar-upload">
+            <div className="ft-avatar-upload-ring">
+              <Avatar name={profile.name} src={profile.avatarUrl} size={104} />
+            </div>
+          </div>
+
+          <div className="ft-profile-id-text">
+            <h3 className="h4 mb-0 text-truncate">{profile.name}</h3>
             <div className="text-secondary small">{t('pub_joined')} {joined}</div>
           </div>
-          {friendButton()}
+
+          <span className="ft-profile-settings-btn">{friendButton()}</span>
         </div>
 
-        {error && <div className="alert alert-danger py-2 small">{error}</div>}
+        {error && <div className="alert alert-danger py-2 small mx-3">{error}</div>}
 
-        <div className="row g-2 text-center">
+        <div className="ft-profile-stats">
           {stat(t('stats_points'), profile.totalPoints)}
           {stat(t('stats_predicted'), profile.totalPredictions)}
           {stat(t('stats_exact'), profile.exactScores)}

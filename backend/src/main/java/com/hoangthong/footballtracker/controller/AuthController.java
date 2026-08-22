@@ -151,6 +151,21 @@ public class AuthController {
         return authService.setDisplayName(principal.getName(), body.get("displayName"));
     }
 
+    /**
+     * Dat / go anh dai dien. Body: { "avatarUrl": "https://res.cloudinary.com/..." }.
+     * Gui chuoi rong hoac bo trong = go anh.
+     *
+     * Tra ve AuthResponse day du (kem token) cho GIONG /display-name - frontend dung
+     * chung mot duong xu ly ket qua cho moi thao tac sua ho so.
+     */
+    @PostMapping("/avatar")
+    public AuthResponse setAvatar(@RequestBody java.util.Map<String, String> body,
+                                  java.security.Principal principal,
+                                  HttpServletRequest http) {
+        limit("avatar:email:" + normalize(principal.getName()), CHANGE_PER_EMAIL, QUARTER_HOUR);
+        return authService.setAvatar(principal.getName(), body.get("avatarUrl"));
+    }
+
     @PostMapping("/reset-password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void resetPassword(@RequestBody java.util.Map<String, String> body, HttpServletRequest http) {

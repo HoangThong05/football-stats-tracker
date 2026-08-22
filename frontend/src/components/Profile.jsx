@@ -2,6 +2,7 @@ import { shortTeamName } from '../utils'
 import { useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
+import AvatarUpload from './AvatarUpload'
 import Badges from './Badges'
 import ChangePassword from './ChangePassword'
 import DisplayName from './DisplayName'
@@ -10,14 +11,22 @@ import FriendsList from './FriendsList'
 import PredictionPointsChart from './PredictionPointsChart'
 
 /**
- * Trang tong hop ca nhan: huy hieu, bieu do diem, doi yeu thich, phong Mini League.
- * Gop lai nhung gi truoc day nam rai rac o cac tab rieng (Lich su / Yeu thich / Mini League).
+ * Trang tong hop ca nhan, dung theo loi trang ca nhan mang xa hoi: mot the "danh tinh"
+ * o dau (bia + anh dai dien + ten + dai so lieu), roi ben duoi la cac the noi dung.
+ *
+ * Vi sao gom lai: truoc day 7 khoi xep chong doc, moi khoi keo dai het be ngang cho vai
+ * dong chu - phai cuon rat nhieu ma khong khoi nao day. Ba danh sach ngan (ban be, doi
+ * yeu thich, phong dau) xep 3 cot vua khit mot man hinh.
+ *
+ * Hai o cai dat (ten hien thi, mat khau) an sau nut "Cai dat": chung la thu thinh
+ * thoang moi dung den mot lan, khong dang chiem cho ngay dau trang.
  */
 export default function Profile({ token, userEmail, hasPassword, viaGoogle, displayName,
-  onDisplayNameSaved, onSelectUser, favorites, onBack,
+  avatarUrl, onAvatarSaved, onDisplayNameSaved, onSelectUser, favorites, onBack,
   onSelectTeam, onGoToMiniLeague, onTokenRenewed }) {
   const { t } = useTranslation()
   const [leagues, setLeagues] = useState([])
+  const [showSettings, setShowSettings] = useState(false)
 
   useEffect(() => {
     if (!token) {
@@ -30,97 +39,108 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
       .catch(() => setLeagues([]))
   }, [token])
 
+  /** Mot the danh sach ngan trong hang 3 cot. */
+  const listCard = (title, count, items, emptyText) => (
+    <div className="ft-card p-3 h-100">
+      <div className="fw-semibold mb-2">
+        {title} <span className="text-secondary ft-num">({count})</span>
+      </div>
+      {items.length === 0 ? (
+        <p className="text-secondary small mb-0">{emptyText}</p>
+      ) : (
+        <ul className="list-group list-group-flush">{items}</ul>
+      )}
+    </div>
+  )
+
   return (
     <div className="ft-fade">
       <button className="btn btn-link ps-0 mb-3" onClick={onBack}>
         {t('back')}
       </button>
 
-      <h3 className="h5 mb-1">{t('profile_title')}</h3>
-      <p className="text-secondary small mb-3">{userEmail}</p>
+      <div className="ft-card ft-profile-hero mb-3">
+        {/* Bia: vach san co cua chinh app, khong phai anh tai ve - khong ton request nao */}
+        <div className="ft-profile-cover" />
 
-      <ProfileStats token={token} />
+        <div className="ft-profile-id">
+          <AvatarUpload token={token} name={displayName || userEmail} avatarUrl={avatarUrl}
+            onSaved={onAvatarSaved} />
 
-      {/* Hai cai dat xep canh nhau, cung nhip voi hang "Doi yeu thich / Mini League"
-          ben duoi. Xep chong len nhau thi moi dong keo dai het be ngang cho vai chu,
-          bo trong khoang giua. */}
-      {/* align-items-start: moi the tu cao theo noi dung cua no. Khong co dong nay thi
-          cot mac dinh keo cao bang nhau - mo form doi mat khau la o "Ten hien thi" ben
-          canh phinh ra mot khoang trong to bang. */}
-      <div className="row g-3 mb-3 align-items-start">
-        <div className="col-12 col-md-6">
-          <div className="ft-card">
-            <DisplayName token={token} displayName={displayName} onSaved={onDisplayNameSaved} />
+          <div className="ft-profile-id-text">
+            <h3 className="h4 mb-0 text-truncate">
+              {displayName || (userEmail || '').split('@')[0]}
+            </h3>
+            <div className="text-secondary small text-truncate">{userEmail}</div>
           </div>
+
+          <button type="button" className="btn btn-sm btn-outline-secondary ft-profile-settings-btn"
+            onClick={() => setShowSettings((v) => !v)}>
+            {showSettings ? t('pw_cancel') : `⚙ ${t('profile_settings')}`}
+          </button>
         </div>
-        <div className="col-12 col-md-6">
-          <div className="ft-card">
+
+        <ProfileStats token={token} />
+
+        {showSettings && (
+          <div className="ft-profile-settings ft-fade">
+            <DisplayName token={token} displayName={displayName} onSaved={onDisplayNameSaved} />
             <ChangePassword token={token} hasPassword={hasPassword} viaGoogle={viaGoogle}
               onTokenRenewed={onTokenRenewed} />
           </div>
-        </div>
+        )}
       </div>
 
-      <FriendsList token={token} onSelectUser={onSelectUser} />
+      <div className="row g-3 mb-3">
+        <div className="col-12 col-lg-4">
+          <FriendsList token={token} onSelectUser={onSelectUser} />
+        </div>
+
+        <div className="col-12 col-md-6 col-lg-4">
+          {listCard(
+            t('profile_favorites_title'),
+            favorites.length,
+            favorites.map((f) => (
+              <li
+                key={f.teamId}
+                className="list-group-item d-flex align-items-center gap-2 px-0"
+                role="button"
+                onClick={() => onSelectTeam(f.teamId)}
+              >
+                {f.teamCrest && <img src={f.teamCrest} alt="" width="22" height="22" loading="lazy" />}
+                <span className="fw-medium text-truncate" title={f.teamName}>{shortTeamName(f.teamName)}</span>
+                <span className="ms-auto text-secondary">›</span>
+              </li>
+            )),
+            t('fav_empty'),
+          )}
+        </div>
+
+        <div className="col-12 col-md-6 col-lg-4">
+          {listCard(
+            t('profile_mini_league_title'),
+            leagues.length,
+            leagues.map((l) => (
+              <li
+                key={l.id}
+                className="list-group-item d-flex align-items-center gap-2 px-0"
+                role="button"
+                onClick={onGoToMiniLeague}
+              >
+                <span className="fw-medium text-truncate">{l.name}</span>
+                <span className="ms-auto text-secondary small">
+                  {l.memberCount} {t('ml_members_count')}
+                </span>
+              </li>
+            )),
+            t('ml_empty'),
+          )}
+        </div>
+      </div>
 
       <Badges token={token} />
 
       <PredictionPointsChart token={token} />
-
-      <div className="row g-3">
-        <div className="col-12 col-md-6">
-          <div className="ft-card p-3 h-100">
-            <div className="fw-semibold mb-2">
-              {t('profile_favorites_title')} ({favorites.length})
-            </div>
-            {favorites.length === 0 ? (
-              <p className="text-secondary small mb-0">{t('fav_empty')}</p>
-            ) : (
-              <ul className="list-group list-group-flush">
-                {favorites.map((f) => (
-                  <li
-                    key={f.teamId}
-                    className="list-group-item d-flex align-items-center gap-2 px-0"
-                    role="button"
-                    onClick={() => onSelectTeam(f.teamId)}
-                  >
-                    {f.teamCrest && <img src={f.teamCrest} alt="" width="22" height="22" loading="lazy" />}
-                    <span className="fw-medium text-truncate" title={f.teamName}>{shortTeamName(f.teamName)}</span>
-                    <span className="ms-auto text-secondary">›</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-
-        <div className="col-12 col-md-6">
-          <div className="ft-card p-3 h-100">
-            <div className="fw-semibold mb-2">
-              {t('profile_mini_league_title')} ({leagues.length})
-            </div>
-            {leagues.length === 0 ? (
-              <p className="text-secondary small mb-0">{t('ml_empty')}</p>
-            ) : (
-              <ul className="list-group list-group-flush">
-                {leagues.map((l) => (
-                  <li
-                    key={l.id}
-                    className="list-group-item d-flex align-items-center gap-2 px-0"
-                    role="button"
-                    onClick={onGoToMiniLeague}
-                  >
-                    <span className="fw-medium text-truncate">{l.name}</span>
-                    <span className="ms-auto text-secondary small">
-                      {l.memberCount} {t('ml_members_count')}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

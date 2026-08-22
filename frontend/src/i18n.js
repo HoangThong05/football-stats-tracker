@@ -142,9 +142,11 @@ export const translations = {
     badge_streak_title: 'Chuỗi thắng',
     badge_streak_desc: '5 lần dự đoán liên tiếp đúng kết quả',
 
-    profile_title: '👤 Hồ sơ của bạn',
     profile_favorites_title: '★ Đội yêu thích',
     profile_mini_league_title: '🏆 Phòng Mini League',
+    profile_settings: 'Cài đặt',
+    profile_avatar_change: 'Đổi ảnh đại diện',
+    profile_avatar_remove: 'Gỡ ảnh đại diện',
 
     standings_search_placeholder: '🔍 Tìm đội bóng...',
     standings_no_match_prefix: 'Không tìm thấy đội nào khớp',
@@ -543,9 +545,11 @@ export const translations = {
     badge_streak_title: 'Win Streak',
     badge_streak_desc: '5 correct predictions in a row',
 
-    profile_title: '👤 Your Profile',
     profile_favorites_title: '★ Favorite Teams',
     profile_mini_league_title: '🏆 Mini League Rooms',
+    profile_settings: 'Settings',
+    profile_avatar_change: 'Change profile photo',
+    profile_avatar_remove: 'Remove photo',
 
     standings_search_placeholder: '🔍 Search teams...',
     standings_no_match_prefix: 'No team matches',

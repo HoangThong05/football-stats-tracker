@@ -100,7 +100,7 @@ export default function RoomChat({ token, leagueId, myUserId, onSelectUser }) {
                       {!sameAsPrev && (
                         <button type="button" className="ft-avatar-btn"
                           onClick={() => onSelectUser(m.authorId)}>
-                          <Avatar name={m.authorName} size={28} />
+                          <Avatar name={m.authorName} src={m.authorAvatar} size={28} />
                         </button>
                       )}
                     </span>

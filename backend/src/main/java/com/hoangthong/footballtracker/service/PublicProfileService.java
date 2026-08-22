@@ -41,6 +41,7 @@ public class PublicProfileService {
         return new PublicProfileDto(
                 user.getId(),
                 user.displayNameOrFallback(),
+                user.getAvatarUrl(),
                 user.getCreatedAt().toString(),
                 stats == null || stats.getTotalPoints() == null ? 0 : stats.getTotalPoints(),
                 stats == null || stats.getScored() == null ? 0 : stats.getScored(),
