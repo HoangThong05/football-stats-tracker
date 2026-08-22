@@ -50,6 +50,13 @@ public class BadgeService {
     public List<BadgeDto> getBadgesForUser(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nguoi dung khong ton tai"));
+        return getBadgesForUserId(user.getId());
+    }
+
+    /** Dung cho ho so cong khai: chi biet id, khong biet (va khong can) email. */
+    public List<BadgeDto> getBadgesForUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user_not_found"));
 
         BadgeProgress progress = evaluateAndAward(user.getId());
 

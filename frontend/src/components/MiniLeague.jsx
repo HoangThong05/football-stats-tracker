@@ -9,7 +9,7 @@ function translateError(code, t) {
   return translated !== key ? translated : code
 }
 
-export default function MiniLeague({ token, onBack  }) {
+export default function MiniLeague({ token, onBack, onSelectUser }) {
   const { t, lang } = useTranslation()
   const [leagues, setLeagues] = useState([])
   const [selected, setSelected] = useState(null)
@@ -277,7 +277,12 @@ if (!token) {
                       <td className="text-center fw-bold">
                         {e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : e.rank}
                       </td>
-                      <td>{e.name}</td>
+                      <td>
+                        <button type="button" className="btn btn-link p-0 text-start"
+                          onClick={() => onSelectUser(e.userId)}>
+                          {e.name}
+                        </button>
+                      </td>
                       <td className="text-center ft-num text-secondary d-none d-sm-table-cell">
                         {e.scoredPredictions}
                       </td>

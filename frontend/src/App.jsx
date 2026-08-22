@@ -20,6 +20,7 @@ import MyPredictionsHistory from "./components/MyPredictionsHistory";
 import StandingsTable from "./components/StandingsTable";
 import CompareTeams from "./components/CompareTeams";
 import MatchReminders from "./components/MatchReminders";
+import PublicProfile from "./components/PublicProfile";
 import ScorersTable from "./components/ScorersTable";
 import TeamDetail from "./components/TeamDetail";
 import MatchDetail from "./components/MatchDetail";
@@ -50,6 +51,8 @@ export default function App() {
   const [error, setError] = useState(null);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
   const [selectedMatchId, setSelectedMatchId] = useState(null);
+  // Ho so cong khai cua nguoi choi khac
+  const [selectedUserId, setSelectedUserId] = useState(null);
   const [showFavorites, setShowFavorites] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showMyPredictions, setShowMyPredictions] = useState(false);
@@ -290,6 +293,7 @@ export default function App() {
    * khi them trang moi ve sau.
    */
   const closeAllPages = () => {
+    setSelectedUserId(null);
     setSelectedTeamId(null);
     setSelectedMatchId(null);
     setShowFavorites(false);
@@ -327,6 +331,11 @@ export default function App() {
   const goToTeam = (teamId) => {
     closeAllPages();
     setSelectedTeamId(teamId);
+  };
+
+  const goToUser = (userId) => {
+    closeAllPages();
+    setSelectedUserId(userId);
   };
 
   // KHONG dong trang "Hom nay" o day: MatchDetail duoc uu tien hien truoc trong chuoi
@@ -548,7 +557,13 @@ export default function App() {
             </div>
           )}
 
-          {selectedTeamId != null ? (
+          {selectedUserId != null ? (
+            <PublicProfile
+              userId={selectedUserId}
+              token={token}
+              onBack={() => setSelectedUserId(null)}
+            />
+          ) : selectedTeamId != null ? (
             <TeamDetail
               teamId={selectedTeamId}
               onBack={() => setSelectedTeamId(null)}
@@ -579,6 +594,7 @@ export default function App() {
             <LeaderboardView
               token={token}
               myName={displayName}
+              onSelectUser={goToUser}
               onBack={() => setShowLeaderboard(false)}
             />
           ) : showMyPredictions ? (
@@ -587,7 +603,8 @@ export default function App() {
               onBack={() => setShowMyPredictions(false)}
             />
           ) : showMiniLeague ? (
-            <MiniLeague token={token} onBack={() => setShowMiniLeague(false)} />
+            <MiniLeague token={token} onBack={() => setShowMiniLeague(false)}
+              onSelectUser={goToUser} />
           ) : showProfile ? (
             <Profile
               token={token}
@@ -596,6 +613,7 @@ export default function App() {
               viaGoogle={viaGoogle}
               displayName={displayName}
               onDisplayNameSaved={handleDisplayNameSaved}
+              onSelectUser={goToUser}
               onTokenRenewed={handleTokenRenewed}
               favorites={favorites}
               onBack={() => setShowProfile(false)}

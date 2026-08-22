@@ -47,7 +47,8 @@ public class SecurityConfig {
                         // dau tien, dat sau thi permitAll nuot mat va principal se la null.
                         .requestMatchers("/api/auth/change-password", "/api/auth/display-name").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/standings/**", "/api/matches/**", "/api/teams/**", "/api/scorers/**").permitAll()
+                        .requestMatchers("/api/standings/**", "/api/matches/**", "/api/teams/**", "/api/scorers/**",
+                                "/api/users/*/profile").permitAll()
                         // Xem lich du doan + BXH du doan la cong khai; GUI du doan (POST /api/predictions)
                         // va xem lich su ca nhan (/api/predictions/mine) van roi vao anyRequest().authenticated().
                         .requestMatchers("/api/predictions/matches/**", "/api/predictions/leaderboard").permitAll()

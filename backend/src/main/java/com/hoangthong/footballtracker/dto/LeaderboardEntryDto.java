@@ -5,5 +5,6 @@ package com.hoangthong.footballtracker.dto;
  *             la trang cong khai, ai vao cung doc duoc - truoc day no lo dia chi email
  *             cua tat ca nguoi choi.
  */
-public record LeaderboardEntryDto(int rank, String name, long totalPoints, long totalPredictions) {
+public record LeaderboardEntryDto(int rank, long userId, String name,
+                                  long totalPoints, long totalPredictions) {
 }

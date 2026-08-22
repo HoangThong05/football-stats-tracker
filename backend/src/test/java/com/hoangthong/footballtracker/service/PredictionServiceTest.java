@@ -161,6 +161,10 @@ class PredictionServiceTest {
 
     private static PredictionRepository.LeaderboardRow leaderboardRow(String email, long points, long count) {
         return new PredictionRepository.LeaderboardRow() {
+            public Long getUserId() {
+                return 1L;
+            }
+
             public String getEmail() {
                 return email;
             }

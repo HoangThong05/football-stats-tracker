@@ -6,6 +6,7 @@ import Badges from './Badges'
 import ChangePassword from './ChangePassword'
 import DisplayName from './DisplayName'
 import ProfileStats from './ProfileStats'
+import FriendsList from './FriendsList'
 import PredictionPointsChart from './PredictionPointsChart'
 
 /**
@@ -13,7 +14,7 @@ import PredictionPointsChart from './PredictionPointsChart'
  * Gop lai nhung gi truoc day nam rai rac o cac tab rieng (Lich su / Yeu thich / Mini League).
  */
 export default function Profile({ token, userEmail, hasPassword, viaGoogle, displayName,
-  onDisplayNameSaved, favorites, onBack,
+  onDisplayNameSaved, onSelectUser, favorites, onBack,
   onSelectTeam, onGoToMiniLeague, onTokenRenewed }) {
   const { t } = useTranslation()
   const [leagues, setLeagues] = useState([])
@@ -59,6 +60,8 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
           </div>
         </div>
       </div>
+
+      <FriendsList token={token} onSelectUser={onSelectUser} />
 
       <Badges token={token} />
 

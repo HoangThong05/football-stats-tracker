@@ -35,6 +35,21 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
             + "ORDER BY m.utcDate ASC")
     List<Prediction> findScoredByUserIdOrderByMatchDateAsc(@Param("userId") Long userId);
 
+    /** Tong hop thanh tich cua 1 user, dung cho ho so cong khai. */
+    @Query("SELECT COALESCE(SUM(p.points), 0) AS totalPoints, "
+            + "COUNT(p) AS scored, "
+            + "COALESCE(SUM(CASE WHEN p.points = 3 THEN 1 ELSE 0 END), 0) AS exactScores "
+            + "FROM Prediction p WHERE p.user.id = :userId AND p.points IS NOT NULL")
+    ProfileStatsRow findProfileStats(@Param("userId") Long userId);
+
+    interface ProfileStatsRow {
+        Long getTotalPoints();
+
+        Long getScored();
+
+        Long getExactScores();
+    }
+
     /** Du doan cua 1 user cho cac tran trong khoang thoi gian - dung cho chuong nhac. */
     @Query("SELECT p FROM Prediction p JOIN FETCH p.match m "
             + "WHERE p.user.id = :userId AND m.utcDate BETWEEN :from AND :to")
@@ -63,17 +78,20 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
                                           @Param("now") java.time.Instant now,
                                           @Param("since") java.time.Instant since);
 
-    @Query("SELECT u.email AS email, "
+    @Query("SELECT u.id AS userId, "
+            + "u.email AS email, "
             + "u.displayName AS displayName, "
             + "COALESCE(SUM(p.points), 0) AS totalPoints, "
             + "COUNT(p) AS totalPredictions "
             + "FROM Prediction p JOIN p.user u "
             + "WHERE p.points IS NOT NULL "
-            + "GROUP BY u.email, u.displayName "
+            + "GROUP BY u.id, u.email, u.displayName "
             + "ORDER BY totalPoints DESC")
     List<LeaderboardRow> findLeaderboard();
 
     interface LeaderboardRow {
+        Long getUserId();
+
         String getEmail();
 
         /** Co the null (chua dat ten) - tang tren tu thay bang phan truoc dau @. */

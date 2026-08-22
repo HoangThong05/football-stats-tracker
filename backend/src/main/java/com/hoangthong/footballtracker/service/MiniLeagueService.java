@@ -75,6 +75,7 @@ public class MiniLeagueService {
                     m.getHomeScore(), m.getAwayScore(), m.getStatus(),
                     new java.util.ArrayList<>()));
             row.picks().add(new MiniLeagueDto.MemberPick(
+                    p.getUser().getId(),
                     p.getUser().displayNameOrFallback(),
                     p.getPredictedHomeScore(), p.getPredictedAwayScore(), p.getPoints()));
         }
@@ -141,6 +142,7 @@ public class MiniLeagueService {
                     : User.fallbackName((String) row[1]);
             entries.add(new MiniLeagueDto.LeagueLeaderboardEntry(
                     i + 1,
+                    ((Number) row[0]).longValue(),
                     memberName,
                     ((Number) row[3]).longValue(),
                     ((Number) row[4]).longValue(),

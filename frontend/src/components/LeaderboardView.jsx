@@ -4,7 +4,7 @@ import { RANK_MEDALS } from '../constants'
 import { useTranslation } from '../i18n'
 import Loading from './Loading'
 
-export default function LeaderboardView({ token, myName, onBack }) {
+export default function LeaderboardView({ token, myName, onBack, onSelectUser }) {
   const { t } = useTranslation()
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
@@ -67,7 +67,10 @@ export default function LeaderboardView({ token, myName, onBack }) {
                     )}
                   </td>
                   <td className="fw-medium">
-                    {r.name}
+                    <button type="button" className="btn btn-link p-0 fw-medium text-start"
+                      onClick={() => onSelectUser(r.userId)}>
+                      {r.name}
+                    </button>
                     {r.name === myName && <span className="badge text-bg-success ms-2">{t('lb_you')}</span>}
                   </td>
                   <td className="text-center">{r.totalPredictions}</td>
