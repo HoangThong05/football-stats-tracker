@@ -2602,3 +2602,36 @@ tr[role='button']:hover img,
   background: var(--bs-tertiary-bg);
   box-shadow: none;
 }
+
+/* ---------- Chat trong phong: bong hoi thoai ---------- */
+.ft-chat-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+/* Tin cua chinh minh: day sang phai, khong avatar - nhin la biet ai noi */
+.ft-chat-row.mine {
+  flex-direction: row-reverse;
+}
+
+/*
+ * O trong giu cho avatar khi nhieu tin lien tiep cung mot nguoi.
+ * Khong giu cho thi cac bong se so le nhau, doan hoi thoai nhin nhu bi vo.
+ */
+.ft-chat-avatar {
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.ft-chat-bubble {
+  max-width: 78%;
+  padding: 6px 12px;
+  border-radius: 16px;
+  background: var(--bs-tertiary-bg);
+  font-size: 0.875rem;
+}
+
+.ft-chat-row.mine .ft-chat-bubble {
+  background: var(--ft-accent-soft, rgba(25, 135, 84, 0.18));
+}

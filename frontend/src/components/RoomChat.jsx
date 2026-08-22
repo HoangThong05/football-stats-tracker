@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
+import Avatar from './Avatar'
 
 const MAX_LENGTH = 500
 const REFRESH_MS = 15_000
@@ -77,41 +78,61 @@ export default function RoomChat({ token, leagueId, myUserId, onSelectUser }) {
             const el = e.currentTarget
             stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40
           }}
-          style={{ maxHeight: 280, overflowY: 'auto' }}
-          className="d-flex flex-column gap-2 mb-3"
+          style={{ maxHeight: 320, overflowY: 'auto' }}
+          className="d-flex flex-column gap-1 mb-3"
         >
           {messages.length === 0 ? (
             <p className="text-secondary small mb-0">{t('chat_empty')}</p>
           ) : (
-            messages.map((m) => (
-              <div key={m.id} className={m.authorId === myUserId ? 'text-end' : ''}>
-                <div className="small">
-                  <button type="button" className="ft-name-link fw-semibold"
-                    onClick={() => onSelectUser(m.authorId)}>
-                    {m.authorName}
-                  </button>
-                  <span className="text-secondary ms-2" style={{ fontSize: '0.72rem' }}>
-                    {when(m.createdAt)}
-                  </span>
+            messages.map((m, i) => {
+              const mine = m.authorId === myUserId
+              /*
+               * Nhieu tin lien tiep cua cung mot nguoi thi chi hien avatar va ten o tin
+               * DAU TIEN. Lap lai o moi dong khien doan hoi thoai ngan cung nhin nhu dai
+               * va roi mat.
+               */
+              const sameAsPrev = i > 0 && messages[i - 1].authorId === m.authorId
+
+              return (
+                <div key={m.id} className={mine ? 'ft-chat-row mine' : 'ft-chat-row'}>
+                  {!mine && (
+                    <span className="ft-chat-avatar">
+                      {!sameAsPrev && (
+                        <button type="button" className="ft-avatar-btn"
+                          onClick={() => onSelectUser(m.authorId)}>
+                          <Avatar name={m.authorName} size={28} />
+                        </button>
+                      )}
+                    </span>
+                  )}
+
+                  <div className="ft-chat-bubble" title={when(m.createdAt)}>
+                    {!mine && !sameAsPrev && (
+                      <button type="button" className="ft-name-link fw-semibold d-block"
+                        style={{ fontSize: '0.75rem' }} onClick={() => onSelectUser(m.authorId)}>
+                        {m.authorName}
+                      </button>
+                    )}
+                    <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+                      {m.content}
+                    </span>
+                  </div>
                 </div>
-                {/* white-space: nguoi dung xuong dong trong tin nhan thi giu nguyen */}
-                <div className="small" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
-                  {m.content}
-                </div>
-              </div>
-            ))
+              )
+            })
           )}
         </div>
 
         <form onSubmit={send} className="d-flex gap-2">
           <input
-            className="form-control"
+            className="form-control rounded-pill"
             placeholder={t('chat_placeholder')}
             value={text}
             maxLength={MAX_LENGTH}
             onChange={(e) => setText(e.target.value)}
           />
-          <button className="btn btn-success flex-shrink-0" disabled={sending || !text.trim()}>
+          <button className="btn btn-success rounded-pill px-3 flex-shrink-0"
+            disabled={sending || !text.trim()}>
             {t('chat_send')}
           </button>
         </form>
