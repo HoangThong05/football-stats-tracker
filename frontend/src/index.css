@@ -2536,13 +2536,15 @@ tr[role='button']:hover img,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 8px;
+  padding: 10px 12px;
   border: 0;
   background: none;
   color: var(--bs-secondary-color);
-  font-size: 0.85rem;
-  font-weight: 500;
+  /* To ngang chu noi dung: hang nay la cho de bam, nho qua thi vua kho trung vua lech
+     ti le voi anh o tren */
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
   border-radius: 8px;
 }
@@ -2639,4 +2641,37 @@ tr[role='button']:hover img,
 /* Tra loi thut vao mot bac so voi binh luan goc */
 .ft-comment-reply {
   padding-left: 36px;
+}
+
+/* Chu trong bai to hon mac dinh - doc mot doan van, khong phai doc nhan */
+.ft-post-text {
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+/* Hang dem "3 thich - 1 binh luan" */
+.ft-post-counts {
+  font-size: 0.85rem;
+}
+
+/*
+ * Nut chon anh: mot nut nho gon.
+ *
+ * Truoc day dung chung lop .ft-post-action (co flex: 1) nen no keo dai het hang,
+ * nhin nhu mot thanh cong cu chu khong phai mot nut phu.
+ */
+.ft-attach-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 999px;
+  color: var(--bs-secondary-color);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.ft-attach-btn:hover {
+  background: var(--bs-tertiary-bg);
 }

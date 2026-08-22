@@ -233,8 +233,8 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
 
           <div className="d-flex gap-2 align-items-center flex-wrap mt-2 pt-2 border-top">
             {imageUploadEnabled() && (
-              <label className="ft-post-action mb-0">
-                🖼 <span>{uploading ? t('forum_uploading') : t('forum_add_image')}</span>
+              <label className="ft-attach-btn mb-0">
+                {uploading ? t('forum_uploading') : t('forum_add_image')}
                 <input type="file" accept="image/*" hidden onChange={pickImage} disabled={uploading} />
               </label>
             )}
@@ -278,7 +278,7 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
             </header>
 
             {p.content && (
-              <p className="px-3 mb-2" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+              <p className="px-3 mb-2 ft-post-text" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
                 {p.content}
               </p>
             )}
@@ -287,7 +287,7 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
             {p.imageUrl && <img src={p.imageUrl} alt="" loading="lazy" className="ft-post-image" />}
 
             {(p.likeCount > 0 || p.comments.length > 0) && (
-              <div className="d-flex gap-3 px-3 pt-2 text-secondary" style={{ fontSize: '0.8rem' }}>
+              <div className="d-flex gap-3 px-3 pt-2 text-secondary ft-post-counts">
                 {p.likeCount > 0 && <span>♥ {p.likeCount}</span>}
                 {p.comments.length > 0 && (
                   <span className="ms-auto">
