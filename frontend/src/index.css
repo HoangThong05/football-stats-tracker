@@ -2974,3 +2974,24 @@ tr[role='button']:hover img,
 [data-bs-theme='dark'] .ft-standings-live {
   color: #ff6b6b;
 }
+
+/*
+ * Mot vung cuon duy nhat cho ca chuong thong bao.
+ *
+ * Truoc day tung khoi (bai viet, tran dau) tu cuon rieng -> hai thanh cuon chong nhau
+ * trong mot menu, nhin roi mat. Gio gop lam mot: cac tieu de chi la vach ngan, ca danh
+ * sach truot chung mot thanh.
+ *
+ * 70vh de menu khong bao gio cao qua man hinh (nhieu tran + nhieu thong bao), va van con
+ * thay dat de biet la menu dang noi tren trang chu khong phai chiem het.
+ */
+.ft-bell-scroll {
+  max-height: 70vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* Am ra bang padding cua panel de thanh cuon sat mep, khong lo mot vien trong */
+  margin: -6px;
+  padding: 6px;
+}

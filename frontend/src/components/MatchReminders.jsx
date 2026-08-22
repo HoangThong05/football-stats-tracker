@@ -219,6 +219,12 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
 
       {open && (
         <div className="ft-user-menu-panel ft-fade" style={{ minWidth: 300, maxWidth: 360 }}>
+          {/*
+           * MOT vung cuon duy nhat cho ca chuong. Truoc day moi khoi (bai viet, tran dau)
+           * co hop cuon rieng -> hai thanh cuon chong nhau trong mot menu, nhin roi. Gio
+           * cac tieu de chi con la vach ngan trong cung mot danh sach.
+           */}
+          <div className="ft-bell-scroll">
           {/* Loi moi ket ban len TREN: do la viec can tra loi, tran dau chi de xem */}
           {requests.length > 0 && (
             <>
@@ -249,7 +255,7 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
           {notifs.length > 0 && (
             <>
               <div className="ft-user-menu-header">{t('notif_title')}</div>
-              <div style={{ maxHeight: 280, overflowY: 'auto' }}>
+              <div>
                 {notifs.map((n) => (
                   <button
                     key={`${n.kind}-${n.postId}-${n.actorId}-${n.createdAt}`}
@@ -282,7 +288,7 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
           {matches.length === 0 ? (
             <p className="text-secondary small mb-0 px-2 py-1">{t('rem_empty')}</p>
           ) : (
-            <div style={{ maxHeight: 340, overflowY: 'auto' }}>
+            <div>
               {matches.map((m) => (
                 <button
                   key={m.matchId}
@@ -330,6 +336,7 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
               ))}
             </div>
           )}
+          </div>
         </div>
       )}
     </div>
