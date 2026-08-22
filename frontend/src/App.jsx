@@ -626,6 +626,7 @@ export default function App() {
           ) : showForum ? (
             <Forum
               token={token}
+              myName={displayName}
               onBack={() => setShowForum(false)}
               onSelectUser={goToUser}
             />

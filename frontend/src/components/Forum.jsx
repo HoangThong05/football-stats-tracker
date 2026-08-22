@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import { imageUploadEnabled, uploadImage } from '../cloudinary'
+import Avatar from './Avatar'
 import Loading from './Loading'
 
 const MAX_POST = 2000
@@ -13,7 +14,7 @@ const MAX_COMMENT = 1000
  * Khach chua dang nhap DOC duoc het nhung khong dang/thich/binh luan duoc - de nguoi
  * moi ghe qua thay noi dung that truoc khi quyet dinh co dang ky khong.
  */
-export default function Forum({ token, onBack, onSelectUser }) {
+export default function Forum({ token, myName, onBack, onSelectUser }) {
   const { t, lang } = useTranslation()
   const [posts, setPosts] = useState(null)
   const [text, setText] = useState('')
@@ -22,6 +23,8 @@ export default function Forum({ token, onBack, onSelectUser }) {
   const [posting, setPosting] = useState(false)
   const [error, setError] = useState(null)
   const [commentText, setCommentText] = useState({})
+  // Bai nao dang mo o nhap binh luan - giong Facebook, bam "Binh luan" moi hien
+  const [openComment, setOpenComment] = useState({})
 
   const errMap = {
     post_empty: t('forum_err_empty'),
@@ -105,16 +108,16 @@ export default function Forum({ token, onBack, onSelectUser }) {
     }
   }
 
-  const when = (iso) =>
-    new Date(iso).toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-GB', {
+  /** "5 phut truoc" doc nhanh hon "13:20 22-08" voi bai vua dang. */
+  const when = (iso) => {
+    const diffMin = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
+    if (diffMin < 1) return t('forum_just_now')
+    if (diffMin < 60) return t('forum_minutes_ago').replace('{n}', diffMin)
+    if (diffMin < 24 * 60) return t('forum_hours_ago').replace('{n}', Math.floor(diffMin / 60))
+    return new Date(iso).toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-GB', {
       day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
     })
-
-  const authorLink = (id, name) => (
-    <button type="button" className="ft-name-link fw-semibold" onClick={() => onSelectUser(id)}>
-      {name}
-    </button>
-  )
+  }
 
   return (
     <div className="ft-fade">
@@ -131,37 +134,40 @@ export default function Forum({ token, onBack, onSelectUser }) {
 
       {token ? (
         <form onSubmit={submitPost} className="ft-card p-3 mb-4">
-          <textarea
-            className="form-control mb-2"
-            rows={3}
-            maxLength={MAX_POST}
-            placeholder={t('forum_placeholder')}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
+          <div className="d-flex gap-2">
+            <Avatar name={myName} size={40} />
+            <textarea
+              className="form-control ft-composer"
+              rows={2}
+              maxLength={MAX_POST}
+              placeholder={t('forum_placeholder').replace('{name}', myName || '')}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+            />
+          </div>
 
           {imageUrl && (
-            <div className="position-relative d-inline-block mb-2">
-              <img src={imageUrl} alt="" style={{ maxHeight: 160, borderRadius: 8 }} />
-              <button type="button" className="btn btn-sm btn-danger position-absolute top-0 end-0 m-1"
-                onClick={() => setImageUrl(null)}>
+            <div className="position-relative d-inline-block mt-2">
+              <img src={imageUrl} alt="" style={{ maxHeight: 160, borderRadius: 10 }} />
+              <button type="button" className="btn btn-sm btn-dark position-absolute top-0 end-0 m-1 rounded-circle"
+                onClick={() => setImageUrl(null)} aria-label="X">
                 ✕
               </button>
             </div>
           )}
 
-          <div className="d-flex gap-2 align-items-center flex-wrap">
+          <div className="d-flex gap-2 align-items-center flex-wrap mt-2 pt-2 border-top">
             {imageUploadEnabled() && (
-              <label className="btn btn-sm btn-outline-secondary mb-0">
-                {uploading ? t('forum_uploading') : t('forum_add_image')}
+              <label className="ft-post-action mb-0">
+                🖼 <span>{uploading ? t('forum_uploading') : t('forum_add_image')}</span>
                 <input type="file" accept="image/*" hidden onChange={pickImage} disabled={uploading} />
               </label>
             )}
-            {/* Chi hien khi sap cham tran - o trong ma bao "0/2000" thi chang noi len dieu gi */}
             {text.length >= MAX_POST * 0.8 && (
-              <span className="text-secondary small ms-auto">{text.length}/{MAX_POST}</span>
+              <span className="text-secondary small">{text.length}/{MAX_POST}</span>
             )}
-            <button className="btn btn-success ms-auto" disabled={posting || uploading || (!text.trim() && !imageUrl)}>
+            <button className="btn btn-success rounded-pill px-4 ms-auto"
+              disabled={posting || uploading || (!text.trim() && !imageUrl)}>
               {posting ? t('auth_submitting') : t('forum_post')}
             </button>
           </div>
@@ -176,71 +182,95 @@ export default function Forum({ token, onBack, onSelectUser }) {
         <p className="text-secondary">{t('forum_empty')}</p>
       ) : (
         posts.map((p) => (
-          <div key={p.id} className="ft-card p-3 mb-3">
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <span className="flex-grow-1 small" style={{ minWidth: 0 }}>
-                {authorLink(p.authorId, p.authorName)}
-                <span className="text-secondary ms-2" style={{ fontSize: '0.72rem' }}>{when(p.createdAt)}</span>
-              </span>
+          <article key={p.id} className="ft-card ft-post mb-3">
+            <header className="d-flex align-items-center gap-2 p-3 pb-2">
+              <button type="button" className="ft-avatar-btn" onClick={() => onSelectUser(p.authorId)}>
+                <Avatar name={p.authorName} size={40} />
+              </button>
+              <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                <button type="button" className="ft-name-link fw-semibold d-block text-truncate"
+                  onClick={() => onSelectUser(p.authorId)}>
+                  {p.authorName}
+                </button>
+                <span className="text-secondary" style={{ fontSize: '0.75rem' }}>{when(p.createdAt)}</span>
+              </div>
               {p.canDelete && (
-                <button className="btn btn-sm btn-link text-danger p-0"
+                <button className="ft-post-menu" title={t('forum_delete')}
                   onClick={() => act(`/posts/${p.id}`, 'DELETE')}>
-                  {t('forum_delete')}
+                  ✕
                 </button>
               )}
-            </div>
+            </header>
 
             {p.content && (
-              <p className="mb-2" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+              <p className="px-3 mb-2" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
                 {p.content}
               </p>
             )}
 
-            {p.imageUrl && (
-              <img src={p.imageUrl} alt="" loading="lazy"
-                style={{ maxWidth: '100%', maxHeight: 420, borderRadius: 8 }} className="mb-2" />
+            {/* Anh trai het be ngang the, khong chua le hai ben - giong bang tin mang xa hoi */}
+            {p.imageUrl && <img src={p.imageUrl} alt="" loading="lazy" className="ft-post-image" />}
+
+            {(p.likeCount > 0 || p.comments.length > 0) && (
+              <div className="d-flex gap-3 px-3 pt-2 text-secondary" style={{ fontSize: '0.8rem' }}>
+                {p.likeCount > 0 && <span>♥ {p.likeCount}</span>}
+                {p.comments.length > 0 && (
+                  <span className="ms-auto">
+                    {p.comments.length} {t('forum_comments_count')}
+                  </span>
+                )}
+              </div>
             )}
 
-            <div className="d-flex gap-3 align-items-center small">
-              <button className={p.likedByMe ? 'ft-name-link text-danger' : 'ft-name-link'}
+            <div className="ft-post-actions mt-2">
+              <button className={p.likedByMe ? 'ft-post-action liked' : 'ft-post-action'}
                 disabled={!token} onClick={() => act(`/posts/${p.id}/like`)}>
-                {p.likedByMe ? '♥' : '♡'} {p.likeCount}
+                {p.likedByMe ? '♥' : '♡'} <span>{t('forum_like')}</span>
               </button>
-              {/*
-                Nut "Bao cao" tam an: no gui that len may chu nhung khong he phan hoi gi,
-                nen nguoi dung bam xong tuong hong. Endpoint va bang du lieu van giu nguyen -
-                bat lai chi la bo dong nay ra, kem theo mot loi xac nhan tu te.
-              */}
+              <button className="ft-post-action" disabled={!token}
+                onClick={() => setOpenComment((m) => ({ ...m, [p.id]: !m[p.id] }))}>
+                💬 <span>{t('forum_comment')}</span>
+              </button>
             </div>
 
-            {p.comments.length > 0 && (
-              <div className="mt-2 pt-2 border-top d-flex flex-column gap-1">
+            {(p.comments.length > 0 || openComment[p.id]) && (
+              <div className="px-3 pb-3 pt-2 d-flex flex-column gap-2">
                 {p.comments.map((c) => (
-                  <div key={c.id} className="small">
-                    {authorLink(c.authorId, c.authorName)}
-                    <span className="ms-2" style={{ overflowWrap: 'anywhere' }}>{c.content}</span>
+                  <div key={c.id} className="d-flex gap-2">
+                    <button type="button" className="ft-avatar-btn" onClick={() => onSelectUser(c.authorId)}>
+                      <Avatar name={c.authorName} size={28} />
+                    </button>
+                    <div className="ft-comment-bubble">
+                      <button type="button" className="ft-name-link fw-semibold d-block"
+                        style={{ fontSize: '0.8rem' }} onClick={() => onSelectUser(c.authorId)}>
+                        {c.authorName}
+                      </button>
+                      <span className="small" style={{ overflowWrap: 'anywhere' }}>{c.content}</span>
+                    </div>
                   </div>
                 ))}
-              </div>
-            )}
 
-            {token && (
-              <div className="d-flex gap-2 mt-2">
-                <input
-                  className="form-control form-control-sm"
-                  maxLength={MAX_COMMENT}
-                  placeholder={t('forum_comment_placeholder')}
-                  value={commentText[p.id] || ''}
-                  onChange={(e) => setCommentText((m) => ({ ...m, [p.id]: e.target.value }))}
-                  onKeyDown={(e) => e.key === 'Enter' && submitComment(p.id)}
-                />
-                <button className="btn btn-sm btn-outline-success flex-shrink-0"
-                  onClick={() => submitComment(p.id)}>
-                  {t('chat_send')}
-                </button>
+                {token && openComment[p.id] && (
+                  <div className="d-flex gap-2 align-items-center">
+                    <Avatar name={myName} size={28} />
+                    <input
+                      className="form-control form-control-sm rounded-pill"
+                      maxLength={MAX_COMMENT}
+                      placeholder={t('forum_comment_placeholder')}
+                      value={commentText[p.id] || ''}
+                      autoFocus
+                      onChange={(e) => setCommentText((m) => ({ ...m, [p.id]: e.target.value }))}
+                      onKeyDown={(e) => e.key === 'Enter' && submitComment(p.id)}
+                    />
+                    <button className="btn btn-sm btn-success rounded-pill flex-shrink-0"
+                      onClick={() => submitComment(p.id)}>
+                      {t('chat_send')}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
-          </div>
+          </article>
         ))
       )}
     </div>
