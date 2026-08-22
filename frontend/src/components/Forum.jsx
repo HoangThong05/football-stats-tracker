@@ -157,8 +157,11 @@ export default function Forum({ token, onBack, onSelectUser }) {
                 <input type="file" accept="image/*" hidden onChange={pickImage} disabled={uploading} />
               </label>
             )}
-            <span className="text-secondary small ms-auto">{text.length}/{MAX_POST}</span>
-            <button className="btn btn-success" disabled={posting || uploading || (!text.trim() && !imageUrl)}>
+            {/* Chi hien khi sap cham tran - o trong ma bao "0/2000" thi chang noi len dieu gi */}
+            {text.length >= MAX_POST * 0.8 && (
+              <span className="text-secondary small ms-auto">{text.length}/{MAX_POST}</span>
+            )}
+            <button className="btn btn-success ms-auto" disabled={posting || uploading || (!text.trim() && !imageUrl)}>
               {posting ? t('auth_submitting') : t('forum_post')}
             </button>
           </div>
@@ -203,12 +206,11 @@ export default function Forum({ token, onBack, onSelectUser }) {
                 disabled={!token} onClick={() => act(`/posts/${p.id}/like`)}>
                 {p.likedByMe ? '♥' : '♡'} {p.likeCount}
               </button>
-              {token && (
-                <button className="ft-name-link text-secondary"
-                  onClick={() => act(`/posts/${p.id}/report`)}>
-                  {t('forum_report')}
-                </button>
-              )}
+              {/*
+                Nut "Bao cao" tam an: no gui that len may chu nhung khong he phan hoi gi,
+                nen nguoi dung bam xong tuong hong. Endpoint va bang du lieu van giu nguyen -
+                bat lai chi la bo dong nay ra, kem theo mot loi xac nhan tu te.
+              */}
             </div>
 
             {p.comments.length > 0 && (
