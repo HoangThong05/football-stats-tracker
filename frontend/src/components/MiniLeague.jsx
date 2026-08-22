@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import { shortTeamName } from '../utils'
+import RoomChat from './RoomChat'
 
 function translateError(code, t) {
   const key = `ml_err_${code}`
@@ -9,7 +10,7 @@ function translateError(code, t) {
   return translated !== key ? translated : code
 }
 
-export default function MiniLeague({ token, onBack, onSelectUser }) {
+export default function MiniLeague({ token, onBack, onSelectUser, myUserId }) {
   const { t, lang } = useTranslation()
   const [leagues, setLeagues] = useState([])
   const [selected, setSelected] = useState(null)
@@ -298,6 +299,9 @@ if (!token) {
               </table>
             </div>
           )}
+
+          <RoomChat token={token} leagueId={selected.id} myUserId={myUserId}
+            onSelectUser={onSelectUser} />
 
           {picks.length > 0 && (
             <div className="mt-4">

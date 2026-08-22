@@ -1,0 +1,121 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { API_BASE, authHeaders } from '../api'
+import { useTranslation } from '../i18n'
+
+const MAX_LENGTH = 500
+const REFRESH_MS = 15_000
+
+/**
+ * Khung chat trong phong Mini League.
+ *
+ * Hoi lai moi 15 giay thay vi mo WebSocket: phong chi vai nguoi, va may chu goi free
+ * ngu khi khong ai dung - giu mot ket noi song lien tuc vua phuc tap vua khong on dinh.
+ */
+export default function RoomChat({ token, leagueId, myUserId, onSelectUser }) {
+  const { t, lang } = useTranslation()
+  const [messages, setMessages] = useState([])
+  const [text, setText] = useState('')
+  const [sending, setSending] = useState(false)
+  const boxRef = useRef(null)
+  // Chi tu cuon xuong khi nguoi dung DANG o duoi cung - dang doc tin cu thi de yen
+  const stickToBottom = useRef(true)
+
+  const load = useCallback(() => {
+    fetch(`${API_BASE}/leagues/${leagueId}/messages`, { headers: authHeaders(token) })
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setMessages)
+      .catch(() => {})
+  }, [leagueId, token])
+
+  useEffect(() => {
+    load()
+    const timer = setInterval(load, REFRESH_MS)
+    return () => clearInterval(timer)
+  }, [load])
+
+  useEffect(() => {
+    const box = boxRef.current
+    if (box && stickToBottom.current) {
+      box.scrollTop = box.scrollHeight
+    }
+  }, [messages])
+
+  const send = async (e) => {
+    e.preventDefault()
+    const content = text.trim()
+    if (!content) return
+    setSending(true)
+    try {
+      const res = await fetch(`${API_BASE}/leagues/${leagueId}/messages`, {
+        method: 'POST',
+        headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      })
+      if (res.ok) {
+        setText('')
+        stickToBottom.current = true
+        load()
+      }
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const when = (iso) =>
+    new Date(iso).toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-GB', {
+      day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
+    })
+
+  return (
+    <div className="mt-4">
+      <h4 className="h6 mb-2">💬 {t('chat_title')}</h4>
+
+      <div className="ft-card p-3">
+        <div
+          ref={boxRef}
+          onScroll={(e) => {
+            const el = e.currentTarget
+            stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40
+          }}
+          style={{ maxHeight: 280, overflowY: 'auto' }}
+          className="d-flex flex-column gap-2 mb-3"
+        >
+          {messages.length === 0 ? (
+            <p className="text-secondary small mb-0">{t('chat_empty')}</p>
+          ) : (
+            messages.map((m) => (
+              <div key={m.id} className={m.authorId === myUserId ? 'text-end' : ''}>
+                <div className="small">
+                  <button type="button" className="ft-name-link fw-semibold"
+                    onClick={() => onSelectUser(m.authorId)}>
+                    {m.authorName}
+                  </button>
+                  <span className="text-secondary ms-2" style={{ fontSize: '0.72rem' }}>
+                    {when(m.createdAt)}
+                  </span>
+                </div>
+                {/* white-space: nguoi dung xuong dong trong tin nhan thi giu nguyen */}
+                <div className="small" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+                  {m.content}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <form onSubmit={send} className="d-flex gap-2">
+          <input
+            className="form-control"
+            placeholder={t('chat_placeholder')}
+            value={text}
+            maxLength={MAX_LENGTH}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <button className="btn btn-success flex-shrink-0" disabled={sending || !text.trim()}>
+            {t('chat_send')}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}

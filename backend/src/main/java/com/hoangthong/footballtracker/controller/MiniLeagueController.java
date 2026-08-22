@@ -57,6 +57,21 @@ public class MiniLeagueController {
         return service.roomPicks(email, id);
     }
 
+    /** Tin nhan trong phong. Chi thanh vien doc duoc. */
+    @GetMapping("/{id}/messages")
+    public java.util.List<MiniLeagueDto.RoomMessageDto> messages(
+            @AuthenticationPrincipal String email,
+            @PathVariable Long id) {
+        return service.messages(email, id);
+    }
+
+    @PostMapping("/{id}/messages")
+    public void postMessage(@AuthenticationPrincipal String email,
+                            @PathVariable Long id,
+                            @RequestBody java.util.Map<String, String> body) {
+        service.postMessage(email, id, body.get("content"));
+    }
+
     @DeleteMapping("/{id}/leave")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void leave(

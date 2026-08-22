@@ -7,7 +7,7 @@ package com.hoangthong.footballtracker.dto;
  *                    hoi theo kieu tai khoan la sai, vi mot tai khoan co the dang nhap
  *                    duoc ca hai duong.
  */
-public record AuthResponse(String token, String email, String role,
+public record AuthResponse(long userId, String token, String email, String role,
                            boolean hasPassword, boolean viaGoogle,
                            /** Ten hien ra cho nguoi khac. Chua dat thi la phan truoc dau @. */
                            String displayName) {

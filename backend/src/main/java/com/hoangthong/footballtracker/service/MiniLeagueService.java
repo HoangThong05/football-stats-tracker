@@ -25,6 +25,10 @@ public class MiniLeagueService {
     private final LeagueMemberRepository memberRepo;
     private final UserRepository userRepo;
     private final com.hoangthong.footballtracker.repository.PredictionRepository predictionRepo;
+    private final com.hoangthong.footballtracker.repository.RoomMessageRepository messageRepo;
+
+    /** So tin gan nhat tra ve moi lan - du cho mot khung chat, khong keo ca lich su. */
+    private static final int MESSAGE_LIMIT = 50;
 
     /** Chi hien du doan cua cac tran trong 14 ngay gan day - du de theo doi vong dau vua qua. */
     private static final java.time.Duration PICKS_WINDOW = java.time.Duration.ofDays(14);
@@ -32,7 +36,9 @@ public class MiniLeagueService {
     public MiniLeagueService(MiniLeagueRepository leagueRepo,
                               LeagueMemberRepository memberRepo,
                               UserRepository userRepo,
-                              com.hoangthong.footballtracker.repository.PredictionRepository predictionRepo) {
+                              com.hoangthong.footballtracker.repository.PredictionRepository predictionRepo,
+                              com.hoangthong.footballtracker.repository.RoomMessageRepository messageRepo) {
+        this.messageRepo = messageRepo;
         this.leagueRepo = leagueRepo;
         this.memberRepo = memberRepo;
         this.userRepo = userRepo;
@@ -151,6 +157,52 @@ public class MiniLeagueService {
         }
         return new MiniLeagueDto.LeagueLeaderboardResponse(
                 league.getId(), league.getName(), league.getInviteCode(), entries);
+    }
+
+    /** Tin nhan gan nhat trong phong, cu -> moi de hien thang tu tren xuong. */
+    public List<MiniLeagueDto.RoomMessageDto> messages(String email, Long leagueId) {
+        MiniLeague league = requireMember(email, leagueId);
+        var page = org.springframework.data.domain.PageRequest.of(0, MESSAGE_LIMIT);
+        var latest = new java.util.ArrayList<>(messageRepo.findLatest(league.getId(), page));
+        java.util.Collections.reverse(latest);
+        return latest.stream()
+                .map(m -> new MiniLeagueDto.RoomMessageDto(
+                        m.getId(),
+                        m.getAuthor().getId(),
+                        m.getAuthor().displayNameOrFallback(),
+                        m.getContent(),
+                        m.getCreatedAt()))
+                .toList();
+    }
+
+    @Transactional
+    public void postMessage(String email, Long leagueId, String rawContent) {
+        MiniLeague league = requireMember(email, leagueId);
+        String content = rawContent == null ? "" : rawContent.trim();
+        if (content.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "message_empty");
+        }
+        if (content.length() > com.hoangthong.footballtracker.entity.RoomMessage.MAX_LENGTH) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "message_too_long");
+        }
+        messageRepo.save(new com.hoangthong.footballtracker.entity.RoomMessage(
+                league, getUser(email), content));
+    }
+
+    /**
+     * Chi thanh vien trong phong moi doc/gui duoc.
+     *
+     * Phong la khong gian rieng - de lot nguoi ngoai vao doc thi no khong con rieng nua,
+     * ma nguoi trong phong lai tuong la rieng nen noi chuyen thoai mai.
+     */
+    private MiniLeague requireMember(String email, Long leagueId) {
+        User user = getUser(email);
+        MiniLeague league = leagueRepo.findById(leagueId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "league_not_found"));
+        if (!memberRepo.existsByLeagueAndUser(league, user)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not_a_member");
+        }
+        return league;
     }
 
     @Transactional

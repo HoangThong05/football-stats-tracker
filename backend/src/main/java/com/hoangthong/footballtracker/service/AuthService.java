@@ -192,7 +192,8 @@ public class AuthService {
     private AuthResponse toAuthResponse(User user) {
         String role = user.getRole().name();
         String token = jwtService.generateToken(user.getEmail(), role, user.getTokenVersion());
-        return new AuthResponse(token, user.getEmail(), role, user.hasPassword(), false,
+        // id null khi doi tuong chua duoc luu (chi xay ra trong test) -> tra 0 thay vi vo loi
+        return new AuthResponse(user.getId() == null ? 0 : user.getId(), token, user.getEmail(), role, user.hasPassword(), false,
                 user.displayNameOrFallback());
     }
 }

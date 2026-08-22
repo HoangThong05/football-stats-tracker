@@ -72,6 +72,7 @@ export default function App() {
   const [viaGoogle, setViaGoogle] = useState(initialSession.viaGoogle);
   // Ten nguoi khac nhin thay o BXH va trong phong dau
   const [displayName, setDisplayName] = useState(initialSession.displayName);
+  const [userId, setUserId] = useState(initialSession.userId);
   const [sessionExpired, setSessionExpired] = useState(false);
   /*
    * Mo san hop thoai khi URL co ?token= - do la nguoi dung vua bam link dat lai mat khau
@@ -248,19 +249,21 @@ export default function App() {
     else setFavorites([]);
   }, [token]);
 
-  const handleAuthSuccess = (newToken, email, role, hasPwd = true, google = false, name = null) => {
+  const handleAuthSuccess = (newToken, email, role, hasPwd = true, google = false, name = null, id = null) => {
     localStorage.setItem("ft_token", newToken);
     localStorage.setItem("ft_email", email);
     localStorage.setItem("ft_role", role);
     localStorage.setItem("ft_has_password", String(hasPwd));
     localStorage.setItem("ft_via_google", String(google));
     if (name) localStorage.setItem("ft_display_name", name);
+    if (id) localStorage.setItem("ft_user_id", String(id));
     setToken(newToken);
     setUserEmail(email);
     setUserRole(role);
     setHasPassword(hasPwd);
     setViaGoogle(google);
     setDisplayName(name);
+    setUserId(id);
     setSessionExpired(false);
     setShowAuthForm(false);
   };
@@ -610,7 +613,7 @@ export default function App() {
             />
           ) : showMiniLeague ? (
             <MiniLeague token={token} onBack={() => setShowMiniLeague(false)}
-              onSelectUser={goToUser} />
+              onSelectUser={goToUser} myUserId={userId} />
           ) : showProfile ? (
             <Profile
               token={token}

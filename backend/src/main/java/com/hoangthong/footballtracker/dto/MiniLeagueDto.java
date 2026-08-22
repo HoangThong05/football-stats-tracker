@@ -57,6 +57,9 @@ public class MiniLeagueDto {
             List<MemberPick> picks
     ) {}
 
+    /** Mot tin nhan trong phong. */
+    public record RoomMessageDto(long id, long authorId, String authorName, String content, Instant createdAt) {}
+
     /** BXH day du cua phong */
     public record LeagueLeaderboardResponse(
             Long leagueId,
