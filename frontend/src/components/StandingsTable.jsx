@@ -47,7 +47,27 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
    * o tren: chua co so lieu thi dung ve.
    */
   const seasonStarted = rows.some((r) => r.playedGames > 0)
-  const activeZones = seasonStarted ? zones : null
+
+  /*
+   * Vung mau (suat cup chau Au / xuong hang) chi bat khi MOI doi da da it nhat 1 tran.
+   *
+   * Giua vong dau tien, doi da da thi len tren con lai xep bang diem nhau o duoi - thu tu
+   * cua nhom duoi hoan toan khong phan anh gi. To do "khu vuc xuong hang" luc do la bia.
+   */
+  const allPlayed = rows.length > 0 && rows.every((r) => r.playedGames > 0)
+  const activeZones = allPlayed ? zones : null
+
+  /*
+   * Huy chuong chi trao cho vi tri co DUY NHAT mot doi.
+   *
+   * Nguon du lieu xep moi doi chua da vao cung mot thu hang, nen sau vong dau dau tien
+   * co 19 doi cung "hang 2" - trao huy chuong bac cho ca 19 doi thi vo nghia. Dieu kien
+   * dung khong phai "mua giai da bat dau" ma la "vi tri nay co mot minh doi do".
+   */
+  const teamsAtPosition = rows.reduce((acc, r) => {
+    acc[r.position] = (acc[r.position] || 0) + 1
+    return acc
+  }, {})
 
   // Moc de ve thanh diem: doi dan dau = thanh day. Tranh chia 0 luc dau mua.
   const maxPoints = rows.reduce((max, r) => Math.max(max, r.points), 0)
@@ -111,7 +131,7 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
                     </td>
                     <td className="ft-team-cell">
                       <div className="d-flex align-items-center gap-2">
-                        {seasonStarted && RANK_MEDALS[r.position] && (
+                        {teamsAtPosition[r.position] === 1 && RANK_MEDALS[r.position] && (
                           <span className="ft-rank-medal" aria-hidden="true">
                             {RANK_MEDALS[r.position]}
                           </span>
