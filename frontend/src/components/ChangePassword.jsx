@@ -77,13 +77,16 @@ export default function ChangePassword({ token, hasPassword, viaGoogle, onTokenR
   }
 
   return (
-    <div className="ft-card p-3 mb-3">
-      <div className="d-flex justify-content-between align-items-center">
-        <div>
-          <h4 className="h6 mb-1">🔒 {hoiMatKhauCu ? t('pw_title') : t('pw_title_set')}</h4>
-          <p className="text-secondary small mb-0">
-            {hoiMatKhauCu ? t('pw_subtitle') : t('pw_subtitle_set')}
-          </p>
+    <div className="ft-account-row">
+      <div className="d-flex align-items-center gap-3">
+        <div className="flex-grow-1" style={{ minWidth: 0 }}>
+          <div className="small fw-medium">🔒 {hoiMatKhauCu ? t('pw_title') : t('pw_title_set')}</div>
+          {/* Cau giai thich dai chi hien khi mo ra - gap lai thi no chiem cho vo ich */}
+          {!open && (
+            <div className="text-secondary small text-truncate">
+              {hoiMatKhauCu ? t('pw_row_hint') : t('pw_row_hint_google')}
+            </div>
+          )}
         </div>
         <button type="button" className="btn btn-sm btn-outline-secondary flex-shrink-0"
           onClick={() => { setOpen((v) => !v); setDone(false); reset() }}>
@@ -92,11 +95,14 @@ export default function ChangePassword({ token, hasPassword, viaGoogle, onTokenR
       </div>
 
       {done && !open && (
-        <div className="alert alert-success py-2 small mb-0 mt-3">{t('pw_done')}</div>
+        <div className="text-success small mt-2">{t('pw_done')}</div>
       )}
 
       {open && (
         <form onSubmit={submit} className="d-flex flex-column gap-3 mt-3">
+          <p className="text-secondary small mb-0">
+            {hoiMatKhauCu ? t('pw_subtitle') : t('pw_subtitle_set')}
+          </p>
           {hoiMatKhauCu && (
             <div>
               <label className="form-label small fw-medium">{t('pw_current')}</label>

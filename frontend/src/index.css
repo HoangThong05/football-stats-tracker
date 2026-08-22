@@ -2457,3 +2457,12 @@ tr[role='button']:hover img,
     grid-area: btn;
   }
 }
+
+/* Mot dong cai dat trong the "Tai khoan" o trang Ho so */
+.ft-account-row {
+  padding: 12px 14px;
+}
+
+.ft-account-row + .ft-account-row {
+  border-top: 1px solid var(--bs-border-color-translucent);
+}

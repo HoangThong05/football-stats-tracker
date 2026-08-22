@@ -10,6 +10,7 @@ import { useTranslation } from '../i18n'
  */
 export default function DisplayName({ token, displayName, onSaved }) {
   const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
   const [value, setValue] = useState(displayName || '')
   const [error, setError] = useState(null)
   const [done, setDone] = useState(false)
@@ -39,6 +40,7 @@ export default function DisplayName({ token, displayName, onSaved }) {
       const data = await res.json()
       onSaved(data.displayName)
       setDone(true)
+      setOpen(false)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -47,9 +49,27 @@ export default function DisplayName({ token, displayName, onSaved }) {
   }
 
   return (
-    <div className="ft-card p-3 mb-3">
-      <h4 className="h6 mb-1">🏷 {t('name_title')}</h4>
-      <p className="text-secondary small mb-3">{t('name_subtitle')}</p>
+    <div className="ft-account-row">
+      <div className="d-flex align-items-center gap-3">
+        <div className="flex-grow-1" style={{ minWidth: 0 }}>
+          <div className="small fw-medium">🏷 {t('name_title')}</div>
+          <div className="text-secondary small text-truncate">
+            {displayName || t('name_not_set')}
+          </div>
+        </div>
+        <button type="button" className="btn btn-sm btn-outline-secondary flex-shrink-0"
+          onClick={() => { setOpen((v) => !v); setDone(false) }}>
+          {open ? t('pw_cancel') : t('pw_open')}
+        </button>
+      </div>
+
+      {!open && done && (
+        <div className="text-success small mt-2">{t('name_done')}</div>
+      )}
+
+      {open && (
+      <>
+      <p className="text-secondary small mb-2 mt-2">{t('name_subtitle')}</p>
 
       <form onSubmit={save} className="d-flex gap-2 flex-wrap align-items-start">
         <input
@@ -68,6 +88,8 @@ export default function DisplayName({ token, displayName, onSaved }) {
 
       {error && <div className="alert alert-danger py-2 small mb-0 mt-2">{error}</div>}
       {done && <div className="alert alert-success py-2 small mb-0 mt-2">{t('name_done')}</div>}
+      </>
+      )}
     </div>
   )
 }

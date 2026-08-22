@@ -5,6 +5,7 @@ import { useTranslation } from '../i18n'
 import Badges from './Badges'
 import ChangePassword from './ChangePassword'
 import DisplayName from './DisplayName'
+import ProfileStats from './ProfileStats'
 import PredictionPointsChart from './PredictionPointsChart'
 
 /**
@@ -37,10 +38,15 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
       <h3 className="h5 mb-1">{t('profile_title')}</h3>
       <p className="text-secondary small mb-3">{userEmail}</p>
 
-      <DisplayName token={token} displayName={displayName} onSaved={onDisplayNameSaved} />
+      <ProfileStats token={token} />
 
-      <ChangePassword token={token} hasPassword={hasPassword} viaGoogle={viaGoogle}
-        onTokenRenewed={onTokenRenewed} />
+      {/* Gop cai dat tai khoan vao MOT the: truoc day moi muc la mot the rieng,
+          hai the lon chiem gan nua man hinh cho hai dong chu. */}
+      <div className="ft-card mb-3">
+        <DisplayName token={token} displayName={displayName} onSaved={onDisplayNameSaved} />
+        <ChangePassword token={token} hasPassword={hasPassword} viaGoogle={viaGoogle}
+          onTokenRenewed={onTokenRenewed} />
+      </div>
 
       <Badges token={token} />
 
