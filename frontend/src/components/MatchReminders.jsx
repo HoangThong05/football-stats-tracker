@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import { relativeTime, shortTeamName } from '../utils'
@@ -81,51 +81,42 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
    */
   const [notifSeenAtOpen, setNotifSeenAtOpen] = useState('')
 
+  /*
+   * Tach rieng thanh useCallback de goi duoc ca luc MO CHUONG, khong chi mount + dinh ky.
+   * Khong co no thi sau khi ban minh vua dong y, phai doi toi 10 phut hoac tai lai trang
+   * moi thay thong bao - bam mo chuong khong lam gi ca.
+   */
+  const load = useCallback(() => {
+    if (!token) return
+    const opts = { headers: authHeaders(token) }
+    fetch(`${API_BASE}/favorites/upcoming`, opts)
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setMatches)
+      // Nhac nho chi la tro giup: hong thi im lang, khong lam phien nguoi dung
+      .catch(() => {})
+    fetch(`${API_BASE}/friends/requests`, opts)
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setRequests)
+      .catch(() => {})
+    fetch(`${API_BASE}/forum/notifications`, opts)
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setNotifs)
+      .catch(() => {})
+    fetch(`${API_BASE}/friends/accepted`, opts)
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setAccepted)
+      .catch(() => {})
+  }, [token])
+
   useEffect(() => {
     if (!token) {
       setMatches([])
       return undefined
     }
-
-    let cancelled = false
-    const load = () => {
-      fetch(`${API_BASE}/favorites/upcoming`, { headers: authHeaders(token) })
-        .then((res) => (res.ok ? res.json() : []))
-        .then((data) => {
-          if (!cancelled) setMatches(data)
-        })
-        // Nhac nho chi la tro giup: hong thi im lang, khong lam phien nguoi dung
-        .catch(() => {})
-
-      fetch(`${API_BASE}/friends/requests`, { headers: authHeaders(token) })
-        .then((res) => (res.ok ? res.json() : []))
-        .then((data) => {
-          if (!cancelled) setRequests(data)
-        })
-        .catch(() => {})
-
-      fetch(`${API_BASE}/forum/notifications`, { headers: authHeaders(token) })
-        .then((res) => (res.ok ? res.json() : []))
-        .then((data) => {
-          if (!cancelled) setNotifs(data)
-        })
-        .catch(() => {})
-
-      fetch(`${API_BASE}/friends/accepted`, { headers: authHeaders(token) })
-        .then((res) => (res.ok ? res.json() : []))
-        .then((data) => {
-          if (!cancelled) setAccepted(data)
-        })
-        .catch(() => {})
-    }
-
     load()
     const timer = setInterval(load, REFRESH_MS)
-    return () => {
-      cancelled = true
-      clearInterval(timer)
-    }
-  }, [token])
+    return () => clearInterval(timer)
+  }, [token, load])
 
   if (!token) {
     return null
@@ -348,6 +339,7 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
           const next = !open
           setOpen(next)
           if (next) {
+            load() // tai lai ngay de thay hoat dong vua xay ra, khong doi chu ky 10 phut
             setNewAtOpen(new Set(matches.filter((m) => !seen.has(m.matchId)).map((m) => m.matchId)))
             markAllSeen()
             setNotifSeenAtOpen(notifSeen)
