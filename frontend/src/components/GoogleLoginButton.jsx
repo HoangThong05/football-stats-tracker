@@ -44,6 +44,21 @@ export default function GoogleLoginButton({ onSuccess, onError }) {
   const [failed, setFailed] = useState(false)
 
   /*
+   * Giu callback moi nhat trong ref thay vi cho vao dependency cua effect ve nut.
+   *
+   * Nut cua Google chi nen ve MOT lan. Neu effect phu thuoc thang onSuccess/onError thi
+   * moi lan cha (AuthPanel) render lai - tuc moi phim go vao o email - ham inline onError
+   * lai la tham chieu moi, effect chay lai va ve lai nut. Google ve nut chung truoc roi
+   * moi doi sang nut ca nhan hoa, nen ve lai lien tuc thanh ra nhap nhay.
+   */
+  const onSuccessRef = useRef(onSuccess)
+  const onErrorRef = useRef(onError)
+  useEffect(() => {
+    onSuccessRef.current = onSuccess
+    onErrorRef.current = onError
+  })
+
+  /*
    * Hoi backend xem tinh nang co duoc bat khong, thay vi doc bien moi truong cua
    * frontend. Nhu vay chi phai cau hinh Client ID o MOT noi - lech nhau giua hai ben
    * se ra loi "invalid audience" rat kho doan.
@@ -87,9 +102,9 @@ export default function GoogleLoginButton({ onSuccess, onError }) {
                 if (!res.ok) throw new Error(data.message || 'google_login_failed')
                 return data
               })
-              .then((data) => onSuccess(data))
+              .then((data) => onSuccessRef.current(data))
               // Tra ve MA loi tho; AuthPanel doi sang cau tieng Viet qua errMap cua no
-              .catch((err) => onError?.(err.message))
+              .catch((err) => onErrorRef.current?.(err.message))
           },
         })
 
@@ -116,7 +131,8 @@ export default function GoogleLoginButton({ onSuccess, onError }) {
     return () => {
       cancelled = true
     }
-  }, [clientId, onSuccess, onError])
+    // Chi phu thuoc clientId: nut ve dung mot lan, khong ve lai theo tung phim go
+  }, [clientId])
 
   if (!clientId || failed) return null
 
