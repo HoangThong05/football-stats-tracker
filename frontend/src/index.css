@@ -2678,3 +2678,21 @@ tr[role='button']:hover img,
   font-size: 1.15rem;
   line-height: 1;
 }
+
+/* ---------- Hang tran dau o trang "Hom nay" ----------
+ * Luoi CO DINH, cung ly do voi hang du doan: flex-grow-1 chi chia PHAN DU, be rong goc
+ * van theo do dai ten doi -> o ty so moi hang dung mot cho, nhin nhu rang cua.
+ */
+.ft-match-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 575.98px) {
+  .ft-match-row {
+    grid-template-columns: 44px minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 8px;
+  }
+}

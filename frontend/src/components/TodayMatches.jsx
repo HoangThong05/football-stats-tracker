@@ -147,15 +147,15 @@ export default function TodayMatches({ onBack, onSelectMatch, favorites = [] }) 
                     return (
                       <li
                         key={`mine-${m.id}`}
-                        className="list-group-item d-flex align-items-center flex-wrap gap-2 py-3"
+                        className="list-group-item ft-match-row py-3"
                         role="button"
                         onClick={() => onSelectMatch(m.id)}
                       >
-                        <small className="text-secondary ft-num" style={{ minWidth: 52 }}>
+                        <small className="text-secondary ft-num">
                           {timeOf(m.utcDate)}
                         </small>
-                        <div className="d-flex align-items-center justify-content-end gap-2 flex-grow-1"
-                          style={{ minWidth: 0 }}>
+                        <div className="d-flex align-items-center justify-content-end gap-2"
+                         >
                           <span className="text-truncate fw-medium" title={m.homeTeam}>
                             {shortTeamName(m.homeTeam)}
                           </span>
@@ -164,7 +164,7 @@ export default function TodayMatches({ onBack, onSelectMatch, favorites = [] }) 
                         <span className={hasScore ? 'ft-score-badge played text-center' : 'ft-score-badge upcoming text-center'}>
                           {hasScore ? `${m.homeScore} - ${m.awayScore}` : t('matches_vs')}
                         </span>
-                        <div className="d-flex align-items-center gap-2 flex-grow-1" style={{ minWidth: 0 }}>
+                        <div className="d-flex align-items-center gap-2">
                           {m.awayCrest && <img src={m.awayCrest} alt="" width="22" height="22" loading="lazy" />}
                           <span className="text-truncate fw-medium" title={m.awayTeam}>
                             {shortTeamName(m.awayTeam)}
@@ -189,18 +189,17 @@ export default function TodayMatches({ onBack, onSelectMatch, favorites = [] }) 
                   return (
                     <li
                       key={m.id}
-                      className="list-group-item d-flex align-items-center flex-wrap gap-2 py-3"
+                      className="list-group-item ft-match-row py-3"
                       role="button"
                       onClick={() => onSelectMatch(m.id)}
                     >
-                      <small className="text-secondary ft-num" style={{ minWidth: 52 }}>
+                      <small className="text-secondary ft-num">
                         {mine && <span className="ft-day-star" title={t('today_my_teams')}>★</span>}
                         {timeOf(m.utcDate)}
                       </small>
 
                       <div
-                        className="d-flex align-items-center justify-content-end gap-2 flex-grow-1"
-                        style={{ minWidth: 0 }}
+                        className="d-flex align-items-center justify-content-end gap-2"
                       >
                         <span className="text-truncate fw-medium" title={m.homeTeam}>{shortTeamName(m.homeTeam)}</span>
                         {m.homeCrest && <img src={m.homeCrest} alt="" width="22" height="22" loading="lazy" />}
@@ -210,7 +209,7 @@ export default function TodayMatches({ onBack, onSelectMatch, favorites = [] }) 
                         {hasScore ? `${m.homeScore} - ${m.awayScore}` : t('matches_vs')}
                       </span>
 
-                      <div className="d-flex align-items-center gap-2 flex-grow-1" style={{ minWidth: 0 }}>
+                      <div className="d-flex align-items-center gap-2">
                         {m.awayCrest && <img src={m.awayCrest} alt="" width="22" height="22" loading="lazy" />}
                         <span className="text-truncate fw-medium" title={m.awayTeam}>{shortTeamName(m.awayTeam)}</span>
                       </div>
