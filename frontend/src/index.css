@@ -2951,3 +2951,26 @@ tr[role='button']:hover img,
   align-items: flex-start;
   gap: 10px;
 }
+
+/*
+ * Nhan "TRUC TIEP" trong bang xep hang.
+ *
+ * Nguon du lieu cong diem cho tran NGAY KHI bong con lan, nen mot doi co the da nhay
+ * len 3 diem trong luc tran chua xong. Nhan nay noi ro hang do con doi duoc.
+ *
+ * Dung mau do va nhip nhay CUNG BO voi bang ron ty so (.ft-ticker-live) de mat nhan
+ * ra ngay day la cung mot y nghia, khong phai hai thu khac nhau.
+ */
+.ft-standings-live {
+  flex-shrink: 0;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #d92d20;
+  white-space: nowrap;
+  animation: ft-ticker-blink 1.4s ease-in-out infinite;
+}
+
+[data-bs-theme='dark'] .ft-standings-live {
+  color: #ff6b6b;
+}

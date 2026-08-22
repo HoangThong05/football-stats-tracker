@@ -1,38 +1,23 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { API_BASE } from '../api'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from '../i18n'
 import { shortTeamName } from '../utils'
-
-/**
- * Thanh ty so chay ngang kieu kenh the thao, dat ngay duoi navbar.
- *
- * Khong co endpoint "live" rieng - dung /api/matches/range cho ngay hom nay, giong
- * trang Hom nay. Du lieu doc tu DB (MatchSyncService dong bo moi 30 phut) nen ty so
- * co the tre toi 30 phut; goi lai moi 60 giay o day KHONG ton them request cua
- * football-data.org vi backend tra tu DB chu khong goi thang len API.
- *
- * Trai mua giai thi khong co tran nao -> component tu tra null, khong de lai thanh
- * rong chiem cho.
- */
-const REFRESH_MS = 60_000
+import { LIVE_STATUSES, useTodayMatches } from '../useLiveMatches'
 
 /** Toc do chay, pixel moi giay. Doc thoai mai o muc nay, khong phai duoi mat theo. */
 const SPEED_PX_PER_S = 70
 
-/** Tran dang da: football-data.org dung 3 trang thai nay. */
-const LIVE_STATUSES = new Set(['LIVE', 'IN_PLAY', 'PAUSED'])
-
-function dayRange() {
-  const start = new Date()
-  start.setHours(0, 0, 0, 0)
-  const end = new Date(start)
-  end.setDate(end.getDate() + 1)
-  return { from: start.toISOString(), to: end.toISOString() }
-}
-
+/**
+ * Thanh ty so chay ngang kieu kenh the thao, dat ngay duoi navbar.
+ *
+ * Nguon tran lay tu useTodayMatches - dung chung voi bang xep hang, de "the nao la
+ * dang da" chi dinh nghia o MOT cho.
+ *
+ * Trai mua giai thi khong co tran nao -> component tu tra null, khong de lai thanh
+ * rong chiem cho.
+ */
 export default function LiveTicker({ onSelectMatch }) {
   const { t, lang } = useTranslation()
-  const [matches, setMatches] = useState([])
+  const matches = useTodayMatches()
 
   const viewportRef = useRef(null)
   const setRef = useRef(null)
@@ -83,28 +68,6 @@ export default function LiveTicker({ onSelectMatch }) {
     return () => observer.disconnect()
     // Do lai moi khi danh sach tran doi (do dai noi dung thay doi theo)
   }, [matches])
-
-  useEffect(() => {
-    let cancelled = false
-
-    const load = () => {
-      const { from, to } = dayRange()
-      fetch(`${API_BASE}/matches/range?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
-        .then((res) => (res.ok ? res.json() : []))
-        .then((data) => {
-          if (!cancelled) setMatches(Array.isArray(data) ? data : [])
-        })
-        // Ticker chi la trang tri: hong thi im lang bien mat, khong bao loi lam phien
-        .catch(() => {})
-    }
-
-    load()
-    const timer = setInterval(load, REFRESH_MS)
-    return () => {
-      cancelled = true
-      clearInterval(timer)
-    }
-  }, [])
 
   if (matches.length === 0) return null
 

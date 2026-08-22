@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { normalizeText, shortTeamName } from '../utils'
 import { useTranslation } from '../i18n'
 import { RANK_MEDALS } from '../constants'
+import { useLiveTeamIds } from '../useLiveMatches'
 import CountUp from './CountUp'
 import FormDots, { parseForm } from './FormDots'
 
@@ -30,6 +31,12 @@ function rowClass(position, total, zones, isFullTable) {
 export default function StandingsTable({ rows, zones, onSelectTeam }) {
   const { t } = useTranslation()
   const [query, setQuery] = useState('')
+  /*
+   * football-data.org CONG DIEM cho tran ngay khi bong con lan, khong doi het tran.
+   * Mot doi vi the co the da nhay len 3 diem trong luc tran chua ket thuc - khong noi
+   * ro thi nguoi xem tuong bang bi sai. Danh dau thang vao hang cua doi do.
+   */
+  const liveTeamIds = useLiveTeamIds()
 
   const q = normalizeText(query.trim())
   const filtered = q ? rows.filter((r) => normalizeText(r.teamName).includes(q)) : rows
@@ -138,6 +145,11 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
                         )}
                         {r.crest && <img src={r.crest} alt="" width="22" height="22" loading="lazy" />}
                         <span title={r.teamName}>{shortTeamName(r.teamName)}</span>
+                        {liveTeamIds.has(r.teamId) && (
+                          <span className="ft-standings-live" title={t('standings_live_hint')}>
+                            ● {t('ticker_live')}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="text-center ft-num">{r.playedGames}</td>
