@@ -8,6 +8,17 @@ import Loading from './Loading'
 const MAX_POST = 2000
 const MAX_COMMENT = 1000
 
+/*
+ * Hoi lai bang tin moi 20 giay.
+ *
+ * Khong co no thi tim/binh luan cua nguoi khac chi hien sau khi tai lai trang - hai
+ * nguoi cung mo se thay hai ban khac nhau ma khong biet.
+ *
+ * Khong dung WebSocket: may chu goi free ngu khi khong ai dung, giu ket noi song lien
+ * tuc vua phuc tap vua hay dut. Voi mot dien dan vai nguoi thi 20 giay la du.
+ */
+const REFRESH_MS = 20_000
+
 /**
  * Dien dan cong khai.
  *
@@ -43,7 +54,23 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
       .catch(() => setPosts([]))
   }, [token])
 
-  useEffect(load, [load])
+  useEffect(() => {
+    load()
+    /*
+     * Tab bi an thi khong hoi nua. Mot tab bo quen mo ca ngay ma cu 20 giay lai goi
+     * mot lan la lang phi hoan toan - khong ai dang nhin no.
+     */
+    const tick = () => {
+      if (!document.hidden) load()
+    }
+    const timer = setInterval(tick, REFRESH_MS)
+    // Quay lai tab thi lam moi ngay, khong bat cho het chu ky
+    document.addEventListener('visibilitychange', tick)
+    return () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', tick)
+    }
+  }, [load])
 
   const call = async (path, options) => {
     const res = await fetch(`${API_BASE}/forum${path}`, {
@@ -106,6 +133,19 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
     } catch (err) {
       setError(err.message)
     }
+  }
+
+  /**
+   * Doi giao dien NGAY roi moi goi may chu.
+   *
+   * Cho may chu tra loi xong moi doi thi bam tim co do tre thay ro - nhat la khi may
+   * chu goi free vua ngu day. Goi that that bai thi load() ben duoi tra lai dung trang thai.
+   */
+  const toggleLike = async (post) => {
+    setPosts((list) => list.map((p) => (p.id === post.id
+      ? { ...p, likedByMe: !p.likedByMe, likeCount: p.likeCount + (p.likedByMe ? -1 : 1) }
+      : p)))
+    await act(`/posts/${post.id}/like`)
   }
 
   /** "5 phut truoc" doc nhanh hon "13:20 22-08" voi bai vua dang. */
@@ -224,7 +264,7 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
 
             <div className="ft-post-actions mt-2">
               <button className={p.likedByMe ? 'ft-post-action liked' : 'ft-post-action'}
-                disabled={!token} onClick={() => act(`/posts/${p.id}/like`)}>
+                disabled={!token} onClick={() => toggleLike(p)}>
                 {p.likedByMe ? '♥' : '♡'} <span>{t('forum_like')}</span>
               </button>
               <button className="ft-post-action" disabled={!token}
