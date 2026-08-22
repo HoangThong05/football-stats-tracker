@@ -28,17 +28,26 @@ public interface ForumCommentRepository extends JpaRepository<ForumComment, Long
     long countByPostId(Long postId);
 
     /**
-     * So binh luan moi ke tu moc thoi gian, KHONG tinh binh luan cua chinh nguoi xem.
+     * So binh luan moi CO DINH DEN nguoi xem: nguoi khac binh luan vao bai cua ho, hoac
+     * tra loi mot binh luan cua ho.
      *
-     * Hien huy hieu cho hoat dong cua chinh minh thi vo nghia - minh vua go ra ma.
+     * Truoc day dem MOI binh luan moi cua ca dien dan, nen nguoi A binh luan vao bai cua
+     * nguoi B cung lam noi so do tren tab Cong dong cua nguoi C - mot thong bao ma nguoi
+     * nhan khong lien quan gi.
+     *
+     * LEFT JOIN c.parent la bat buoc: viet thang "c.parent.author.id" thi JPQL tu sinh
+     * INNER JOIN, va moi binh luan GOC (parent = null) bi loai khoi ket qua - ke ca binh
+     * luan goc nam ngay tren bai cua nguoi xem.
      */
     @Query("""
             SELECT COUNT(c) FROM ForumComment c
+            LEFT JOIN c.parent parent
             WHERE c.createdAt > :since
-              AND (:viewerId IS NULL OR c.author.id <> :viewerId)
+              AND c.author.id <> :viewerId
+              AND (c.post.author.id = :viewerId OR parent.author.id = :viewerId)
             """)
-    long countNewSince(@Param("since") java.time.Instant since,
-                       @Param("viewerId") Long viewerId);
+    long countNewForViewer(@Param("since") java.time.Instant since,
+                           @Param("viewerId") Long viewerId);
 
     void deleteByPostId(Long postId);
 }

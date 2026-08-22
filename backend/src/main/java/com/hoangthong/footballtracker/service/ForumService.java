@@ -161,15 +161,26 @@ public class ForumService {
     }
 
     /**
-     * So bai + binh luan moi ke tu lan cuoi nguoi nay mo dien dan.
+     * So hoat dong moi DANG DE NGUOI NAY BIET, ke tu lan cuoi ho mo dien dan:
+     * bai viet moi, binh luan vao bai cua ho, tra loi binh luan cua ho, va luot thich
+     * bai cua ho.
      *
-     * Bo qua hoat dong cua CHINH ho: hien huy hieu cho binh luan minh vua go la vo nghia.
+     * KHONG tinh binh luan giua nhung nguoi khac voi nhau tren bai cua nguoi khac - do
+     * la chuyen khong dinh gi den ho, ma truoc day van lam noi so do tren tab Cong dong.
+     * Cung bo qua hoat dong cua CHINH ho: bao cho minh ve binh luan minh vua go la vo nghia.
      */
     public long unreadCount(String viewerEmail, java.time.Instant since) {
         Long viewerId = viewerEmail == null
                 ? null
                 : userRepo.findByEmail(viewerEmail).map(User::getId).orElse(null);
-        return postRepo.countNewSince(since, viewerId) + commentRepo.countNewSince(since, viewerId);
+        // Bai moi thi ai cung duoc bao, ke ca khach chua dang nhap
+        long total = postRepo.countNewSince(since, viewerId);
+        // Con binh luan va luot thich chi tinh khi chung dinh den bai/binh luan cua nguoi xem
+        if (viewerId != null) {
+            total += commentRepo.countNewForViewer(since, viewerId);
+            total += likeRepo.countNewForViewer(since, viewerId);
+        }
+        return total;
     }
 
     private ForumPost visiblePost(long postId) {
