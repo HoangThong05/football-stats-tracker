@@ -284,23 +284,35 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
     </button>
   )
 
-  /* Mot loi moi ket ban: co nut Dong y / Tu choi ngay tren dong. */
+  /*
+   * Mot loi moi ket ban: avatar + cau moi (duoc xuong dong), hai nut o HANG DUOI.
+   *
+   * Truoc day nhet ca cau va hai nut tren mot hang, cau dai "X muon ket ban voi ban" bi
+   * cat cut con "X muon ket..." vi khong du cho. Cho nut xuong hang rieng thi chu thong.
+   */
   const renderFriendRequest = (r) => (
-    <div key={`r-${r.userId}`} className="d-flex align-items-center gap-2 small px-2 py-2">
-      <button type="button"
-        className="ft-name-link text-truncate flex-grow-1"
-        style={{ minWidth: 0 }}
+    <div key={`r-${r.userId}`} className="ft-notif-item px-2 py-2">
+      <button type="button" className="ft-avatar-btn"
         onClick={() => { setOpen(false); onSelectUser(r.userId) }}>
-        {t('friend_wants_to_add').replace('{name}', r.name)}
+        <Avatar name={r.name} src={r.avatarUrl} size={32} />
       </button>
-      <button className="btn btn-sm btn-success flex-shrink-0" disabled={busy}
-        onClick={() => answer(r.userId, 'POST', '/accept')}>
-        {t('friend_accept')}
-      </button>
-      <button className="btn btn-sm btn-outline-secondary flex-shrink-0" disabled={busy}
-        onClick={() => answer(r.userId, 'DELETE', '')}>
-        {t('friend_decline')}
-      </button>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <button type="button" className="ft-name-link small d-block text-start"
+          style={{ whiteSpace: 'normal' }}
+          onClick={() => { setOpen(false); onSelectUser(r.userId) }}>
+          {t('friend_wants_to_add').replace('{name}', r.name)}
+        </button>
+        <div className="d-flex gap-2 mt-1">
+          <button className="btn btn-sm btn-success" disabled={busy}
+            onClick={() => answer(r.userId, 'POST', '/accept')}>
+            {t('friend_accept')}
+          </button>
+          <button className="btn btn-sm btn-outline-secondary" disabled={busy}
+            onClick={() => answer(r.userId, 'DELETE', '')}>
+            {t('friend_decline')}
+          </button>
+        </div>
+      </div>
     </div>
   )
 
