@@ -29,6 +29,7 @@ class UpcomingFavoriteServiceTest {
 
     private FavoriteTeamRepository favoriteRepository;
     private MatchFixtureRepository matchRepository;
+    private com.hoangthong.footballtracker.repository.PredictionRepository predictionRepository;
     private UpcomingFavoriteService service;
     private final User user = new User("an@example.com", "hash");
 
@@ -37,8 +38,11 @@ class UpcomingFavoriteServiceTest {
         UserRepository userRepository = mock(UserRepository.class);
         favoriteRepository = mock(FavoriteTeamRepository.class);
         matchRepository = mock(MatchFixtureRepository.class);
+        predictionRepository = mock(com.hoangthong.footballtracker.repository.PredictionRepository.class);
         when(userRepository.findByEmail("an@example.com")).thenReturn(Optional.of(user));
-        service = new UpcomingFavoriteService(userRepository, favoriteRepository, matchRepository);
+        when(predictionRepository.findByUserIdInWindow(any(), any(), any())).thenReturn(List.of());
+        service = new UpcomingFavoriteService(
+                userRepository, favoriteRepository, matchRepository, predictionRepository);
     }
 
     private void theoDoi(long... teamIds) {
@@ -152,6 +156,32 @@ class UpcomingFavoriteServiceTest {
         assertThat(service.listFor("an@example.com"))
                 .extracting(UpcomingFavoriteDto::matchId)
                 .containsExactly(2L, 1L);
+    }
+
+    /**
+     * Tran minh da du doan phai vao chuong DU khong theo doi doi nao trong tran do.
+     *
+     * Khong co the thi nguoi dung khong bao gio duoc bao la du doan cua minh vua duoc
+     * cham diem - ma do moi la tin ho cho.
+     */
+    @Test
+    void tran_minh_da_du_doan_van_vao_danh_sach_du_khong_theo_doi_doi_nao() {
+        when(favoriteRepository.findByUserId(any())).thenReturn(List.of());
+        MatchFixture m = tran(7, ARSENAL, CHELSEA, -5, "FINISHED");
+        m.setHomeScore(3);
+        m.setAwayScore(0);
+        coCacTran(m);
+        var pick = new com.hoangthong.footballtracker.entity.Prediction(user, m, 3, 0);
+        pick.setPoints(3);
+        when(predictionRepository.findByUserIdInWindow(any(), any(), any())).thenReturn(List.of(pick));
+
+        List<UpcomingFavoriteDto> rows = service.listFor("an@example.com");
+
+        assertThat(rows).hasSize(1);
+        assertThat(rows.get(0).myPoints()).isEqualTo(3);
+        assertThat(rows.get(0).myHomeScore()).isEqualTo(3);
+        // Khong theo doi doi nao -> khong co ten doi kem theo
+        assertThat(rows.get(0).followedTeamName()).isNull();
     }
 
     @Test

@@ -81,11 +81,16 @@ export default function MatchReminders({ token, onSelectMatch }) {
    * de no keu so do thi con so mat y nghia "sap den gio".
    */
   const soonLimit = Date.now() + BADGE_WINDOW_HOURS * 3600 * 1000
-  const soonCount = matches.filter(
-    (m) => m.status !== 'FINISHED'
-      && new Date(m.utcDate).getTime() <= soonLimit
-      && !seen.has(m.matchId),
-  ).length
+  const soonCount = matches.filter((m) => {
+    if (seen.has(m.matchId)) return false
+    /*
+     * Du doan vua duoc cham diem CUNG duoc dem, du tran da xong.
+     * Diem so la thu nguoi dung cho doi - im lang o day thi ho phai tu vao trang
+     * lich su moi biet minh duoc bao nhieu.
+     */
+    if (m.myPoints != null) return true
+    return m.status !== 'FINISHED' && new Date(m.utcDate).getTime() <= soonLimit
+  }).length
 
   const markAllSeen = () => {
     /*
@@ -165,9 +170,28 @@ export default function MatchReminders({ token, onSelectMatch }) {
                   <span className="d-block text-secondary" style={{ fontSize: '0.75rem' }}>
                     {m.status === 'FINISHED' ? t('rem_finished') : formatKickoff(m.utcDate)}
                   </span>
-                  <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
-                    ★ {shortTeamName(m.followedTeamName)}
-                  </span>
+                  {m.followedTeamName && (
+                    <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
+                      ★ {shortTeamName(m.followedTeamName)}
+                    </span>
+                  )}
+                  {m.myHomeScore != null && (
+                    <span className="d-block" style={{ fontSize: '0.72rem' }}>
+                      <span className="text-secondary">
+                        {t('rem_my_pick')} {m.myHomeScore}-{m.myAwayScore}
+                      </span>
+                      {m.myPoints != null && (
+                        <span
+                          className={`badge ms-2 ${
+                            m.myPoints === 3 ? 'text-bg-success'
+                              : m.myPoints === 1 ? 'text-bg-warning' : 'text-bg-secondary'
+                          }`}
+                        >
+                          +{m.myPoints}
+                        </span>
+                      )}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

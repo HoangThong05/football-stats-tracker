@@ -8,6 +8,8 @@ import java.time.Instant;
  * @param followedTeamName ten doi NGUOI DUNG THEO DOI (mot trong hai doi duoi day).
  *                         Can no de noi ro "vi sao ban nhan duoc nhac nay" - theo doi
  *                         nhieu doi thi nhin cap dau khong doan duoc doi nao la cua minh.
+ *                         null = tran nay vao danh sach vi nguoi dung DA DU DOAN no,
+ *                         khong phai vi theo doi doi nao.
  */
 public record UpcomingFavoriteDto(
         long matchId,
@@ -23,7 +25,12 @@ public record UpcomingFavoriteDto(
         String awayCrest,
         String status,
         Integer homeScore,
-        Integer awayScore
+        Integer awayScore,
+        /** Du doan cua chinh nguoi dung cho tran nay. null = khong dat du doan. */
+        Integer myHomeScore,
+        Integer myAwayScore,
+        /** Diem nhan duoc. null = tran chua duoc cham diem. */
+        Integer myPoints
 ) {
     /** Tran da ket thuc -> hien ti so thay vi dem nguoc gio. */
     public boolean finished() {

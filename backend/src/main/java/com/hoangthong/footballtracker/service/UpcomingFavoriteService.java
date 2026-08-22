@@ -50,10 +50,13 @@ public class UpcomingFavoriteService {
     private final UserRepository userRepository;
     private final FavoriteTeamRepository favoriteRepository;
     private final MatchFixtureRepository matchRepository;
+    private final com.hoangthong.footballtracker.repository.PredictionRepository predictionRepository;
 
     public UpcomingFavoriteService(UserRepository userRepository,
                                    FavoriteTeamRepository favoriteRepository,
-                                   MatchFixtureRepository matchRepository) {
+                                   MatchFixtureRepository matchRepository,
+                                   com.hoangthong.footballtracker.repository.PredictionRepository predictionRepository) {
+        this.predictionRepository = predictionRepository;
         this.userRepository = userRepository;
         this.favoriteRepository = favoriteRepository;
         this.matchRepository = matchRepository;
@@ -63,19 +66,33 @@ public class UpcomingFavoriteService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials"));
 
-        List<FavoriteTeam> follows = favoriteRepository.findByUserId(user.getId());
-        if (follows.isEmpty()) {
-            return List.of();
-        }
-
         Map<Long, String> followedNames = new HashMap<>();
-        for (FavoriteTeam f : follows) {
+        for (FavoriteTeam f : favoriteRepository.findByUserId(user.getId())) {
             followedNames.put(f.getTeamId(), f.getTeamName());
         }
 
         Instant now = Instant.now();
+        Instant from = now.minus(BEHIND);
+        Instant to = now.plus(AHEAD);
+
+        /*
+         * Du doan cua chinh nguoi dung, tra cuu theo id tran.
+         *
+         * Vi sao gop vao day: khi mot du doan duoc cham diem, do la tin nguoi dung MUON
+         * biet ngay. Ma tran ho dat cuoc chua chac la tran cua doi ho theo doi - loc theo
+         * doi yeu thich thoi thi ho khong bao gio duoc bao la minh vua duoc bao nhieu diem.
+         */
+        Map<Long, com.hoangthong.footballtracker.entity.Prediction> myPicks = new HashMap<>();
+        for (var p : predictionRepository.findByUserIdInWindow(user.getId(), from, to)) {
+            myPicks.put(p.getMatch().getId(), p);
+        }
+
+        if (followedNames.isEmpty() && myPicks.isEmpty()) {
+            return List.of();
+        }
+
         List<MatchFixture> matches = matchRepository.findByStatusInAndUtcDateBetween(
-                SHOWN_STATUSES, now.minus(BEHIND), now.plus(AHEAD));
+                SHOWN_STATUSES, from, to);
 
         List<UpcomingFavoriteDto> result = new ArrayList<>();
         for (MatchFixture m : matches) {
@@ -90,7 +107,10 @@ public class UpcomingFavoriteService {
             } else if (followedNames.containsKey(m.getAwayTeamId())) {
                 followedId = m.getAwayTeamId();
             }
-            if (followedId == null) {
+
+            var myPick = myPicks.get(m.getId());
+            // Vao danh sach neu la doi dang theo doi HOAC la tran minh da du doan
+            if (followedId == null && myPick == null) {
                 continue;
             }
 
@@ -98,11 +118,14 @@ public class UpcomingFavoriteService {
                     m.getId(),
                     m.getCompetition(),
                     m.getUtcDate(),
-                    followedId,
-                    followedNames.get(followedId),
+                    followedId == null ? 0 : followedId,
+                    followedId == null ? null : followedNames.get(followedId),
                     m.getHomeTeamId(), m.getHomeTeam(), m.getHomeCrest(),
                     m.getAwayTeamId(), m.getAwayTeam(), m.getAwayCrest(),
-                    m.getStatus(), m.getHomeScore(), m.getAwayScore()));
+                    m.getStatus(), m.getHomeScore(), m.getAwayScore(),
+                    myPick == null ? null : myPick.getPredictedHomeScore(),
+                    myPick == null ? null : myPick.getPredictedAwayScore(),
+                    myPick == null ? null : myPick.getPoints()));
         }
 
         /*

@@ -35,6 +35,13 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
             + "ORDER BY m.utcDate ASC")
     List<Prediction> findScoredByUserIdOrderByMatchDateAsc(@Param("userId") Long userId);
 
+    /** Du doan cua 1 user cho cac tran trong khoang thoi gian - dung cho chuong nhac. */
+    @Query("SELECT p FROM Prediction p JOIN FETCH p.match m "
+            + "WHERE p.user.id = :userId AND m.utcDate BETWEEN :from AND :to")
+    List<Prediction> findByUserIdInWindow(@Param("userId") Long userId,
+                                          @Param("from") java.time.Instant from,
+                                          @Param("to") java.time.Instant to);
+
     /** Bang xep hang: tong diem + so lan du doan cua tung nguoi (chi tinh du doan da cham diem). */
     /**
      * Du doan cua NHIEU nguoi cho cac tran DA LAN BANH, dung cho man "ca phong doan gi".
