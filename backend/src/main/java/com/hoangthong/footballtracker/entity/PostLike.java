@@ -46,6 +46,8 @@ public class PostLike {
     }
 
     public Long getId() { return id; }
+    public ForumPost getPost() { return post; }
+    public User getUser() { return user; }
 
     /** null = luot thich co truoc khi co cot nay. */
     public Instant getCreatedAt() { return createdAt; }

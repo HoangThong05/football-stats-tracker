@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import { imageUploadEnabled, uploadImage } from '../cloudinary'
+import { relativeTime } from '../utils'
 import Avatar from './Avatar'
 import Loading from './Loading'
 
@@ -25,7 +26,8 @@ const REFRESH_MS = 20_000
  * Khach chua dang nhap DOC duoc het nhung khong dang/thich/binh luan duoc - de nguoi
  * moi ghe qua thay noi dung that truoc khi quyet dinh co dang ky khong.
  */
-export default function Forum({ token, myName, myAvatar, onBack, onSelectUser }) {
+export default function Forum({ token, myName, myAvatar, focusPostId, onClearFocus,
+  onBack, onSelectUser }) {
   const { t, lang } = useTranslation()
   const [posts, setPosts] = useState(null)
   const [text, setText] = useState('')
@@ -63,12 +65,23 @@ export default function Forum({ token, myName, myAvatar, onBack, onSelectUser })
     not_your_comment: t('forum_err_not_yours'),
   }
 
+  /*
+   * focusPostId co gia tri -> chi lay DUNG bai do, kem het binh luan.
+   *
+   * Khong loc tu bang tin: bai duoc nhac toi trong chuong co the nam ngoai 20 bai dau,
+   * va binh luan lam nguoi dung duoc bao co the la binh luan thu 50 - ban rut gon
+   * 3 binh luan cua bang tin khong chua no.
+   */
   const load = useCallback(() => {
-    fetch(`${API_BASE}/forum/posts`, { headers: authHeaders(token) })
-      .then((res) => (res.ok ? res.json() : []))
-      .then(setPosts)
+    const url = focusPostId
+      ? `${API_BASE}/forum/posts/${focusPostId}`
+      : `${API_BASE}/forum/posts`
+    fetch(url, { headers: authHeaders(token) })
+      .then((res) => (res.ok ? res.json() : null))
+      // Bai da bi xoa -> mang rong, o duoi hien cau "bai nay khong con nua"
+      .then((data) => setPosts(data == null ? [] : (focusPostId ? [data] : data)))
       .catch(() => setPosts([]))
-  }, [token])
+  }, [token, focusPostId])
 
   useEffect(() => {
     load()
@@ -230,16 +243,7 @@ export default function Forum({ token, myName, myAvatar, onBack, onSelectUser })
     setOpenComment((m) => ({ ...m, [postId]: true }))
   }
 
-  /** "5 phut truoc" doc nhanh hon "13:20 22-08" voi bai vua dang. */
-  const when = (iso) => {
-    const diffMin = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
-    if (diffMin < 1) return t('forum_just_now')
-    if (diffMin < 60) return t('forum_minutes_ago').replace('{n}', diffMin)
-    if (diffMin < 24 * 60) return t('forum_hours_ago').replace('{n}', Math.floor(diffMin / 60))
-    return new Date(iso).toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-GB', {
-      day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
-    })
-  }
+  const when = (iso) => relativeTime(iso, t, lang)
 
   /** Mot binh luan - dung chung cho ca binh luan goc lan tra loi. */
   const renderComment = (post, c) => (
@@ -292,7 +296,16 @@ export default function Forum({ token, myName, myAvatar, onBack, onSelectUser })
       <button className="btn btn-link ps-0 mb-3" onClick={onBack}>{t('back')}</button>
 
       <h3 className="h5 mb-1">{t('forum_title')}</h3>
-      <p className="text-secondary small mb-3">{t('forum_subtitle')}</p>
+      {focusPostId ? (
+        <p className="text-secondary small mb-3">
+          {t('forum_one_post')}
+          <button type="button" className="ft-name-link ms-2" onClick={onClearFocus}>
+            {t('forum_back_to_feed')}
+          </button>
+        </p>
+      ) : (
+        <p className="text-secondary small mb-3">{t('forum_subtitle')}</p>
+      )}
 
       {error && (
         <div className="alert alert-danger py-2 small" role="button" onClick={() => setError(null)}>
@@ -300,7 +313,7 @@ export default function Forum({ token, myName, myAvatar, onBack, onSelectUser })
         </div>
       )}
 
-      {token ? (
+      {token && !focusPostId ? (
         <form onSubmit={submitPost} className="ft-card p-3 mb-4">
           <div className="d-flex gap-2">
             <Avatar name={myName} src={myAvatar} size={40} />
@@ -340,14 +353,14 @@ export default function Forum({ token, myName, myAvatar, onBack, onSelectUser })
             </button>
           </div>
         </form>
-      ) : (
+      ) : focusPostId ? null : (
         <div className="alert alert-secondary py-2 small">{t('forum_login_hint')}</div>
       )}
 
       {posts === null ? (
         <Loading rows={4} />
       ) : posts.length === 0 ? (
-        <p className="text-secondary">{t('forum_empty')}</p>
+        <p className="text-secondary">{focusPostId ? t('forum_post_gone') : t('forum_empty')}</p>
       ) : (
         posts.map((p) => (
           <article key={p.id} className="ft-card ft-post mb-3">

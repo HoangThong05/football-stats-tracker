@@ -41,3 +41,21 @@ export function formatKickoff(utcDate, lang = 'vi', { includeYear = false } = {}
     minute: '2-digit',
   })
 }
+
+/**
+ * "5 phut truoc" / "3 gio truoc" / ngay thang neu qua mot ngay.
+ *
+ * Voi mot viec vua xay ra thi khoang cach doc nhanh hon dong ho: "5 phut truoc" hieu
+ * ngay, con "13:20 22-08" thi phai tu tinh xem la bao lau roi.
+ *
+ * @param {(key: string) => string} t ham dich, can 3 khoa forum_just_now/minutes_ago/hours_ago
+ */
+export function relativeTime(iso, t, lang = 'vi') {
+  const diffMin = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
+  if (diffMin < 1) return t('forum_just_now')
+  if (diffMin < 60) return t('forum_minutes_ago').replace('{n}', diffMin)
+  if (diffMin < 24 * 60) return t('forum_hours_ago').replace('{n}', Math.floor(diffMin / 60))
+  return new Date(iso).toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-GB', {
+    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
+  })
+}

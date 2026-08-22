@@ -28,26 +28,30 @@ public interface ForumCommentRepository extends JpaRepository<ForumComment, Long
     long countByPostId(Long postId);
 
     /**
-     * So binh luan moi CO DINH DEN nguoi xem: nguoi khac binh luan vao bai cua ho, hoac
-     * tra loi mot binh luan cua ho.
-     *
-     * Truoc day dem MOI binh luan moi cua ca dien dan, nen nguoi A binh luan vao bai cua
-     * nguoi B cung lam noi so do tren tab Cong dong cua nguoi C - mot thong bao ma nguoi
-     * nhan khong lien quan gi.
+     * Binh luan CO DINH DEN nguoi xem, moi nhat truoc: nguoi khac binh luan vao bai cua
+     * ho, hoac tra loi mot binh luan cua ho. Nguon cho chuong thong bao.
      *
      * LEFT JOIN c.parent la bat buoc: viet thang "c.parent.author.id" thi JPQL tu sinh
      * INNER JOIN, va moi binh luan GOC (parent = null) bi loai khoi ket qua - ke ca binh
      * luan goc nam ngay tren bai cua nguoi xem.
+     *
+     * FETCH het cac quan he se doc toi: khong co chung thi moi dong lai sinh them mot
+     * truy van rieng de lay ten va anh nguoi viet.
      */
     @Query("""
-            SELECT COUNT(c) FROM ForumComment c
-            LEFT JOIN c.parent parent
-            WHERE c.createdAt > :since
-              AND c.author.id <> :viewerId
-              AND (c.post.author.id = :viewerId OR parent.author.id = :viewerId)
+            SELECT c FROM ForumComment c
+            JOIN FETCH c.author
+            JOIN FETCH c.post p
+            JOIN FETCH p.author
+            LEFT JOIN FETCH c.parent parent
+            LEFT JOIN FETCH parent.author
+            WHERE c.author.id <> :viewerId
+              AND p.hidden = false
+              AND (p.author.id = :viewerId OR parent.author.id = :viewerId)
+            ORDER BY c.createdAt DESC
             """)
-    long countNewForViewer(@Param("since") java.time.Instant since,
-                           @Param("viewerId") Long viewerId);
+    List<ForumComment> findForViewer(@Param("viewerId") Long viewerId,
+                                     org.springframework.data.domain.Pageable pageable);
 
     void deleteByPostId(Long postId);
 

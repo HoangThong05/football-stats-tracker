@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
-import { shortTeamName } from '../utils'
+import { relativeTime, shortTeamName } from '../utils'
+import Avatar from './Avatar'
 
 /*
  * Con so tren chuong chi dem tran trong 48 gio toi.
@@ -12,6 +13,16 @@ import { shortTeamName } from '../utils'
 const BADGE_WINDOW_HOURS = 48
 const REFRESH_MS = 10 * 60 * 1000
 const SEEN_KEY = 'ft_seen_matches'
+
+/*
+ * Moc "da xem thong bao dien dan den dau", rieng voi moc cua tab Cong dong
+ * (ft_forum_seen). Hai cho dem hai thu khac nhau - tab dem bai moi, chuong dem viec
+ * dinh den minh - nen dung chung mot moc thi mo cho nay se tat so cua cho kia.
+ */
+const NOTIF_SEEN_KEY = 'ft_forum_notif_seen'
+
+/** Cau mo ta cho tung loai thong bao. */
+const NOTIF_TEXT = { COMMENT: 'notif_comment', REPLY: 'notif_reply', LIKE: 'notif_like' }
 
 /*
  * Cac tran da xem duoc ghi o localStorage chu khong luu tren may chu.
@@ -34,7 +45,7 @@ function loadSeen() {
  * Thay cho email nhac tran (da tat qua app.notify.email-enabled). Doc tu database
  * nen khong ton han muc API - goi lai dinh ky thoai mai.
  */
-export default function MatchReminders({ token, onSelectMatch, onSelectUser }) {
+export default function MatchReminders({ token, onSelectMatch, onSelectUser, onSelectPost }) {
   const { t, lang } = useTranslation()
   const [matches, setMatches] = useState([])
   const [open, setOpen] = useState(false)
@@ -53,6 +64,20 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser }) {
    */
   const [requests, setRequests] = useState([])
   const [busy, setBusy] = useState(false)
+  // Ai vua binh luan / tra loi / thich bai cua minh
+  const [notifs, setNotifs] = useState([])
+  /*
+   * Moc doc lay MOT LAN luc mo trang, khong doc lai localStorage o moi lan ve.
+   * Doc lai thi ngay sau khi bam mo chuong moc se nhay len "bay gio" va cham xanh
+   * cua chinh nhung dong vua hien bien mat truoc mat nguoi dung.
+   */
+  const [notifSeen, setNotifSeen] = useState(() => localStorage.getItem(NOTIF_SEEN_KEY) || '')
+  /*
+   * Moc TRUOC LUC MO, giu de ve cham xanh. Ve theo notifSeen thi mo chuong ra la moc
+   * nhay len "bay gio" va cham cua chinh nhung dong vua hien tat ngay truoc mat -
+   * cung van de ma newAtOpen ben tran dau da phai xu ly.
+   */
+  const [notifSeenAtOpen, setNotifSeenAtOpen] = useState('')
 
   useEffect(() => {
     if (!token) {
@@ -74,6 +99,13 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser }) {
         .then((res) => (res.ok ? res.json() : []))
         .then((data) => {
           if (!cancelled) setRequests(data)
+        })
+        .catch(() => {})
+
+      fetch(`${API_BASE}/forum/notifications`, { headers: authHeaders(token) })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => {
+          if (!cancelled) setNotifs(data)
         })
         .catch(() => {})
     }
@@ -107,8 +139,11 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser }) {
     return m.status !== 'FINISHED' && new Date(m.utcDate).getTime() <= soonLimit
   }).length
 
+  // Chua bao gio mo chuong -> coi nhu chua doc dong nao
+  const unreadNotifs = notifs.filter((n) => !notifSeen || n.createdAt > notifSeen)
+
   // Loi moi luon duoc dem, khong tru theo "da xem"
-  const badgeCount = soonCount + requests.length
+  const badgeCount = soonCount + requests.length + unreadNotifs.length
 
   const answer = async (userId, method, path) => {
     setBusy(true)
@@ -117,6 +152,16 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser }) {
       setRequests((list) => list.filter((r) => r.userId !== userId))
     } finally {
       setBusy(false)
+    }
+  }
+
+  const markNotifsSeen = () => {
+    const now = new Date().toISOString()
+    setNotifSeen(now)
+    try {
+      localStorage.setItem(NOTIF_SEEN_KEY, now)
+    } catch {
+      // Trinh duyet chan localStorage (che do rieng tu) -> bo qua, chuong van chay
     }
   }
 
@@ -161,6 +206,8 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser }) {
           if (next) {
             setNewAtOpen(new Set(matches.filter((m) => !seen.has(m.matchId)).map((m) => m.matchId)))
             markAllSeen()
+            setNotifSeenAtOpen(notifSeen)
+            markNotifsSeen()
           }
         }}
         title={t('rem_title')}
@@ -194,6 +241,37 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser }) {
                       {t('friend_decline')}
                     </button>
                   </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {notifs.length > 0 && (
+            <>
+              <div className="ft-user-menu-header">{t('notif_title')}</div>
+              <div style={{ maxHeight: 280, overflowY: 'auto' }}>
+                {notifs.map((n) => (
+                  <button
+                    key={`${n.kind}-${n.postId}-${n.actorId}-${n.createdAt}`}
+                    className="ft-user-menu-item ft-notif-item"
+                    onClick={() => { setOpen(false); onSelectPost(n.postId) }}
+                  >
+                    <Avatar name={n.actorName} src={n.actorAvatar} size={32} />
+                    <span style={{ minWidth: 0 }}>
+                      <span className="d-block small">
+                        {(!notifSeenAtOpen || n.createdAt > notifSeenAtOpen) && <span className="ft-rem-dot" />}
+                        <strong>{n.actorName}</strong> {t(NOTIF_TEXT[n.kind])}
+                      </span>
+                      {n.excerpt && (
+                        <span className="d-block text-secondary text-truncate" style={{ fontSize: '0.75rem' }}>
+                          {n.excerpt}
+                        </span>
+                      )}
+                      <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
+                        {relativeTime(n.createdAt, t, lang)}
+                      </span>
+                    </span>
+                  </button>
                 ))}
               </div>
             </>

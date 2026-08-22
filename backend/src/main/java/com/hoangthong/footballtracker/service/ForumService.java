@@ -53,6 +53,12 @@ public class ForumService {
      * Admin khong bi hai cua so nay chan - neu khong thi bai rac dang tu hom qua se
      * vinh vien khong ai don duoc.
      */
+    /** So dong toi da trong chuong. Cuon dai hon nua thi khong ai doc het. */
+    private static final int NOTIFICATION_LIMIT = 15;
+
+    /** Do dai trich dan trong chuong - du de nhan ra bai nao, khong tran ca bang. */
+    private static final int EXCERPT_LENGTH = 80;
+
     private static final java.time.Duration EDIT_WINDOW = java.time.Duration.ofHours(1);
     private static final java.time.Duration DELETE_WINDOW = java.time.Duration.ofHours(24);
 
@@ -75,7 +81,20 @@ public class ForumService {
     public List<ForumDto.Post> feed(String viewerEmail, int page) {
         User viewer = viewerEmail == null ? null : userRepo.findByEmail(viewerEmail).orElse(null);
         List<ForumPost> posts = postRepo.findVisible(PageRequest.of(Math.max(0, page), PAGE_SIZE));
-        return assemble(posts, viewer);
+        return assemble(posts, viewer, false);
+    }
+
+    /**
+     * Mot bai duy nhat, kem TAT CA binh luan cua no.
+     *
+     * Dung khi nguoi dung bam mot dong trong chuong: bai duoc nhac toi co the nam ngoai
+     * 20 bai dau cua bang tin, ma binh luan lam ho duoc bao co the la binh luan thu 50 -
+     * ban rut gon 3 binh luan cua bang tin se khong chua no.
+     */
+    @Transactional(readOnly = true)
+    public ForumDto.Post onePost(String viewerEmail, long postId) {
+        User viewer = viewerEmail == null ? null : userRepo.findByEmail(viewerEmail).orElse(null);
+        return assemble(List.of(visiblePost(postId)), viewer, true).get(0);
     }
 
     @Transactional
@@ -263,26 +282,81 @@ public class ForumService {
     }
 
     /**
-     * So hoat dong moi DANG DE NGUOI NAY BIET, ke tu lan cuoi ho mo dien dan:
-     * bai viet moi, binh luan vao bai cua ho, tra loi binh luan cua ho, va luot thich
-     * bai cua ho.
+     * So BAI VIET moi ke tu lan cuoi nguoi nay mo dien dan - con so tren tab Cong dong.
      *
-     * KHONG tinh binh luan giua nhung nguoi khac voi nhau tren bai cua nguoi khac - do
-     * la chuyen khong dinh gi den ho, ma truoc day van lam noi so do tren tab Cong dong.
-     * Cung bo qua hoat dong cua CHINH ho: bao cho minh ve binh luan minh vua go la vo nghia.
+     * Chi dem bai, khong dem binh luan hay luot thich: hai thu do la viec rieng cua
+     * nguoi nhan nen da chuyen han sang chuong ({@link #notifications}). Chia doi vai
+     * tro nhu vay de mot su viec chi lam noi so o DUNG MOT cho - so tren tab tra loi
+     * "co gi moi de doc khong", so tren chuong tra loi "co ai dong den minh khong".
+     *
+     * Bo qua bai cua chinh ho: bao cho minh ve bai minh vua dang la vo nghia.
      */
     public long unreadCount(String viewerEmail, java.time.Instant since) {
         Long viewerId = viewerEmail == null
                 ? null
                 : userRepo.findByEmail(viewerEmail).map(User::getId).orElse(null);
-        // Bai moi thi ai cung duoc bao, ke ca khach chua dang nhap
-        long total = postRepo.countNewSince(since, viewerId);
-        // Con binh luan va luot thich chi tinh khi chung dinh den bai/binh luan cua nguoi xem
-        if (viewerId != null) {
-            total += commentRepo.countNewForViewer(since, viewerId);
-            total += likeRepo.countNewForViewer(since, viewerId);
+        return postRepo.countNewSince(since, viewerId);
+    }
+
+    /**
+     * Nhung viec nguoi khac vua lam voi bai/binh luan cua nguoi nay - noi dung cua chuong.
+     *
+     * Gop tu hai nguon roi xep theo thoi gian: lay {@link #NOTIFICATION_LIMIT} dong moi
+     * nhat cua MOI nguon truoc, tron lai, roi moi cat. Khong lam vay - vi du chi lay 15
+     * dong moi nhat cua binh luan - thi mot tran mua binh luan se day het luot thich ra
+     * khoi danh sach du chung moi hon.
+     */
+    @Transactional(readOnly = true)
+    public List<ForumDto.Notification> notifications(String email) {
+        User viewer = getUser(email);
+        var page = PageRequest.of(0, NOTIFICATION_LIMIT);
+        List<ForumDto.Notification> all = new ArrayList<>();
+
+        for (ForumComment c : commentRepo.findForViewer(viewer.getId(), page)) {
+            /*
+             * Tra loi binh luan cua minh, hay binh luan vao bai cua minh? Mot binh luan
+             * co the vua nam duoi bai cua minh vua tra loi minh - khi do goi la "tra loi"
+             * vi do la cau noi truc tiep voi minh, sat nghia hon.
+             */
+            boolean isReply = c.getParent() != null
+                    && c.getParent().getAuthor().getId().equals(viewer.getId());
+            all.add(new ForumDto.Notification(
+                    isReply ? "REPLY" : "COMMENT",
+                    c.getPost().getId(),
+                    c.getAuthor().getId(),
+                    c.getAuthor().displayNameOrFallback(),
+                    c.getAuthor().getAvatarUrl(),
+                    excerpt(c.getContent()),
+                    c.getCreatedAt()));
         }
-        return total;
+
+        for (PostLike l : likeRepo.findForViewer(viewer.getId(), page)) {
+            all.add(new ForumDto.Notification(
+                    "LIKE",
+                    l.getPost().getId(),
+                    l.getUser().getId(),
+                    l.getUser().displayNameOrFallback(),
+                    l.getUser().getAvatarUrl(),
+                    // Voi luot thich thi trich chinh BAI CUA MINH: nguoi doc can nho
+                    // la bai nao duoc thich, chu khong phai luot thich noi gi
+                    excerpt(l.getPost().getContent()),
+                    l.getCreatedAt()));
+        }
+
+        all.sort(java.util.Comparator.comparing(ForumDto.Notification::createdAt).reversed());
+        return all.size() > NOTIFICATION_LIMIT ? List.copyOf(all.subList(0, NOTIFICATION_LIMIT)) : all;
+    }
+
+    /** Gop xuong dong va cat ngan. Bai chi co anh thi noi dung rong -> tra ve chuoi rong. */
+    private static String excerpt(String text) {
+        if (text == null) {
+            return "";
+        }
+        // Phai la HAI gach cheo. Tu Java 15, "\s" trong chuoi Java la ky tu KHOANG
+        // TRANG chu khong phai regex, nen mot gach cheo se thanh regex " +" - gop duoc
+        // khoang trang nhung xuong dong trong bai van lot qua nguyen ven.
+        String flat = text.strip().replaceAll("\\s+", " ");
+        return flat.length() <= EXCERPT_LENGTH ? flat : flat.substring(0, EXCERPT_LENGTH) + "…";
     }
 
     private ForumPost visiblePost(long postId) {
@@ -295,8 +369,13 @@ public class ForumService {
         return post;
     }
 
-    /** Gop bai + so thich + binh luan lai, moi thu MOT truy van chung cho ca trang. */
-    private List<ForumDto.Post> assemble(List<ForumPost> posts, User viewer) {
+    /**
+     * Gop bai + so thich + binh luan lai, moi thu MOT truy van chung cho ca trang.
+     *
+     * @param allComments true = tra het binh luan (man xem mot bai), false = chi
+     *                    {@link #COMMENTS_PREVIEW} binh luan goc gan nhat (bang tin)
+     */
+    private List<ForumDto.Post> assemble(List<ForumPost> posts, User viewer, boolean allComments) {
         if (posts.isEmpty()) {
             return List.of();
         }
@@ -343,7 +422,7 @@ public class ForumService {
                     .filter(c -> c.parentId() == null)
                     .map(ForumDto.Comment::id)
                     .toList();
-            if (keptRoots.size() > COMMENTS_PREVIEW) {
+            if (!allComments && keptRoots.size() > COMMENTS_PREVIEW) {
                 keptRoots = keptRoots.subList(keptRoots.size() - COMMENTS_PREVIEW, keptRoots.size());
             }
             Set<Long> rootIds = new HashSet<>(keptRoots);

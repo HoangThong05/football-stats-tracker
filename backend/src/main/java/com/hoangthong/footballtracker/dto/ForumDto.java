@@ -44,6 +44,25 @@ public class ForumDto {
             List<Comment> comments
     ) {}
 
+    /**
+     * Mot dong trong chuong thong bao: ai do vua dong vao bai/binh luan cua nguoi xem.
+     *
+     * Khong co bang thong bao rieng trong CSDL - moi dong day duoc suy ra tu chinh
+     * binh luan va luot thich da co. Them mot bang nua thi phai ghi vao do moi lan co
+     * hoat dong, roi phai don khi bai bi xoa; suy ra luc doc thi khong bao gio lech.
+     */
+    public record Notification(
+            /** COMMENT = binh luan vao bai minh; REPLY = tra loi binh luan minh; LIKE = thich bai minh. */
+            String kind,
+            long postId,
+            long actorId,
+            String actorName,
+            String actorAvatar,
+            /** Trich ngan de nhan ra dang noi ve bai nao. */
+            String excerpt,
+            Instant createdAt
+    ) {}
+
     public record CreatePostRequest(String content, String imageUrl) {}
 
     public record CommentRequest(String content, Long parentId) {}

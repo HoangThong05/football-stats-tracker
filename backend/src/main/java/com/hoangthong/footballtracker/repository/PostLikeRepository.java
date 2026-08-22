@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -23,19 +22,24 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     List<Long> findLikedPostIds(@Param("userId") Long userId, @Param("postIds") Collection<Long> postIds);
 
     /**
-     * So luot thich moi vao bai cua nguoi xem, khong tinh luot chinh ho bam.
+     * Luot thich vao bai cua nguoi xem, moi nhat truoc. Nguon cho chuong thong bao.
      *
-     * createdAt null (luot thich co truoc khi them cot nay) khong bao gio thoa
-     * "> :since" nen khong bi dem nguoc ve qua khu.
+     * Loai bo createdAt null - do la cac luot thich co TRUOC khi cot nay ton tai, khong
+     * biet chung xay ra luc nao nen khong xep duoc vao dong thoi gian.
      */
     @Query("""
-            SELECT COUNT(l) FROM PostLike l
-            WHERE l.createdAt > :since
-              AND l.user.id <> :viewerId
-              AND l.post.author.id = :viewerId
+            SELECT l FROM PostLike l
+            JOIN FETCH l.user
+            JOIN FETCH l.post p
+            JOIN FETCH p.author
+            WHERE l.user.id <> :viewerId
+              AND p.author.id = :viewerId
+              AND p.hidden = false
+              AND l.createdAt IS NOT NULL
+            ORDER BY l.createdAt DESC
             """)
-    long countNewForViewer(@Param("since") Instant since,
-                           @Param("viewerId") Long viewerId);
+    List<PostLike> findForViewer(@Param("viewerId") Long viewerId,
+                                 org.springframework.data.domain.Pageable pageable);
 
     void deleteByPostId(Long postId);
 }

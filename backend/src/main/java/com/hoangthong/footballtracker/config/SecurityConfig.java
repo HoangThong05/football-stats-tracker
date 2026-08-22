@@ -51,7 +51,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/standings/**", "/api/matches/**", "/api/teams/**", "/api/scorers/**",
                                 "/api/users/*/profile").permitAll()
                         // Doc dien dan la cong khai; moi thao tac GHI roi vao anyRequest().authenticated()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/forum/posts", "/api/forum/unread").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/forum/posts", "/api/forum/posts/*", "/api/forum/unread").permitAll()
                         // Xem lich du doan + BXH du doan la cong khai; GUI du doan (POST /api/predictions)
                         // va xem lich su ca nhan (/api/predictions/mine) van roi vao anyRequest().authenticated().
                         .requestMatchers("/api/predictions/matches/**", "/api/predictions/leaderboard").permitAll()

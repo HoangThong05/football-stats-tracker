@@ -2944,3 +2944,10 @@ tr[role='button']:hover img,
 .ft-edit-box textarea {
   font-size: 0.9rem;
 }
+
+/* Mot dong trong chuong: anh dai dien ben trai, cau mo ta + trich dan ben phai */
+.ft-notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}

@@ -60,6 +60,8 @@ export default function App() {
   const [showMyPredictions, setShowMyPredictions] = useState(false);
   const [showMiniLeague, setShowMiniLeague] = useState(false);
   const [showForum, setShowForum] = useState(false);
+  // Bam mot dong trong chuong -> mo dien dan o dung bai do thay vi ca bang tin
+  const [focusPostId, setFocusPostId] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
   const [showToday, setShowToday] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -320,6 +322,7 @@ export default function App() {
    */
   const closeAllPages = () => {
     setShowForum(false);
+    setFocusPostId(null);
     setSelectedUserId(null);
     setSelectedTeamId(null);
     setSelectedMatchId(null);
@@ -372,6 +375,13 @@ export default function App() {
    */
   const goToUser = (userId) => {
     setSelectedUserId(userId);
+  };
+
+  /** Mo dien dan o dung mot bai - dung khi bam mot dong trong chuong. */
+  const goToPost = (postId) => {
+    closeAllPages();
+    setFocusPostId(postId);
+    setShowForum(true);
   };
 
   // KHONG dong trang "Hom nay" o day: MatchDetail duoc uu tien hien truoc trong chuoi
@@ -487,7 +497,8 @@ export default function App() {
 
               <div className="ft-navbar-right">
                 {/* Nhac tran cua doi dang theo doi - thay cho email nhac tran */}
-                <MatchReminders token={token} onSelectMatch={goToMatch} onSelectUser={goToUser} />
+                <MatchReminders token={token} onSelectMatch={goToMatch} onSelectUser={goToUser}
+                  onSelectPost={goToPost} />
                 {userEmail ? (
                   <div
                     className="ft-user-menu"
@@ -661,6 +672,8 @@ export default function App() {
               token={token}
               myName={displayName}
               myAvatar={avatarUrl}
+              focusPostId={focusPostId}
+              onClearFocus={() => setFocusPostId(null)}
               onBack={() => setShowForum(false)}
               onSelectUser={goToUser}
             />

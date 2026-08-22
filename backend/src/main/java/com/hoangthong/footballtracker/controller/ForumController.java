@@ -36,6 +36,18 @@ public class ForumController {
         return service.feed(viewerEmail, page);
     }
 
+    /** Mot bai duy nhat kem het binh luan - dung khi bam vao mot dong trong chuong. */
+    @GetMapping("/posts/{id}")
+    public ForumDto.Post onePost(@AuthenticationPrincipal String viewerEmail, @PathVariable long id) {
+        return service.onePost(viewerEmail, id);
+    }
+
+    /** Nhung viec nguoi khac vua lam voi bai/binh luan cua minh - noi dung cua chuong. */
+    @GetMapping("/notifications")
+    public List<ForumDto.Notification> notifications(@AuthenticationPrincipal String email) {
+        return service.notifications(email);
+    }
+
     @PostMapping("/posts")
     public void create(@AuthenticationPrincipal String email,
                        @RequestBody ForumDto.CreatePostRequest body) {
