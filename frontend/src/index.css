@@ -2528,16 +2528,17 @@ tr[role='button']:hover img,
 /* Hai nut Thich / Binh luan chia deu, co duong ke tach khoi noi dung */
 .ft-post-actions {
   display: flex;
+  gap: 4px;
+  padding: 4px 8px;
   border-top: 1px solid var(--bs-border-color-translucent);
 }
 
 .ft-post-action {
-  flex: 1;
+  /* Khong flex: 1 - nut chi rong bang noi dung, dung sat trai nhu bang tin Facebook */
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 8px 14px;
   border: 0;
   background: none;
   color: var(--bs-secondary-color);
@@ -2649,10 +2650,6 @@ tr[role='button']:hover img,
   line-height: 1.55;
 }
 
-/* Hang dem "3 thich - 1 binh luan" */
-.ft-post-counts {
-  font-size: 0.85rem;
-}
 
 /*
  * Nut chon anh: mot nut nho gon.
@@ -2674,4 +2671,10 @@ tr[role='button']:hover img,
 
 .ft-attach-btn:hover {
   background: var(--bs-tertiary-bg);
+}
+
+/* Bieu tuong to hon con so ben canh - mat bat vao hinh truoc, roi moi doc so */
+.ft-action-icon {
+  font-size: 1.15rem;
+  line-height: 1;
 }

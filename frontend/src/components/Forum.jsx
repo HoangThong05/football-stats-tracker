@@ -286,25 +286,21 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
             {/* Anh trai het be ngang the, khong chua le hai ben - giong bang tin mang xa hoi */}
             {p.imageUrl && <img src={p.imageUrl} alt="" loading="lazy" className="ft-post-image" />}
 
-            {(p.likeCount > 0 || p.comments.length > 0) && (
-              <div className="d-flex gap-3 px-3 pt-2 text-secondary ft-post-counts">
-                {p.likeCount > 0 && <span>♥ {p.likeCount}</span>}
-                {p.comments.length > 0 && (
-                  <span className="ms-auto">
-                    {p.comments.length} {t('forum_comments_count')}
-                  </span>
-                )}
-              </div>
-            )}
-
-            <div className="ft-post-actions mt-2">
+            {/*
+              Bieu tuong va so nam CHUNG mot hang, can trai.
+              Tach thanh hang dem rieng roi hang nut rieng thi mot bai chi vai chu se co
+              phan chan cao hon ca phan noi dung.
+            */}
+            <div className="ft-post-actions">
               <button className={p.likedByMe ? 'ft-post-action liked' : 'ft-post-action'}
-                disabled={!token} onClick={() => toggleLike(p)}>
-                {p.likedByMe ? '♥' : '♡'} <span>{t('forum_like')}</span>
+                disabled={!token} onClick={() => toggleLike(p)} title={t('forum_like')}>
+                <span className="ft-action-icon">{p.likedByMe ? '♥' : '♡'}</span>
+                {p.likeCount > 0 && <span className="ft-num">{p.likeCount}</span>}
               </button>
-              <button className="ft-post-action" disabled={!token}
+              <button className="ft-post-action" disabled={!token} title={t('forum_comment')}
                 onClick={() => setOpenComment((m) => ({ ...m, [p.id]: !m[p.id] }))}>
-                💬 <span>{t('forum_comment')}</span>
+                <span className="ft-action-icon">💬</span>
+                {p.comments.length > 0 && <span className="ft-num">{p.comments.length}</span>}
               </button>
             </div>
 
