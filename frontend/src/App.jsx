@@ -399,6 +399,34 @@ export default function App() {
   // Vd 2025 -> "2025/26"
   const formatSeasonRange = (startYear) => `${startYear}/${String(startYear + 1).slice(2)}`;
 
+  /**
+   * Trang Ho so cua chinh minh. Co HAI duong vao nen tach ra mot cho:
+   * - Menu tai khoan -> Quay lai la dong trang, ve trang chu
+   * - Bam vao ten/anh CUA CHINH MINH o Cong dong, BXH, chat... -> Quay lai phai tra ve
+   *   dung trang dang doc do, y het khi xem ho so nguoi khac
+   */
+  const renderMyProfile = (onBack) => (
+    <Profile
+      token={token}
+      userEmail={userEmail}
+      hasPassword={hasPassword}
+      viaGoogle={viaGoogle}
+      displayName={displayName}
+      avatarUrl={avatarUrl}
+      onAvatarSaved={handleAvatarSaved}
+      onDisplayNameSaved={handleDisplayNameSaved}
+      onSelectUser={goToUser}
+      onTokenRenewed={handleTokenRenewed}
+      favorites={favorites}
+      onBack={onBack}
+      onSelectTeam={goToTeam}
+      onGoToMiniLeague={() => {
+        closeAllPages();
+        setShowMiniLeague(true);
+      }}
+    />
+  );
+
   return (
     <LanguageContext.Provider value={{ lang, t, setLang }}>
       <>
@@ -623,11 +651,17 @@ export default function App() {
           )}
 
           {selectedUserId != null ? (
-            <PublicProfile
-              userId={selectedUserId}
-              token={token}
-              onBack={() => setSelectedUserId(null)}
-            />
+            /* Bam vao chinh minh -> trang Ho so day du (co cai dat, doi yeu thich...),
+               khong phai ban rut gon danh cho nguoi la nhin vao */
+            selectedUserId === userId ? (
+              renderMyProfile(() => setSelectedUserId(null))
+            ) : (
+              <PublicProfile
+                userId={selectedUserId}
+                token={token}
+                onBack={() => setSelectedUserId(null)}
+              />
+            )
           ) : selectedTeamId != null ? (
             <TeamDetail
               teamId={selectedTeamId}
@@ -681,25 +715,7 @@ export default function App() {
             <MiniLeague token={token} onBack={() => setShowMiniLeague(false)}
               onSelectUser={goToUser} myUserId={userId} />
           ) : showProfile ? (
-            <Profile
-              token={token}
-              userEmail={userEmail}
-              hasPassword={hasPassword}
-              viaGoogle={viaGoogle}
-              displayName={displayName}
-              avatarUrl={avatarUrl}
-              onAvatarSaved={handleAvatarSaved}
-              onDisplayNameSaved={handleDisplayNameSaved}
-              onSelectUser={goToUser}
-              onTokenRenewed={handleTokenRenewed}
-              favorites={favorites}
-              onBack={() => setShowProfile(false)}
-              onSelectTeam={goToTeam}
-              onGoToMiniLeague={() => {
-                setShowProfile(false);
-                setShowMiniLeague(true);
-              }}
-            />
+            renderMyProfile(() => setShowProfile(false))
           ) : showToday ? (
             <TodayMatches
               onBack={() => setShowToday(false)}
