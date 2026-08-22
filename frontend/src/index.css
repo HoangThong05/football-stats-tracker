@@ -712,6 +712,20 @@ body,
   color: var(--ft-accent-strong);
 }
 
+/*
+ * Bam chuot vao mot muc roi cuon -> muc do GIU vien focus, nhin nhu bi "dinh" lai.
+ * Bo vien khi bam bang chuot, chi giu khi di chuyen bang ban phim (focus-visible) de
+ * nguoi dung phim van thay minh dang o dau.
+ */
+.ft-user-menu-item:focus {
+  outline: none;
+}
+
+.ft-user-menu-item:focus-visible {
+  outline: 2px solid var(--ft-accent);
+  outline-offset: -2px;
+}
+
 .ft-user-menu-item-danger:hover {
   background: rgba(220, 38, 38, 0.1);
   color: #dc2626;

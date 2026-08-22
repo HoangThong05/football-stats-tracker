@@ -190,6 +190,118 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
     return hours <= 24 ? `${clock} · ${t('rem_in_hours').replace('{h}', Math.max(0, hours))}` : clock
   }
 
+  /*
+   * Mot dong tran dau, dung chung cho phan KET QUA (da xong) o tren va NHAC TRAN
+   * (sap toi) o duoi. Da xong thi hien ti so + du doan dung/sai; sap toi thi dem gio.
+   */
+  const renderMatchRow = (m) => (
+    <button
+      key={`m-${m.matchId}`}
+      className="ft-user-menu-item"
+      onClick={() => { setOpen(false); onSelectMatch(m.matchId) }}
+    >
+      <span className="d-block small fw-semibold">
+        {newAtOpen.has(m.matchId) && <span className="ft-rem-dot" />}
+        {shortTeamName(m.homeTeam)}
+        {m.status === 'FINISHED'
+          ? ` ${m.homeScore ?? '-'} - ${m.awayScore ?? '-'} `
+          : ' vs '}
+        {shortTeamName(m.awayTeam)}
+      </span>
+      <span className="d-block text-secondary" style={{ fontSize: '0.75rem' }}>
+        {m.status === 'FINISHED' ? t('rem_finished') : formatKickoff(m.utcDate)}
+      </span>
+      {m.followedTeamName && (
+        <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
+          ★ {shortTeamName(m.followedTeamName)}
+        </span>
+      )}
+      {m.myHomeScore != null && (
+        <>
+          {/* Du doan da duoc cham diem -> bao ro DUNG hay SAI, khong chi mot con so */}
+          {m.myPoints != null && (
+            <span className={`d-block fw-semibold ${
+              m.myPoints === 3 ? 'text-success'
+                : m.myPoints === 1 ? 'text-warning' : 'text-danger'
+            }`} style={{ fontSize: '0.72rem' }}>
+              {m.myPoints === 3 ? t('rem_pred_exact')
+                : m.myPoints === 1 ? t('rem_pred_partial') : t('rem_pred_wrong')}
+              {m.myPoints > 0 && <span className="ft-num ms-1">+{m.myPoints}</span>}
+            </span>
+          )}
+          <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
+            {t('rem_my_pick')} {m.myHomeScore}-{m.myAwayScore}
+          </span>
+        </>
+      )}
+    </button>
+  )
+
+  /* Mot dong thong bao dien dan: ai do binh luan / tra loi / thich bai cua minh. */
+  const renderForumNotif = (n) => (
+    <button
+      key={`n-${n.postId}-${n.actorId}-${n.createdAt}`}
+      className="ft-user-menu-item ft-notif-item"
+      onClick={() => { setOpen(false); onSelectPost(n.postId) }}
+    >
+      <Avatar name={n.actorName} src={n.actorAvatar} size={32} />
+      <span style={{ minWidth: 0 }}>
+        <span className="d-block small">
+          {(!notifSeenAtOpen || n.createdAt > notifSeenAtOpen) && <span className="ft-rem-dot" />}
+          <strong>{n.actorName}</strong> {t(NOTIF_TEXT[n.kind])}
+        </span>
+        {n.excerpt && (
+          <span className="d-block text-secondary text-truncate" style={{ fontSize: '0.75rem' }}>
+            {n.excerpt}
+          </span>
+        )}
+        <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
+          {relativeTime(n.createdAt, t, lang)}
+        </span>
+      </span>
+    </button>
+  )
+
+  /* Mot loi moi ket ban: co nut Dong y / Tu choi ngay tren dong. */
+  const renderFriendRequest = (r) => (
+    <div key={`r-${r.userId}`} className="d-flex align-items-center gap-2 small px-2 py-2">
+      <button type="button"
+        className="ft-name-link text-truncate flex-grow-1"
+        style={{ minWidth: 0 }}
+        onClick={() => { setOpen(false); onSelectUser(r.userId) }}>
+        {t('friend_wants_to_add').replace('{name}', r.name)}
+      </button>
+      <button className="btn btn-sm btn-success flex-shrink-0" disabled={busy}
+        onClick={() => answer(r.userId, 'POST', '/accept')}>
+        {t('friend_accept')}
+      </button>
+      <button className="btn btn-sm btn-outline-secondary flex-shrink-0" disabled={busy}
+        onClick={() => answer(r.userId, 'DELETE', '')}>
+        {t('friend_decline')}
+      </button>
+    </div>
+  )
+
+  /*
+   * Mot luong duy nhat, khong chia khoi.
+   *
+   * TREN - viec DA xay ra (loi moi, hoat dong ve bai viet, ket qua du doan), moi nhat
+   * len dau nhu mot khung chat.
+   * DUOI - tran SAP da, gan gio nhat truoc.
+   *
+   * Tach hai phan vi chung nguoc chieu thoi gian: tron chung mot truc "moi nhat len dau"
+   * thi tran tuong lai luon day het thong bao da xay ra xuong duoi.
+   */
+  const finished = matches.filter((m) => m.status === 'FINISHED')
+  const upcoming = matches.filter((m) => m.status !== 'FINISHED')
+    .sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate))
+
+  const activity = [
+    ...requests.map((r) => ({ id: `r-${r.userId}`, time: r.since, node: renderFriendRequest(r) })),
+    ...notifs.map((n) => ({ id: `n-${n.postId}-${n.actorId}-${n.createdAt}`, time: n.createdAt, node: renderForumNotif(n) })),
+    ...finished.map((m) => ({ id: `f-${m.matchId}`, time: m.utcDate, node: renderMatchRow(m) })),
+  ].sort((a, b) => new Date(b.time) - new Date(a.time))
+
   return (
     <div
       className="ft-user-menu"
@@ -219,123 +331,15 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
 
       {open && (
         <div className="ft-user-menu-panel ft-fade" style={{ minWidth: 300, maxWidth: 360 }}>
-          {/*
-           * MOT vung cuon duy nhat cho ca chuong. Truoc day moi khoi (bai viet, tran dau)
-           * co hop cuon rieng -> hai thanh cuon chong nhau trong mot menu, nhin roi. Gio
-           * cac tieu de chi con la vach ngan trong cung mot danh sach.
-           */}
           <div className="ft-bell-scroll">
-          {/* Loi moi ket ban len TREN: do la viec can tra loi, tran dau chi de xem */}
-          {requests.length > 0 && (
-            <>
-              <div className="ft-user-menu-header">{t('friends_requests')}</div>
-              <div className="d-flex flex-column gap-2 px-2 pb-2">
-                {requests.map((r) => (
-                  <div key={r.userId} className="d-flex align-items-center gap-2 small">
-                    <button type="button"
-                      className="ft-name-link text-truncate flex-grow-1"
-                      style={{ minWidth: 0 }}
-                      onClick={() => { setOpen(false); onSelectUser(r.userId) }}>
-                      {r.name}
-                    </button>
-                    <button className="btn btn-sm btn-success flex-shrink-0" disabled={busy}
-                      onClick={() => answer(r.userId, 'POST', '/accept')}>
-                      {t('friend_accept')}
-                    </button>
-                    <button className="btn btn-sm btn-outline-secondary flex-shrink-0" disabled={busy}
-                      onClick={() => answer(r.userId, 'DELETE', '')}>
-                      {t('friend_decline')}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {notifs.length > 0 && (
-            <>
-              <div className="ft-user-menu-header">{t('notif_title')}</div>
-              <div>
-                {notifs.map((n) => (
-                  <button
-                    key={`${n.kind}-${n.postId}-${n.actorId}-${n.createdAt}`}
-                    className="ft-user-menu-item ft-notif-item"
-                    onClick={() => { setOpen(false); onSelectPost(n.postId) }}
-                  >
-                    <Avatar name={n.actorName} src={n.actorAvatar} size={32} />
-                    <span style={{ minWidth: 0 }}>
-                      <span className="d-block small">
-                        {(!notifSeenAtOpen || n.createdAt > notifSeenAtOpen) && <span className="ft-rem-dot" />}
-                        <strong>{n.actorName}</strong> {t(NOTIF_TEXT[n.kind])}
-                      </span>
-                      {n.excerpt && (
-                        <span className="d-block text-secondary text-truncate" style={{ fontSize: '0.75rem' }}>
-                          {n.excerpt}
-                        </span>
-                      )}
-                      <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
-                        {relativeTime(n.createdAt, t, lang)}
-                      </span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-
-          <div className="ft-user-menu-header">{t('rem_title')}</div>
-
-          {matches.length === 0 ? (
-            <p className="text-secondary small mb-0 px-2 py-1">{t('rem_empty')}</p>
-          ) : (
-            <div>
-              {matches.map((m) => (
-                <button
-                  key={m.matchId}
-                  className="ft-user-menu-item"
-                  onClick={() => {
-                    setOpen(false)
-                    onSelectMatch(m.matchId)
-                  }}
-                >
-                  <span className="d-block small fw-semibold">
-                    {newAtOpen.has(m.matchId) && <span className="ft-rem-dot" />}
-                    {shortTeamName(m.homeTeam)}
-                    {m.status === 'FINISHED'
-                      ? ` ${m.homeScore ?? '-'} - ${m.awayScore ?? '-'} `
-                      : ' vs '}
-                    {shortTeamName(m.awayTeam)}
-                  </span>
-                  <span className="d-block text-secondary" style={{ fontSize: '0.75rem' }}>
-                    {m.status === 'FINISHED' ? t('rem_finished') : formatKickoff(m.utcDate)}
-                  </span>
-                  {m.followedTeamName && (
-                    <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
-                      ★ {shortTeamName(m.followedTeamName)}
-                    </span>
-                  )}
-                  {m.myHomeScore != null && (
-                    <>
-                      {/* Du doan da duoc cham diem -> bao ro DUNG hay SAI, khong chi mot con so */}
-                      {m.myPoints != null && (
-                        <span className={`d-block fw-semibold ${
-                          m.myPoints === 3 ? 'text-success'
-                            : m.myPoints === 1 ? 'text-warning' : 'text-danger'
-                        }`} style={{ fontSize: '0.72rem' }}>
-                          {m.myPoints === 3 ? t('rem_pred_exact')
-                            : m.myPoints === 1 ? t('rem_pred_partial') : t('rem_pred_wrong')}
-                          {m.myPoints > 0 && <span className="ft-num ms-1">+{m.myPoints}</span>}
-                        </span>
-                      )}
-                      <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
-                        {t('rem_my_pick')} {m.myHomeScore}-{m.myAwayScore}
-                      </span>
-                    </>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
+            {activity.length === 0 && upcoming.length === 0 ? (
+              <p className="text-secondary small mb-0 px-2 py-1">{t('rem_empty')}</p>
+            ) : (
+              <>
+                {activity.map((a) => <div key={a.id}>{a.node}</div>)}
+                {upcoming.map((m) => renderMatchRow(m))}
+              </>
+            )}
           </div>
         </div>
       )}
