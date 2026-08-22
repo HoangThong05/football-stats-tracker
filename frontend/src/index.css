@@ -2463,6 +2463,3 @@ tr[role='button']:hover img,
   padding: 12px 14px;
 }
 
-.ft-account-row + .ft-account-row {
-  border-top: 1px solid var(--bs-border-color-translucent);
-}

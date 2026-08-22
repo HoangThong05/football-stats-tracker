@@ -40,12 +40,21 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
 
       <ProfileStats token={token} />
 
-      {/* Gop cai dat tai khoan vao MOT the: truoc day moi muc la mot the rieng,
-          hai the lon chiem gan nua man hinh cho hai dong chu. */}
-      <div className="ft-card mb-3">
-        <DisplayName token={token} displayName={displayName} onSaved={onDisplayNameSaved} />
-        <ChangePassword token={token} hasPassword={hasPassword} viaGoogle={viaGoogle}
-          onTokenRenewed={onTokenRenewed} />
+      {/* Hai cai dat xep canh nhau, cung nhip voi hang "Doi yeu thich / Mini League"
+          ben duoi. Xep chong len nhau thi moi dong keo dai het be ngang cho vai chu,
+          bo trong khoang giua. */}
+      <div className="row g-3 mb-3">
+        <div className="col-12 col-md-6">
+          <div className="ft-card h-100">
+            <DisplayName token={token} displayName={displayName} onSaved={onDisplayNameSaved} />
+          </div>
+        </div>
+        <div className="col-12 col-md-6">
+          <div className="ft-card h-100">
+            <ChangePassword token={token} hasPassword={hasPassword} viaGoogle={viaGoogle}
+              onTokenRenewed={onTokenRenewed} />
+          </div>
+        </div>
       </div>
 
       <Badges token={token} />
