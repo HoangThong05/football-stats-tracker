@@ -2,20 +2,33 @@ package com.hoangthong.footballtracker.controller;
 
 import com.hoangthong.footballtracker.dto.MiniLeagueDto;
 import com.hoangthong.footballtracker.service.MiniLeagueService;
+import com.hoangthong.footballtracker.service.WriteRateLimiter;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/leagues")
 public class MiniLeagueController {
 
-    private final MiniLeagueService service;
+    /*
+     * Vao phong siet chat nhat: moi lan goi la mot lan doan ma moi 6 ky tu, chan tay
+     * lai thi khong the do het khong gian ma. Tao phong va nhan tin rong rai hon nhung
+     * van du de chan script.
+     */
+    private static final int JOIN_PER_HOUR = 20;
+    private static final int CREATE_PER_HOUR = 20;
+    private static final int MESSAGE_PER_MIN = 30;
 
-    public MiniLeagueController(MiniLeagueService service) {
+    private final MiniLeagueService service;
+    private final WriteRateLimiter limiter;
+
+    public MiniLeagueController(MiniLeagueService service, WriteRateLimiter limiter) {
         this.service = service;
+        this.limiter = limiter;
     }
 
     @PostMapping
@@ -23,6 +36,7 @@ public class MiniLeagueController {
     public MiniLeagueDto.LeagueResponse create(
             @AuthenticationPrincipal String email,
             @RequestBody MiniLeagueDto.CreateLeagueRequest req) {
+        limiter.check("league-create", email, CREATE_PER_HOUR, Duration.ofHours(1));
         return service.createLeague(email, req.name());
     }
 
@@ -30,6 +44,7 @@ public class MiniLeagueController {
     public MiniLeagueDto.LeagueResponse join(
             @AuthenticationPrincipal String email,
             @RequestBody MiniLeagueDto.JoinLeagueRequest req) {
+        limiter.check("league-join", email, JOIN_PER_HOUR, Duration.ofHours(1));
         return service.joinLeague(email, req.inviteCode());
     }
 
@@ -69,6 +84,7 @@ public class MiniLeagueController {
     public void postMessage(@AuthenticationPrincipal String email,
                             @PathVariable Long id,
                             @RequestBody java.util.Map<String, String> body) {
+        limiter.check("league-message", email, MESSAGE_PER_MIN, Duration.ofMinutes(1));
         service.postMessage(email, id, body.get("content"));
     }
 

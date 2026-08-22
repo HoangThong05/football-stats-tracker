@@ -158,9 +158,13 @@ public class ForumService {
     }
 
     @Transactional
-    public void report(String email, long postId, String reason) {
+    public void report(String email, long postId, String rawReason) {
         User reporter = getUser(email);
         ForumPost post = visiblePost(postId);
+        // Cat cho vua cot DB (200). Khong lam thi ly do dai hon 200 ky tu se nem loi CSDL
+        // -> 500, thay vi luu gon lai. Ly do chi de admin doc tham khao nen cat la du.
+        String reason = rawReason == null ? null
+                : (rawReason.length() > 200 ? rawReason.substring(0, 200) : rawReason);
         // Da bao roi thi im lang bo qua - bao loi chi lam nguoi dung tuong minh lam sai
         if (reportRepo.existsByPostIdAndReporterId(postId, reporter.getId())) {
             return;

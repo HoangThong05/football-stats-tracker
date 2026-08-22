@@ -407,6 +407,7 @@ export const translations = {
     ml_members_count: 'người',
 
     ml_err_already_joined: 'Bạn đã tham gia phòng này rồi',
+    ml_err_rate_limited: 'Bạn thao tác quá nhanh, thử lại sau một lát nhé.',
     ml_err_invite_code_invalid: 'Mã mời không hợp lệ',
     ml_err_league_not_found: 'Không tìm thấy phòng',
     ml_err_owner_cannot_leave: 'Chủ phòng không thể rời phòng',
@@ -830,6 +831,7 @@ export const translations = {
     ml_members_count: 'members',
 
     ml_err_already_joined: 'You have already joined this room',
+    ml_err_rate_limited: 'You are doing that too fast, please try again in a moment.',
     ml_err_invite_code_invalid: 'Invalid invite code',
     ml_err_league_not_found: 'Room not found',
     ml_err_owner_cannot_leave: 'Owner cannot leave the room',

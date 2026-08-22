@@ -7,6 +7,7 @@ import com.hoangthong.footballtracker.dto.PredictionHistoryDto;
 import com.hoangthong.footballtracker.dto.PredictionRequest;
 import com.hoangthong.footballtracker.service.BadgeService;
 import com.hoangthong.footballtracker.service.PredictionService;
+import com.hoangthong.footballtracker.service.WriteRateLimiter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -27,12 +29,21 @@ import java.util.List;
 @RequestMapping("/api/predictions")
 public class PredictionController {
 
+    /*
+     * Rong rai: mot vong dau co the co ca chuc tran o 6 giai, nguoi dung dat/sua lien
+     * tuc trong mot phien la binh thuong. Nguong nay chi de chan script goi khong dut.
+     */
+    private static final int SUBMIT_PER_10MIN = 150;
+
     private final PredictionService predictionService;
     private final BadgeService badgeService;
+    private final WriteRateLimiter limiter;
 
-    public PredictionController(PredictionService predictionService, BadgeService badgeService) {
+    public PredictionController(PredictionService predictionService, BadgeService badgeService,
+                                WriteRateLimiter limiter) {
         this.predictionService = predictionService;
         this.badgeService = badgeService;
+        this.limiter = limiter;
     }
 
     /**
@@ -47,6 +58,7 @@ public class PredictionController {
     @PostMapping
     public ResponseEntity<Void> submitPrediction(
             @AuthenticationPrincipal String email, @RequestBody PredictionRequest request) {
+        limiter.check("predict", email, SUBMIT_PER_10MIN, Duration.ofMinutes(10));
         predictionService.submitPrediction(email, request);
         return ResponseEntity.noContent().build();
     }

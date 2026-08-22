@@ -2,6 +2,7 @@ package com.hoangthong.footballtracker.controller;
 
 import com.hoangthong.footballtracker.dto.ForumDto;
 import com.hoangthong.footballtracker.service.ForumService;
+import com.hoangthong.footballtracker.service.WriteRateLimiter;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,16 +14,33 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Duration;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/forum")
 public class ForumController {
 
-    private final ForumService service;
+    /*
+     * Nguong chan spam, tinh theo tung tai khoan. Dat rong rai - nguoi dung that khong
+     * bao gio cham toi, chi chan script goi lien tuc. Dang bai it hon binh luan vi mot
+     * bai la mot muc rieng tren bang tin, cham hon nhieu thi la co van de.
+     */
+    private static final Duration TEN_MIN = Duration.ofMinutes(10);
+    private static final Duration ONE_MIN = Duration.ofMinutes(1);
+    private static final Duration ONE_HOUR = Duration.ofHours(1);
+    private static final int POST_PER_10MIN = 15;
+    private static final int COMMENT_PER_10MIN = 40;
+    private static final int EDIT_PER_10MIN = 40;
+    private static final int LIKE_PER_MIN = 100;
+    private static final int REPORT_PER_HOUR = 20;
 
-    public ForumController(ForumService service) {
+    private final ForumService service;
+    private final WriteRateLimiter limiter;
+
+    public ForumController(ForumService service, WriteRateLimiter limiter) {
         this.service = service;
+        this.limiter = limiter;
     }
 
     /**
@@ -51,6 +69,7 @@ public class ForumController {
     @PostMapping("/posts")
     public void create(@AuthenticationPrincipal String email,
                        @RequestBody ForumDto.CreatePostRequest body) {
+        limiter.check("forum-post", email, POST_PER_10MIN, TEN_MIN);
         service.createPost(email, body.content(), body.imageUrl());
     }
 
@@ -58,6 +77,7 @@ public class ForumController {
     @PutMapping("/posts/{id}")
     public void editPost(@AuthenticationPrincipal String email, @PathVariable long id,
                          @RequestBody ForumDto.EditRequest body) {
+        limiter.check("forum-edit", email, EDIT_PER_10MIN, TEN_MIN);
         service.editPost(email, id, body.content());
     }
 
@@ -71,6 +91,7 @@ public class ForumController {
     @PutMapping("/comments/{id}")
     public void editComment(@AuthenticationPrincipal String email, @PathVariable long id,
                             @RequestBody ForumDto.EditRequest body) {
+        limiter.check("forum-edit", email, EDIT_PER_10MIN, TEN_MIN);
         service.editComment(email, id, body.content());
     }
 
@@ -103,18 +124,21 @@ public class ForumController {
     @PostMapping("/posts/{id}/comments")
     public void comment(@AuthenticationPrincipal String email, @PathVariable long id,
                         @RequestBody ForumDto.CommentRequest body) {
+        limiter.check("forum-comment", email, COMMENT_PER_10MIN, TEN_MIN);
         service.comment(email, id, body.content(), body.parentId());
     }
 
     /** Bam lan nua thi bo thich. */
     @PostMapping("/posts/{id}/like")
     public void like(@AuthenticationPrincipal String email, @PathVariable long id) {
+        limiter.check("forum-like", email, LIKE_PER_MIN, ONE_MIN);
         service.toggleLike(email, id);
     }
 
     @PostMapping("/posts/{id}/report")
     public void report(@AuthenticationPrincipal String email, @PathVariable long id,
                        @RequestBody(required = false) ForumDto.ReportRequest body) {
+        limiter.check("forum-report", email, REPORT_PER_HOUR, ONE_HOUR);
         service.report(email, id, body == null ? null : body.reason());
     }
 }

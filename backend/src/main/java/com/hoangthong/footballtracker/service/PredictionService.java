@@ -78,9 +78,16 @@ public class PredictionService {
                 .toList();
     }
 
+    /**
+     * Ti so du doan toi da cho mot doi. Tran bong that gan nhu khong bao gio qua so nay;
+     * chan tren de khong ai nhet 2 ty vao lam tran bang / gay tran so khi cham diem.
+     */
+    private static final int MAX_SCORE = 99;
+
     /** Tao moi hoac sua du doan (chi khi tran chua bat dau). */
     public void submitPrediction(String email, PredictionRequest request) {
-        if (request.homeScore() < 0 || request.awayScore() < 0) {
+        if (request.homeScore() < 0 || request.awayScore() < 0
+                || request.homeScore() > MAX_SCORE || request.awayScore() > MAX_SCORE) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ti so khong hop le");
         }
 
