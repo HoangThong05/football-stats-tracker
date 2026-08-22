@@ -40,6 +40,12 @@ public class FriendController {
         return service.incomingRequests(email);
     }
 
+    /** Loi moi cua minh vua duoc chap nhan (14 ngay gan nhat) - de bao len chuong. */
+    @GetMapping("/accepted")
+    public List<FriendDto> accepted(@AuthenticationPrincipal String email) {
+        return service.recentlyAccepted(email);
+    }
+
     @PostMapping("/{userId}")
     public void request(@AuthenticationPrincipal String email, @PathVariable long userId) {
         limiter.check("friend-request", email, REQUEST_PER_HOUR, Duration.ofHours(1));

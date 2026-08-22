@@ -64,6 +64,8 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
    */
   const [requests, setRequests] = useState([])
   const [busy, setBusy] = useState(false)
+  // Loi moi cua MINH vua duoc nguoi khac chap nhan (14 ngay gan nhat)
+  const [accepted, setAccepted] = useState([])
   // Ai vua binh luan / tra loi / thich bai cua minh
   const [notifs, setNotifs] = useState([])
   /*
@@ -108,6 +110,13 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
           if (!cancelled) setNotifs(data)
         })
         .catch(() => {})
+
+      fetch(`${API_BASE}/friends/accepted`, { headers: authHeaders(token) })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => {
+          if (!cancelled) setAccepted(data)
+        })
+        .catch(() => {})
     }
 
     load()
@@ -139,11 +148,13 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
     return m.status !== 'FINISHED' && new Date(m.utcDate).getTime() <= soonLimit
   }).length
 
-  // Chua bao gio mo chuong -> coi nhu chua doc dong nao
+  // Chua bao gio mo chuong -> coi nhu chua doc dong nao. Loi moi da chap nhan dung
+  // chung moc "da xem hoat dong" voi thong bao dien dan (cung la viec da xay ra voi minh).
   const unreadNotifs = notifs.filter((n) => !notifSeen || n.createdAt > notifSeen)
+  const unreadAccepted = accepted.filter((a) => !notifSeen || a.since > notifSeen)
 
-  // Loi moi luon duoc dem, khong tru theo "da xem"
-  const badgeCount = soonCount + requests.length + unreadNotifs.length
+  // Loi moi DEN luon duoc dem, khong tru theo "da xem"
+  const badgeCount = soonCount + requests.length + unreadNotifs.length + unreadAccepted.length
 
   const answer = async (userId, method, path) => {
     setBusy(true)
@@ -262,6 +273,26 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
     </button>
   )
 
+  /* Mot dong: nguoi khac vua chap nhan loi moi ket ban cua minh. Bam vao mo ho so ho. */
+  const renderFriendAccepted = (a) => (
+    <button
+      key={`a-${a.userId}`}
+      className="ft-user-menu-item ft-notif-item"
+      onClick={() => { setOpen(false); onSelectUser(a.userId) }}
+    >
+      <Avatar name={a.name} src={a.avatarUrl} size={32} />
+      <span style={{ minWidth: 0 }}>
+        <span className="d-block small">
+          {(!notifSeenAtOpen || a.since > notifSeenAtOpen) && <span className="ft-rem-dot" />}
+          <strong>{a.name}</strong> {t('friend_accepted_you')}
+        </span>
+        <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
+          {relativeTime(a.since, t, lang)}
+        </span>
+      </span>
+    </button>
+  )
+
   /* Mot loi moi ket ban: co nut Dong y / Tu choi ngay tren dong. */
   const renderFriendRequest = (r) => (
     <div key={`r-${r.userId}`} className="d-flex align-items-center gap-2 small px-2 py-2">
@@ -299,6 +330,7 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
   const activity = [
     ...requests.map((r) => ({ id: `r-${r.userId}`, time: r.since, node: renderFriendRequest(r) })),
     ...notifs.map((n) => ({ id: `n-${n.postId}-${n.actorId}-${n.createdAt}`, time: n.createdAt, node: renderForumNotif(n) })),
+    ...accepted.map((a) => ({ id: `a-${a.userId}`, time: a.since, node: renderFriendAccepted(a) })),
     ...finished.map((m) => ({ id: `f-${m.matchId}`, time: m.utcDate, node: renderMatchRow(m) })),
   ].sort((a, b) => new Date(b.time) - new Date(a.time))
 

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -63,7 +64,7 @@ public class FriendshipService {
              * Khong xu ly the thi hai nguoi cung bam se ket o trang thai cho lan nhau mai.
              */
             if (f.getStatus() == Friendship.Status.PENDING && f.getAddressee().getId().equals(me.getId())) {
-                f.setStatus(Friendship.Status.ACCEPTED);
+                f.markAccepted();
                 friendshipRepository.save(f);
                 return;
             }
@@ -82,7 +83,7 @@ public class FriendshipService {
         if (f.getStatus() != Friendship.Status.PENDING || !f.getAddressee().getId().equals(me.getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "request_not_found");
         }
-        f.setStatus(Friendship.Status.ACCEPTED);
+        f.markAccepted();
         friendshipRepository.save(f);
     }
 
@@ -106,6 +107,26 @@ public class FriendshipService {
         User me = getUser(email);
         return friendshipRepository.findIncomingRequests(me.getId()).stream()
                 .map(f -> toDto(f.getRequester(), f))
+                .toList();
+    }
+
+    /**
+     * Loi moi cua MINH vua duoc nguoi khac chap nhan - de bao len chuong.
+     *
+     * Chi tinh khi MINH la nguoi GUI: nguoi nhan bam dong y thi da biet roi, con nguoi
+     * gui moi la nguoi can duoc bao. Gioi han 14 ngay gan nhat de danh sach khong phinh
+     * mai; quan he cu (acceptedAt null) khong bao gio lot vao.
+     *
+     * Truong "since" cua FriendDto o day mang thoi diem CHAP NHAN, de chuong xep dung cho.
+     */
+    public List<FriendDto> recentlyAccepted(String email) {
+        User me = getUser(email);
+        Instant since = Instant.now().minus(java.time.Duration.ofDays(14));
+        return friendshipRepository.findRecentlyAcceptedForRequester(me.getId(), since).stream()
+                .map(f -> new FriendDto(f.getAddressee().getId(),
+                        f.getAddressee().displayNameOrFallback(),
+                        f.getAddressee().getAvatarUrl(),
+                        f.getAcceptedAt().toString()))
                 .toList();
     }
 

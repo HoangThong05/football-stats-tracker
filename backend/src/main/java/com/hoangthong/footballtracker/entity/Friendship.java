@@ -44,6 +44,18 @@ public class Friendship {
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
+    /**
+     * Luc loi moi duoc chap nhan. null = chua chap nhan (con PENDING), HOAC la quan he
+     * ket ban tu truoc khi co cot nay.
+     *
+     * De null duoc (khong NOT NULL): bang friendship da co san du lieu, Hibernate che do
+     * update them cot bang ALTER TABLE - khai NOT NULL khong mac dinh thi Postgres tu choi.
+     * Cac quan he cu vi the co acceptedAt null, nen khong bao gio lot vao "vua chap nhan"
+     * -> khong bung thong bao nguoc ve qua khu.
+     */
+    @Column
+    private Instant acceptedAt;
+
     protected Friendship() {
         // JPA can
     }
@@ -58,6 +70,14 @@ public class Friendship {
     public User getAddressee() { return addressee; }
     public Status getStatus() { return status; }
     public void setStatus(Status status) { this.status = status; }
+
+    public Instant getAcceptedAt() { return acceptedAt; }
+
+    /** Chuyen sang da ket ban va ghi lai thoi diem - luon di cung nhau. */
+    public void markAccepted() {
+        this.status = Status.ACCEPTED;
+        this.acceptedAt = Instant.now();
+    }
     public Instant getCreatedAt() { return createdAt; }
 
     /** Nguoi con lai trong cap, nhin tu goc do cua userId. */

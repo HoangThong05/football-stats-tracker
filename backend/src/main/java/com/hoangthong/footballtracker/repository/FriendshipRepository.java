@@ -32,6 +32,24 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
             """)
     List<Friendship> findAcceptedOf(@Param("userId") Long userId);
 
+    /**
+     * Loi moi MINH da gui vua duoc chap nhan, moi nhat truoc. Nguon cho thong bao chuong.
+     *
+     * Chi lay khi minh la REQUESTER: nguoi nhan chap nhan roi thi khong can bao lai cho ho.
+     * acceptedAt IS NOT NULL loai cac quan he cu tu truoc khi co cot nay.
+     */
+    @Query("""
+            SELECT f FROM Friendship f
+            JOIN FETCH f.addressee
+            WHERE f.requester.id = :userId
+              AND f.status = com.hoangthong.footballtracker.entity.Friendship$Status.ACCEPTED
+              AND f.acceptedAt IS NOT NULL
+              AND f.acceptedAt > :since
+            ORDER BY f.acceptedAt DESC
+            """)
+    List<Friendship> findRecentlyAcceptedForRequester(@Param("userId") Long userId,
+                                                      @Param("since") java.time.Instant since);
+
     /** Loi moi NGUOI KHAC gui den, dang cho tra loi. */
     @Query("""
             SELECT f FROM Friendship f
