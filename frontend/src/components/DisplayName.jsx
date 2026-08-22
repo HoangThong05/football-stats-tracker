@@ -52,7 +52,7 @@ export default function DisplayName({ token, displayName, onSaved }) {
     <div className="ft-account-row">
       <div className="d-flex align-items-center gap-3">
         <div className="flex-grow-1" style={{ minWidth: 0 }}>
-          <div className="small fw-medium">🏷 {t('name_title')}</div>
+          <div className="small fw-medium">{t('name_title')}</div>
           <div className="text-secondary small text-truncate">
             {displayName || t('name_not_set')}
           </div>
