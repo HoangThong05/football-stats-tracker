@@ -333,8 +333,14 @@ export default function App() {
     setSelectedTeamId(teamId);
   };
 
+  /*
+   * KHONG dong trang dang mo.
+   *
+   * Ho so cong khai duoc dung o dau chuoi ternary nen no phu LEN trang hien tai. Giu
+   * trang do lai thi bam "Quay lai" se ve dung cho vua di - Mini League, BXH, hay Ho so.
+   * Goi closeAllPages() o day thi trang nguon bi tat, quay lai roi ve thang trang chu.
+   */
   const goToUser = (userId) => {
-    closeAllPages();
     setSelectedUserId(userId);
   };
 
