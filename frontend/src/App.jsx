@@ -60,7 +60,6 @@ export default function App() {
   const [showMyPredictions, setShowMyPredictions] = useState(false);
   const [showMiniLeague, setShowMiniLeague] = useState(false);
   const [showForum, setShowForum] = useState(false);
-  const forumUnread = useForumUnread(token);
   const [showProfile, setShowProfile] = useState(false);
   const [showToday, setShowToday] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -69,6 +68,8 @@ export default function App() {
   // tranh giao dien hien "dang dang nhap" nhung moi request deu bi tra 403.
   const [initialSession] = useState(loadSavedSession);
   const [token, setToken] = useState(initialSession.token);
+  // PHAI dat sau `token`: dat truoc thi doc bien chua khai bao -> ca app trang man hinh
+  const forumUnread = useForumUnread(token);
   const [userEmail, setUserEmail] = useState(initialSession.email);
   const [userRole, setUserRole] = useState(initialSession.role);
   const [hasPassword, setHasPassword] = useState(initialSession.hasPassword);
