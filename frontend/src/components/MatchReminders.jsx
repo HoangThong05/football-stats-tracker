@@ -309,21 +309,22 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
                     </span>
                   )}
                   {m.myHomeScore != null && (
-                    <span className="d-block" style={{ fontSize: '0.72rem' }}>
-                      <span className="text-secondary">
-                        {t('rem_my_pick')} {m.myHomeScore}-{m.myAwayScore}
-                      </span>
+                    <>
+                      {/* Du doan da duoc cham diem -> bao ro DUNG hay SAI, khong chi mot con so */}
                       {m.myPoints != null && (
-                        <span
-                          className={`badge ms-2 ${
-                            m.myPoints === 3 ? 'text-bg-success'
-                              : m.myPoints === 1 ? 'text-bg-warning' : 'text-bg-secondary'
-                          }`}
-                        >
-                          +{m.myPoints}
+                        <span className={`d-block fw-semibold ${
+                          m.myPoints === 3 ? 'text-success'
+                            : m.myPoints === 1 ? 'text-warning' : 'text-danger'
+                        }`} style={{ fontSize: '0.72rem' }}>
+                          {m.myPoints === 3 ? t('rem_pred_exact')
+                            : m.myPoints === 1 ? t('rem_pred_partial') : t('rem_pred_wrong')}
+                          {m.myPoints > 0 && <span className="ft-num ms-1">+{m.myPoints}</span>}
                         </span>
                       )}
-                    </span>
+                      <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
+                        {t('rem_my_pick')} {m.myHomeScore}-{m.myAwayScore}
+                      </span>
+                    </>
                   )}
                 </button>
               ))}
