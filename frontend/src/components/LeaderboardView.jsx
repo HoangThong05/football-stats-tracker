@@ -67,7 +67,7 @@ export default function LeaderboardView({ token, myName, onBack, onSelectUser })
                     )}
                   </td>
                   <td className="fw-medium">
-                    <button type="button" className="btn btn-link p-0 fw-medium text-start"
+                    <button type="button" className="ft-name-link fw-medium"
                       onClick={() => onSelectUser(r.userId)}>
                       {r.name}
                     </button>

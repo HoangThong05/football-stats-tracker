@@ -44,7 +44,7 @@ export default function FriendsList({ token, onSelectUser }) {
   }
 
   const nameButton = (f) => (
-    <button type="button" className="btn btn-link p-0 text-start text-truncate"
+    <button type="button" className="ft-name-link text-truncate"
       style={{ minWidth: 0 }} onClick={() => onSelectUser(f.userId)}>
       {f.name}
     </button>

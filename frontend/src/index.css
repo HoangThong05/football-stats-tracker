@@ -2463,3 +2463,25 @@ tr[role='button']:hover img,
   padding: 12px 14px;
 }
 
+
+/*
+ * Ten nguoi choi bam duoc (mo ho so cong khai).
+ *
+ * Dung btn-link cua Bootstrap thi ten nao cung gach chan va doi mau xanh - bang xep hang
+ * day nhung dong nhu vay nhin rat roi. O day giu nguyen mau chu, chi gach chan khi re
+ * chuot vao de nguoi dung van biet la bam duoc.
+ */
+.ft-name-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+}
+
+.ft-name-link:hover,
+.ft-name-link:focus-visible {
+  text-decoration: underline;
+  color: var(--ft-accent-strong);
+}

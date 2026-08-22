@@ -278,7 +278,7 @@ if (!token) {
                         {e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : e.rank}
                       </td>
                       <td>
-                        <button type="button" className="btn btn-link p-0 text-start"
+                        <button type="button" className="ft-name-link"
                           onClick={() => onSelectUser(e.userId)}>
                           {e.name}
                         </button>

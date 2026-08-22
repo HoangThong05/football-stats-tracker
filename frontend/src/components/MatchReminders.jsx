@@ -34,7 +34,7 @@ function loadSeen() {
  * Thay cho email nhac tran (da tat qua app.notify.email-enabled). Doc tu database
  * nen khong ton han muc API - goi lai dinh ky thoai mai.
  */
-export default function MatchReminders({ token, onSelectMatch }) {
+export default function MatchReminders({ token, onSelectMatch, onSelectUser }) {
   const { t, lang } = useTranslation()
   const [matches, setMatches] = useState([])
   const [open, setOpen] = useState(false)
@@ -45,6 +45,14 @@ export default function MatchReminders({ token, onSelectMatch }) {
    * thay cai nao la moi.
    */
   const [newAtOpen, setNewAtOpen] = useState(new Set())
+  /*
+   * Loi moi ket ban KHONG dung co che "da xem".
+   *
+   * Chung la viec can lam chu khong phai tin de doc: van con do la van phai tra loi.
+   * Danh dau da xem roi tat so di thi nguoi dung quen mat co ai dang cho minh.
+   */
+  const [requests, setRequests] = useState([])
+  const [busy, setBusy] = useState(false)
 
   useEffect(() => {
     if (!token) {
@@ -60,6 +68,13 @@ export default function MatchReminders({ token, onSelectMatch }) {
           if (!cancelled) setMatches(data)
         })
         // Nhac nho chi la tro giup: hong thi im lang, khong lam phien nguoi dung
+        .catch(() => {})
+
+      fetch(`${API_BASE}/friends/requests`, { headers: authHeaders(token) })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => {
+          if (!cancelled) setRequests(data)
+        })
         .catch(() => {})
     }
 
@@ -91,6 +106,19 @@ export default function MatchReminders({ token, onSelectMatch }) {
     if (m.myPoints != null) return true
     return m.status !== 'FINISHED' && new Date(m.utcDate).getTime() <= soonLimit
   }).length
+
+  // Loi moi luon duoc dem, khong tru theo "da xem"
+  const badgeCount = soonCount + requests.length
+
+  const answer = async (userId, method, path) => {
+    setBusy(true)
+    try {
+      await fetch(`${API_BASE}/friends/${userId}${path}`, { method, headers: authHeaders(token) })
+      setRequests((list) => list.filter((r) => r.userId !== userId))
+    } finally {
+      setBusy(false)
+    }
+  }
 
   const markAllSeen = () => {
     /*
@@ -139,11 +167,38 @@ export default function MatchReminders({ token, onSelectMatch }) {
         style={{ position: 'relative' }}
       >
         🔔
-        {soonCount > 0 && <span className="ft-rem-badge">{soonCount}</span>}
+        {badgeCount > 0 && <span className="ft-rem-badge">{badgeCount}</span>}
       </button>
 
       {open && (
         <div className="ft-user-menu-panel ft-fade" style={{ minWidth: 300, maxWidth: 360 }}>
+          {/* Loi moi ket ban len TREN: do la viec can tra loi, tran dau chi de xem */}
+          {requests.length > 0 && (
+            <>
+              <div className="ft-user-menu-header">{t('friends_requests')}</div>
+              <div className="d-flex flex-column gap-2 px-2 pb-2">
+                {requests.map((r) => (
+                  <div key={r.userId} className="d-flex align-items-center gap-2 small">
+                    <button type="button"
+                      className="ft-name-link text-truncate flex-grow-1"
+                      style={{ minWidth: 0 }}
+                      onClick={() => { setOpen(false); onSelectUser(r.userId) }}>
+                      {r.name}
+                    </button>
+                    <button className="btn btn-sm btn-success flex-shrink-0" disabled={busy}
+                      onClick={() => answer(r.userId, 'POST', '/accept')}>
+                      {t('friend_accept')}
+                    </button>
+                    <button className="btn btn-sm btn-outline-secondary flex-shrink-0" disabled={busy}
+                      onClick={() => answer(r.userId, 'DELETE', '')}>
+                      {t('friend_decline')}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
           <div className="ft-user-menu-header">{t('rem_title')}</div>
 
           {matches.length === 0 ? (
