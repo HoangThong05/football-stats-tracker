@@ -6,7 +6,9 @@ import java.util.List;
 public class ForumDto {
 
     /** Mot binh luan. */
-    public record Comment(long id, long authorId, String authorName, String content, Instant createdAt) {}
+    /** parentId null = binh luan goc; co gia tri = tra loi cho binh luan do. */
+    public record Comment(long id, Long parentId, long authorId, String authorName,
+                          String content, Instant createdAt) {}
 
     /**
      * Mot bai viet kem moi thu can de hien: so thich, minh da thich chua, binh luan.
@@ -30,7 +32,7 @@ public class ForumDto {
 
     public record CreatePostRequest(String content, String imageUrl) {}
 
-    public record CommentRequest(String content) {}
+    public record CommentRequest(String content, Long parentId) {}
 
     public record ReportRequest(String reason) {}
 }

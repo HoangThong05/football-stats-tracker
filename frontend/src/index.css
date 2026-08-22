@@ -2635,3 +2635,8 @@ tr[role='button']:hover img,
 .ft-chat-row.mine .ft-chat-bubble {
   background: var(--ft-accent-soft, rgba(25, 135, 84, 0.18));
 }
+
+/* Tra loi thut vao mot bac so voi binh luan goc */
+.ft-comment-reply {
+  padding-left: 36px;
+}

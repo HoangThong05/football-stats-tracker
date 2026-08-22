@@ -23,6 +23,17 @@ public class ForumComment {
     @JoinColumn(name = "author_id")
     private User author;
 
+    /**
+     * Binh luan cha, null = binh luan goc.
+     *
+     * CHI LONG MOT CAP: tra loi cua tra loi van gan vao binh luan goc (xu ly o
+     * ForumService.comment). Long nhieu cap thi tren dien thoai cac muc thut dan vao
+     * den muc chi con vai chu moi dong.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private ForumComment parent;
+
     @Column(nullable = false, length = MAX_CONTENT)
     private String content;
 
@@ -33,15 +44,17 @@ public class ForumComment {
         // JPA can
     }
 
-    public ForumComment(ForumPost post, User author, String content) {
+    public ForumComment(ForumPost post, User author, String content, ForumComment parent) {
         this.post = post;
         this.author = author;
         this.content = content;
+        this.parent = parent;
     }
 
     public Long getId() { return id; }
     public ForumPost getPost() { return post; }
     public User getAuthor() { return author; }
+    public ForumComment getParent() { return parent; }
     public String getContent() { return content; }
     public Instant getCreatedAt() { return createdAt; }
 }

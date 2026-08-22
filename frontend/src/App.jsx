@@ -11,6 +11,7 @@ import { LEAGUES, VIEWS } from "./constants";
 import { LanguageContext, translations } from "./i18n";
 import { useSlidingIndicator } from "./useSlidingIndicator";
 import { usePendingPredictions } from "./usePendingPredictions";
+import { useForumUnread } from "./useForumUnread";
 import Loading from "./components/Loading";
 import AuthPanel from "./components/AuthPanel";
 import AdminUsers from "./components/AdminUsers";
@@ -59,6 +60,7 @@ export default function App() {
   const [showMyPredictions, setShowMyPredictions] = useState(false);
   const [showMiniLeague, setShowMiniLeague] = useState(false);
   const [showForum, setShowForum] = useState(false);
+  const forumUnread = useForumUnread(token);
   const [showProfile, setShowProfile] = useState(false);
   const [showToday, setShowToday] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -429,9 +431,14 @@ export default function App() {
                     onClick={() => {
                       closeAllPages();
                       setShowForum(true);
+                      // Mo ra la coi nhu da xem - so tat ngay, khong doi tai xong
+                      forumUnread.markSeen();
                     }}
                   >
                     {t("nav_forum")}
+                    {forumUnread.count > 0 && (
+                      <span className="ft-tab-badge">{forumUnread.count}</span>
+                    )}
                   </button>
                 </div>
 

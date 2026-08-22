@@ -46,10 +46,30 @@ public class ForumController {
         service.deletePost(email, id);
     }
 
+    /**
+     * So bai + binh luan moi ke tu moc thoi gian frontend gui len.
+     *
+     * Frontend tu nho moc "lan cuoi mo dien dan" o may cua no - khong luu tren may chu:
+     * mot bang nua chi de ghi "da xem den dau" la khong dang, va moc do sai lech mot
+     * chut cung khong gay hai gi.
+     */
+    @GetMapping("/unread")
+    public java.util.Map<String, Long> unread(@AuthenticationPrincipal String email,
+                                              @RequestParam String since) {
+        java.time.Instant moc;
+        try {
+            moc = java.time.Instant.parse(since);
+        } catch (java.time.format.DateTimeParseException e) {
+            // Moc hong (nguoi dung xoa localStorage, gia tri la) -> coi nhu chua co gi moi
+            return java.util.Map.of("count", 0L);
+        }
+        return java.util.Map.of("count", service.unreadCount(email, moc));
+    }
+
     @PostMapping("/posts/{id}/comments")
     public void comment(@AuthenticationPrincipal String email, @PathVariable long id,
                         @RequestBody ForumDto.CommentRequest body) {
-        service.comment(email, id, body.content());
+        service.comment(email, id, body.content(), body.parentId());
     }
 
     /** Bam lan nua thi bo thich. */

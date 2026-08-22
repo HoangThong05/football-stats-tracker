@@ -36,6 +36,8 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
   const [commentText, setCommentText] = useState({})
   // Bai nao dang mo o nhap binh luan - giong Facebook, bam "Binh luan" moi hien
   const [openComment, setOpenComment] = useState({})
+  // Dang tra loi binh luan nao: { [postId]: comment }
+  const [replyTo, setReplyTo] = useState({})
 
   const errMap = {
     post_empty: t('forum_err_empty'),
@@ -118,8 +120,12 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
     const content = (commentText[postId] || '').trim()
     if (!content) return
     try {
-      await call(`/posts/${postId}/comments`, { method: 'POST', body: JSON.stringify({ content }) })
+      await call(`/posts/${postId}/comments`, {
+        method: 'POST',
+        body: JSON.stringify({ content, parentId: replyTo[postId]?.id ?? null }),
+      })
       setCommentText((m) => ({ ...m, [postId]: '' }))
+      setReplyTo((m) => ({ ...m, [postId]: null }))
       load()
     } catch (err) {
       setError(err.message)
@@ -148,6 +154,11 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
     await act(`/posts/${post.id}/like`)
   }
 
+  const startReply = (postId, comment) => {
+    setReplyTo((m) => ({ ...m, [postId]: comment }))
+    setOpenComment((m) => ({ ...m, [postId]: true }))
+  }
+
   /** "5 phut truoc" doc nhanh hon "13:20 22-08" voi bai vua dang. */
   const when = (iso) => {
     const diffMin = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
@@ -158,6 +169,30 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
       day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
     })
   }
+
+  /** Mot binh luan - dung chung cho ca binh luan goc lan tra loi. */
+  const renderComment = (post, c) => (
+    <div className="d-flex gap-2">
+      <button type="button" className="ft-avatar-btn" onClick={() => onSelectUser(c.authorId)}>
+        <Avatar name={c.authorName} size={28} />
+      </button>
+      <div style={{ minWidth: 0 }}>
+        <div className="ft-comment-bubble">
+          <button type="button" className="ft-name-link fw-semibold d-block"
+            style={{ fontSize: '0.8rem' }} onClick={() => onSelectUser(c.authorId)}>
+            {c.authorName}
+          </button>
+          <span className="small" style={{ overflowWrap: 'anywhere' }}>{c.content}</span>
+        </div>
+        {token && (
+          <button type="button" className="ft-name-link text-secondary ps-2"
+            style={{ fontSize: '0.72rem' }} onClick={() => startReply(post.id, c)}>
+            {t('forum_reply')}
+          </button>
+        )}
+      </div>
+    </div>
+  )
 
   return (
     <div className="ft-fade">
@@ -275,22 +310,29 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
 
             {(p.comments.length > 0 || openComment[p.id]) && (
               <div className="px-3 pb-3 pt-2 d-flex flex-column gap-2">
-                {p.comments.map((c) => (
-                  <div key={c.id} className="d-flex gap-2">
-                    <button type="button" className="ft-avatar-btn" onClick={() => onSelectUser(c.authorId)}>
-                      <Avatar name={c.authorName} size={28} />
-                    </button>
-                    <div className="ft-comment-bubble">
-                      <button type="button" className="ft-name-link fw-semibold d-block"
-                        style={{ fontSize: '0.8rem' }} onClick={() => onSelectUser(c.authorId)}>
-                        {c.authorName}
-                      </button>
-                      <span className="small" style={{ overflowWrap: 'anywhere' }}>{c.content}</span>
-                    </div>
+                {p.comments.filter((c) => c.parentId == null).map((root) => (
+                  <div key={root.id} className="d-flex flex-column gap-2">
+                    {renderComment(p, root)}
+                    {/* Tra loi thut vao mot bac, du de thay quan he ma khong be nho o chu */}
+                    {p.comments.filter((r) => r.parentId === root.id).map((reply) => (
+                      <div key={reply.id} className="ft-comment-reply">
+                        {renderComment(p, reply)}
+                      </div>
+                    ))}
                   </div>
                 ))}
 
                 {token && openComment[p.id] && (
+                  <>
+                  {replyTo[p.id] && (
+                    <div className="small text-secondary d-flex align-items-center gap-2">
+                      <span>{t('forum_replying_to')} {replyTo[p.id].authorName}</span>
+                      <button type="button" className="ft-name-link"
+                        onClick={() => setReplyTo((m) => ({ ...m, [p.id]: null }))}>
+                        ✕
+                      </button>
+                    </div>
+                  )}
                   <div className="d-flex gap-2 align-items-center">
                     <Avatar name={myName} size={28} />
                     <input
@@ -307,6 +349,7 @@ export default function Forum({ token, myName, onBack, onSelectUser }) {
                       {t('chat_send')}
                     </button>
                   </div>
+                  </>
                 )}
               </div>
             )}

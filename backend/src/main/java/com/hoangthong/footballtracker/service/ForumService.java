@@ -98,7 +98,7 @@ public class ForumService {
     }
 
     @Transactional
-    public void comment(String email, long postId, String rawContent) {
+    public void comment(String email, long postId, String rawContent, Long parentId) {
         User author = getUser(email);
         ForumPost post = visiblePost(postId);
         String content = rawContent == null ? "" : rawContent.trim();
@@ -108,7 +108,24 @@ public class ForumService {
         if (content.length() > ForumComment.MAX_CONTENT) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "comment_too_long");
         }
-        commentRepo.save(new ForumComment(post, author, content));
+        /*
+         * Tra loi cua tra loi van gan vao binh luan GOC.
+         *
+         * Long nhieu cap thi tren dien thoai cac muc thut dan vao den muc chi con vai
+         * chu moi dong. Mot cap la du de biet ai dang noi voi ai.
+         */
+        ForumComment parent = null;
+        if (parentId != null) {
+            parent = commentRepo.findById(parentId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "comment_not_found"));
+            if (!parent.getPost().getId().equals(postId)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "comment_not_found");
+            }
+            if (parent.getParent() != null) {
+                parent = parent.getParent();
+            }
+        }
+        commentRepo.save(new ForumComment(post, author, content, parent));
     }
 
     /** Bam lan nua thi bo thich - mot nut lam ca hai chieu. */
@@ -155,6 +172,18 @@ public class ForumService {
         postRepo.delete(post);
     }
 
+    /**
+     * So bai + binh luan moi ke tu lan cuoi nguoi nay mo dien dan.
+     *
+     * Bo qua hoat dong cua CHINH ho: hien huy hieu cho binh luan minh vua go la vo nghia.
+     */
+    public long unreadCount(String viewerEmail, java.time.Instant since) {
+        Long viewerId = viewerEmail == null
+                ? null
+                : userRepo.findByEmail(viewerEmail).map(User::getId).orElse(null);
+        return postRepo.countNewSince(since, viewerId) + commentRepo.countNewSince(since, viewerId);
+    }
+
     private ForumPost visiblePost(long postId) {
         ForumPost post = postRepo.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "post_not_found"));
@@ -184,7 +213,9 @@ public class ForumService {
         Map<Long, List<ForumDto.Comment>> commentsByPost = new HashMap<>();
         for (ForumComment c : commentRepo.findByPostIds(ids)) {
             commentsByPost.computeIfAbsent(c.getPost().getId(), k -> new ArrayList<>())
-                    .add(new ForumDto.Comment(c.getId(), c.getAuthor().getId(),
+                    .add(new ForumDto.Comment(c.getId(),
+                            c.getParent() == null ? null : c.getParent().getId(),
+                            c.getAuthor().getId(),
                             c.getAuthor().displayNameOrFallback(), c.getContent(), c.getCreatedAt()));
         }
 
@@ -192,10 +223,24 @@ public class ForumService {
 
         return posts.stream().map(p -> {
             List<ForumDto.Comment> all = commentsByPost.getOrDefault(p.getId(), List.of());
-            // Lay COMMENTS_PREVIEW binh luan MOI NHAT (cuoi danh sach da sap tang dan)
-            List<ForumDto.Comment> preview = all.size() > COMMENTS_PREVIEW
-                    ? all.subList(all.size() - COMMENTS_PREVIEW, all.size())
-                    : all;
+            /*
+             * Gioi han theo binh luan GOC, roi keo theo tat ca tra loi cua chung.
+             *
+             * Cat thang theo so luong thi mot tra loi co the bi giu lai trong khi binh
+             * luan goc cua no bi cat - nguoi doc thay cau tra loi lo lung khong biet
+             * dang noi ve cai gi.
+             */
+            List<Long> keptRoots = all.stream()
+                    .filter(c -> c.parentId() == null)
+                    .map(ForumDto.Comment::id)
+                    .toList();
+            if (keptRoots.size() > COMMENTS_PREVIEW) {
+                keptRoots = keptRoots.subList(keptRoots.size() - COMMENTS_PREVIEW, keptRoots.size());
+            }
+            Set<Long> rootIds = new HashSet<>(keptRoots);
+            List<ForumDto.Comment> preview = all.stream()
+                    .filter(c -> rootIds.contains(c.parentId() == null ? c.id() : c.parentId()))
+                    .toList();
             boolean canDelete = viewerIsAdmin
                     || (viewer != null && p.getAuthor().getId().equals(viewer.getId()));
             return new ForumDto.Post(
