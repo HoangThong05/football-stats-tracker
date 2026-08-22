@@ -21,6 +21,7 @@ import StandingsTable from "./components/StandingsTable";
 import CompareTeams from "./components/CompareTeams";
 import MatchReminders from "./components/MatchReminders";
 import PublicProfile from "./components/PublicProfile";
+import Forum from "./components/Forum";
 import ScorersTable from "./components/ScorersTable";
 import TeamDetail from "./components/TeamDetail";
 import MatchDetail from "./components/MatchDetail";
@@ -57,6 +58,7 @@ export default function App() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showMyPredictions, setShowMyPredictions] = useState(false);
   const [showMiniLeague, setShowMiniLeague] = useState(false);
+  const [showForum, setShowForum] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showToday, setShowToday] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -296,6 +298,7 @@ export default function App() {
    * khi them trang moi ve sau.
    */
   const closeAllPages = () => {
+    setShowForum(false);
     setSelectedUserId(null);
     setSelectedTeamId(null);
     setSelectedMatchId(null);
@@ -420,6 +423,15 @@ export default function App() {
                     }}
                   >
                     {t("nav_mini_league")}
+                  </button>
+                  <button
+                    className="ft-nav-btn"
+                    onClick={() => {
+                      closeAllPages();
+                      setShowForum(true);
+                    }}
+                  >
+                    {t("nav_forum")}
                   </button>
                 </div>
 
@@ -610,6 +622,12 @@ export default function App() {
             <MyPredictionsHistory
               token={token}
               onBack={() => setShowMyPredictions(false)}
+            />
+          ) : showForum ? (
+            <Forum
+              token={token}
+              onBack={() => setShowForum(false)}
+              onSelectUser={goToUser}
             />
           ) : showMiniLeague ? (
             <MiniLeague token={token} onBack={() => setShowMiniLeague(false)}
