@@ -34,11 +34,32 @@ public class AuthService {
         this.emailService = emailService;
     }
 
+    /**
+     * Dinh dang email toi thieu: co phan truoc @, co ten mien, VA ten mien phai co dau cham.
+     *
+     * Vi sao phai tu kiem: o <input type="email"> cua trinh duyet CHAP NHAN ten mien
+     * khong co dau cham (vd "a@gmail-cn") - dung theo chuan HTML vi dia chi noi bo la
+     * hop le - nen khong the tin no. Va quan trong hon: ai goi thang API thi khong co
+     * o input nao chan ho ca.
+     */
+    private static final java.util.regex.Pattern EMAIL_PATTERN =
+            java.util.regex.Pattern.compile("^[^\\s@]+@[^\\s@.]+(\\.[^\\s@.]+)+$");
+
+    private static final int MIN_PASSWORD_LENGTH = 6;
+    private static final int MAX_EMAIL_LENGTH = 254;
+
     public AuthResponse register(AuthRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
+        String email = request.email() == null ? "" : request.email().trim();
+        if (email.length() > MAX_EMAIL_LENGTH || !EMAIL_PATTERN.matcher(email).matches()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_email");
+        }
+        if (request.password() == null || request.password().length() < MIN_PASSWORD_LENGTH) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "password_too_short");
+        }
+        if (userRepository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "email_exists");
         }
-        User user = new User(request.email(), passwordEncoder.encode(request.password()));
+        User user = new User(email, passwordEncoder.encode(request.password()));
         userRepository.save(user);
         return toAuthResponse(user);
     }
@@ -88,6 +109,10 @@ public class AuthService {
     }
 
     public void resetPassword(String token, String newPassword) {
+        // Cung mot muc toi thieu voi luc dang ky - khong the di duong vong qua link email
+        if (newPassword == null || newPassword.length() < MIN_PASSWORD_LENGTH) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "password_too_short");
+        }
         User user = userRepository.findByResetToken(token)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "token_invalid"));
         if (user.getResetTokenExpiry() == null || Instant.now().isAfter(user.getResetTokenExpiry())) {
@@ -111,7 +136,7 @@ public class AuthService {
      */
     public AuthResponse changePassword(String email, String currentPassword, String newPassword,
                                       boolean sessionViaGoogle) {
-        if (newPassword == null || newPassword.length() < 6) {
+        if (newPassword == null || newPassword.length() < MIN_PASSWORD_LENGTH) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "password_too_short");
         }
         User user = userRepository.findByEmail(email)

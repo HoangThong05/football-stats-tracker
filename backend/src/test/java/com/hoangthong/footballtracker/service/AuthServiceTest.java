@@ -39,6 +39,55 @@ class AuthServiceTest {
         authService = new AuthService(userRepository, passwordEncoder, jwtService, null);
     }
 
+    /**
+     * Kiem tra dinh dang PHAI o backend.
+     *
+     * <input type="email"> cua trinh duyet cho qua ten mien khong co dau cham
+     * ("a@gmail-cn") - dung chuan HTML nhung khong phai dia chi that. Va ai goi thang
+     * API thi khong co o input nao chan ho.
+     */
+    @Test
+    void email_sai_dinh_dang_thi_khong_dang_ky_duoc() {
+        for (String xau : new String[]{"khong-co-cho-a", "a@gmail-cn", "a@b", "@gmail.com",
+                                       "a b@gmail.com", "", "   "}) {
+            assertThatThrownBy(() -> authService.register(new AuthRequest(xau, "123456")))
+                    .as("email: '%s'", xau)
+                    .isInstanceOf(ResponseStatusException.class)
+                    .hasMessageContaining("invalid_email");
+        }
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void email_dung_dinh_dang_thi_qua() {
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("hashed");
+
+        for (String tot : new String[]{"a@gmail.com", "ten.co.dau@sub.domain.vn", "a+b@x.co.uk"}) {
+            authService.register(new AuthRequest(tot, "123456"));
+        }
+        verify(userRepository, org.mockito.Mockito.times(3)).save(any());
+    }
+
+    @Test
+    void mat_khau_qua_ngan_thi_khong_dang_ky_duoc() {
+        assertThatThrownBy(() -> authService.register(new AuthRequest("a@gmail.com", "12345")))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("password_too_short");
+        verify(userRepository, never()).save(any());
+    }
+
+    /** Khoang trang thua o dau/cuoi khong duoc bien thanh mot tai khoan khac. */
+    @Test
+    void email_duoc_cat_khoang_trang_thua() {
+        when(userRepository.existsByEmail("a@gmail.com")).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("hashed");
+
+        authService.register(new AuthRequest("  a@gmail.com  ", "123456"));
+
+        verify(userRepository).existsByEmail("a@gmail.com");
+    }
+
     @Test
     void dang_ky_thanh_cong_thi_tra_ve_role_USER() {
         when(userRepository.existsByEmail("moi@example.com")).thenReturn(false);
