@@ -338,9 +338,8 @@ export default function App() {
     setToken(null);
     setUserEmail(null);
     setUserRole(null);
-    // Xoa ca ten va anh: nguoi tiep theo dang nhap tren may nay khong thay sot lai
-    // mat nguoi truoc trong khoanh khac truoc khi phien moi kip nap ve
-    setDisplayName(null);
+    // Nguoi tiep theo dang nhap tren may nay khong thay sot lai mat nguoi truoc
+    // trong khoanh khac truoc khi phien moi kip nap ve
     setAvatarUrl(null);
     closeAllPages();
   };
