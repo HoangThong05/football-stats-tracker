@@ -296,7 +296,8 @@ export const translations = {
     statue_sound_on: 'Bật tiếng cổ vũ',
     statue_sound_off: 'Tắt tiếng cổ vũ',
 
-    ticker_label: 'Tỷ số',
+    ticker_label: 'Trận đấu',
+    ticker_label_live: 'Trực tiếp',
     ticker_live: 'TRỰC TIẾP',
     ticker_finished: 'KT',
     statue_missing_file: 'Chưa có file ronaldo.glb trong thư mục public/',
@@ -696,7 +697,8 @@ export const translations = {
     statue_sound_on: 'Turn on crowd sound',
     statue_sound_off: 'Turn off crowd sound',
 
-    ticker_label: 'Scores',
+    ticker_label: 'Matches',
+    ticker_label_live: 'Live',
     ticker_live: 'LIVE',
     ticker_finished: 'FT',
     statue_missing_file: 'No ronaldo.glb found in the public/ folder',

@@ -2696,3 +2696,30 @@ tr[role='button']:hover img,
     gap: 8px;
   }
 }
+
+/*
+ * Nhan bang ron khi DANG co tran lan banh.
+ *
+ * Do la mau quy uoc cho "truc tiep" o moi trang the thao - nguoi dung hieu ngay ma
+ * khong can doc chu. Chi bat khi that su co tran dang da, khong thi no mat y nghia.
+ */
+.ft-ticker-label.live {
+  background: #dc2626;
+  color: #fff;
+  animation: ft-live-pulse 2s ease-in-out infinite;
+}
+
+[data-bs-theme='dark'] .ft-ticker-label.live {
+  color: #fff;
+}
+
+@keyframes ft-live-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.55); }
+  50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ft-ticker-label.live {
+    animation: none;
+  }
+}

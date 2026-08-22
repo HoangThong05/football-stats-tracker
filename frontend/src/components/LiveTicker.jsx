@@ -114,6 +114,8 @@ export default function LiveTicker({ onSelectMatch }) {
       minute: '2-digit',
     })
 
+  const hasLive = matches.some((m) => LIVE_STATUSES.has(m.status))
+
   const renderItem = (m, key) => {
     const live = LIVE_STATUSES.has(m.status)
     const finished = m.status === 'FINISHED'
@@ -141,7 +143,14 @@ export default function LiveTicker({ onSelectMatch }) {
 
   return (
     <div className="ft-ticker">
-      <div className="ft-ticker-label">{t('ticker_label')}</div>
+      {/*
+        Nhan doi theo tinh hinh that: co tran dang da thi bao "TRUC TIEP" mau do, khong
+        thi la "TRAN DAU". Goi tat ca la "TY SO" thi sai voi cac tran chua da - chung
+        moi chi co gio, chua co ti so nao.
+      */}
+      <div className={hasLive ? 'ft-ticker-label live' : 'ft-ticker-label'}>
+        {hasLive ? t('ticker_label_live') : t('ticker_label')}
+      </div>
       <div className="ft-ticker-viewport" ref={viewportRef}>
         {/*
           Bang chay gom `copies` BAN SAO giong het nhau cua danh sach tran.
