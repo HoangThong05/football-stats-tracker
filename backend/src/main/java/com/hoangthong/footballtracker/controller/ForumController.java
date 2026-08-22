@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,9 +42,30 @@ public class ForumController {
         service.createPost(email, body.content(), body.imageUrl());
     }
 
+    /** Sua phan chu cua bai. Chi tac gia, va chi trong 1 gio dau. */
+    @PutMapping("/posts/{id}")
+    public void editPost(@AuthenticationPrincipal String email, @PathVariable long id,
+                         @RequestBody ForumDto.EditRequest body) {
+        service.editPost(email, id, body.content());
+    }
+
+    /** Xoa bai. Tac gia trong 24 gio dau, admin thi bat ky luc nao. */
     @DeleteMapping("/posts/{id}")
     public void delete(@AuthenticationPrincipal String email, @PathVariable long id) {
         service.deletePost(email, id);
+    }
+
+    /** Sua binh luan. Chi tac gia, va chi trong 1 gio dau. */
+    @PutMapping("/comments/{id}")
+    public void editComment(@AuthenticationPrincipal String email, @PathVariable long id,
+                            @RequestBody ForumDto.EditRequest body) {
+        service.editComment(email, id, body.content());
+    }
+
+    /** Xoa binh luan. Tac gia trong 24 gio dau, admin thi bat ky luc nao. */
+    @DeleteMapping("/comments/{id}")
+    public void deleteComment(@AuthenticationPrincipal String email, @PathVariable long id) {
+        service.deleteComment(email, id);
     }
 
     /**

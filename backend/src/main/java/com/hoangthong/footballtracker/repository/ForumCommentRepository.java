@@ -50,4 +50,7 @@ public interface ForumCommentRepository extends JpaRepository<ForumComment, Long
                            @Param("viewerId") Long viewerId);
 
     void deleteByPostId(Long postId);
+
+    /** Cac tra loi cua mot binh luan goc - xoa binh luan goc phai keo theo chung. */
+    void deleteByParentId(Long parentId);
 }

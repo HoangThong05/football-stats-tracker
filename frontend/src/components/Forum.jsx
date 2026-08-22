@@ -38,6 +38,14 @@ export default function Forum({ token, myName, myAvatar, onBack, onSelectUser })
   const [openComment, setOpenComment] = useState({})
   // Dang tra loi binh luan nao: { [postId]: comment }
   const [replyTo, setReplyTo] = useState({})
+  /*
+   * Dang sua cai gi: { kind: 'post' | 'comment', id, text }, null = khong sua gi.
+   *
+   * Mot o duy nhat chu khong phai mot o cho moi bai: mo hai o sua cung luc roi bam Luu
+   * nham cai nay sang cai kia la chuyen rat de xay ra, ma khong ai can lam viec do.
+   */
+  const [editing, setEditing] = useState(null)
+  const [savingEdit, setSavingEdit] = useState(false)
 
   const errMap = {
     post_empty: t('forum_err_empty'),
@@ -47,6 +55,12 @@ export default function Forum({ token, myName, myAvatar, onBack, onSelectUser })
     image_too_large: t('forum_err_image_size'),
     image_upload_failed: t('forum_err_image_upload'),
     rate_limited: t('auth_rate_limited'),
+    comment_empty: t('forum_err_comment_empty'),
+    comment_too_long: t('forum_err_comment_too_long'),
+    edit_window_over: t('forum_err_edit_window'),
+    delete_window_over: t('forum_err_delete_window'),
+    not_your_post: t('forum_err_not_yours'),
+    not_your_comment: t('forum_err_not_yours'),
   }
 
   const load = useCallback(() => {
@@ -132,6 +146,63 @@ export default function Forum({ token, myName, myAvatar, onBack, onSelectUser })
     }
   }
 
+  const startEdit = (kind, id, content) => setEditing({ kind, id, text: content })
+
+  const saveEdit = async () => {
+    const content = editing.text.trim()
+    if (!content) return
+    setError(null)
+    setSavingEdit(true)
+    try {
+      await call(`/${editing.kind === 'post' ? 'posts' : 'comments'}/${editing.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ content }),
+      })
+      setEditing(null)
+      load()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
+  /**
+   * Hoi lai truoc khi xoa. Xoa la khong lay lai duoc, va nut xoa nam ngay canh nut sua -
+   * bam nham mot ly la mat ca bai.
+   */
+  const confirmDelete = (kind, id) => {
+    const question = kind === 'post' ? t('forum_confirm_delete_post') : t('forum_confirm_delete_comment')
+    if (!confirm(question)) return
+    // Dang sua dung thu vua xoa thi dong o sua lai, khong de no lo lung
+    if (editing?.kind === kind && editing.id === id) setEditing(null)
+    act(`/${kind === 'post' ? 'posts' : 'comments'}/${id}`, 'DELETE')
+  }
+
+  /** O sua dung chung cho bai va binh luan - khac nhau moi so dong va gioi han ky tu. */
+  const editBox = (rows, maxLength) => (
+    <div className="ft-edit-box">
+      <textarea
+        className="form-control"
+        rows={rows}
+        maxLength={maxLength}
+        value={editing.text}
+        autoFocus
+        onChange={(e) => setEditing((v) => ({ ...v, text: e.target.value }))}
+      />
+      <div className="d-flex gap-2 mt-2">
+        <button type="button" className="btn btn-sm btn-success"
+          disabled={savingEdit || !editing.text.trim()} onClick={saveEdit}>
+          {t('forum_edit_save')}
+        </button>
+        <button type="button" className="btn btn-sm btn-outline-secondary"
+          disabled={savingEdit} onClick={() => setEditing(null)}>
+          {t('forum_edit_cancel')}
+        </button>
+      </div>
+    </div>
+  )
+
   const act = async (path, method = 'POST') => {
     try {
       await call(path, { method })
@@ -176,19 +247,41 @@ export default function Forum({ token, myName, myAvatar, onBack, onSelectUser })
       <button type="button" className="ft-avatar-btn" onClick={() => onSelectUser(c.authorId)}>
         <Avatar name={c.authorName} src={c.authorAvatar} size={28} />
       </button>
-      <div style={{ minWidth: 0 }}>
-        <div className="ft-comment-bubble">
-          <button type="button" className="ft-name-link fw-semibold d-block"
-            style={{ fontSize: '0.8rem' }} onClick={() => onSelectUser(c.authorId)}>
-            {c.authorName}
-          </button>
-          <span className="small" style={{ overflowWrap: 'anywhere' }}>{c.content}</span>
-        </div>
-        {token && (
-          <button type="button" className="ft-name-link text-secondary ps-2"
-            style={{ fontSize: '0.72rem' }} onClick={() => startReply(post.id, c)}>
-            {t('forum_reply')}
-          </button>
+      <div className="flex-grow-1" style={{ minWidth: 0 }}>
+        {editing?.kind === 'comment' && editing.id === c.id ? (
+          editBox(2, MAX_COMMENT)
+        ) : (
+          <>
+            <div className="ft-comment-bubble">
+              <button type="button" className="ft-name-link fw-semibold d-block"
+                style={{ fontSize: '0.8rem' }} onClick={() => onSelectUser(c.authorId)}>
+                {c.authorName}
+              </button>
+              <span className="small" style={{ overflowWrap: 'anywhere' }}>{c.content}</span>
+            </div>
+
+            <div className="ft-comment-tools">
+              {token && (
+                <button type="button" className="ft-name-link text-secondary"
+                  onClick={() => startReply(post.id, c)}>
+                  {t('forum_reply')}
+                </button>
+              )}
+              {c.canEdit && (
+                <button type="button" className="ft-name-link text-secondary"
+                  onClick={() => startEdit('comment', c.id, c.content)}>
+                  {t('forum_edit')}
+                </button>
+              )}
+              {c.canDelete && (
+                <button type="button" className="ft-name-link text-secondary"
+                  onClick={() => confirmDelete('comment', c.id)}>
+                  {t('forum_delete')}
+                </button>
+              )}
+              {c.editedAt && <span className="text-secondary">{t('forum_edited')}</span>}
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -267,20 +360,33 @@ export default function Forum({ token, myName, myAvatar, onBack, onSelectUser })
                   onClick={() => onSelectUser(p.authorId)}>
                   {p.authorName}
                 </button>
-                <span className="text-secondary" style={{ fontSize: '0.75rem' }}>{when(p.createdAt)}</span>
+                <span className="text-secondary" style={{ fontSize: '0.75rem' }}>
+                  {when(p.createdAt)}
+                  {p.editedAt && ` · ${t('forum_edited')}`}
+                </span>
               </div>
+              {p.canEdit && (
+                <button className="ft-post-menu" title={t('forum_edit')}
+                  onClick={() => startEdit('post', p.id, p.content)}>
+                  ✎
+                </button>
+              )}
               {p.canDelete && (
                 <button className="ft-post-menu" title={t('forum_delete')}
-                  onClick={() => act(`/posts/${p.id}`, 'DELETE')}>
+                  onClick={() => confirmDelete('post', p.id)}>
                   ✕
                 </button>
               )}
             </header>
 
-            {p.content && (
-              <p className="px-3 mb-2 ft-post-text" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
-                {p.content}
-              </p>
+            {editing?.kind === 'post' && editing.id === p.id ? (
+              <div className="px-3 pb-2">{editBox(3, MAX_POST)}</div>
+            ) : (
+              p.content && (
+                <p className="px-3 mb-2 ft-post-text" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+                  {p.content}
+                </p>
+              )
             )}
 
             {/* Anh trai het be ngang the, khong chua le hai ben - giong bang tin mang xa hoi */}

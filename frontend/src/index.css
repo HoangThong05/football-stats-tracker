@@ -2929,3 +2929,18 @@ tr[role='button']:hover img,
     width: 100%;
   }
 }
+
+/* Hang cong cu duoi moi binh luan: Tra loi / Sua / Xoa / nhan "da chinh sua" */
+.ft-comment-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 8px;
+  margin-top: 2px;
+  font-size: 0.72rem;
+}
+
+/* O sua bai/binh luan tai cho, thay cho phan chu trong luc dang sua */
+.ft-edit-box textarea {
+  font-size: 0.9rem;
+}

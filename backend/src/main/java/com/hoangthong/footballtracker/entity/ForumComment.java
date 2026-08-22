@@ -40,6 +40,15 @@ public class ForumComment {
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
+    /**
+     * Lan sua gan nhat. null = chua sua lan nao -> khong hien nhan "da chinh sua".
+     *
+     * De null duoc: bang da co san du lieu, Hibernate che do update them cot nay bang
+     * ALTER TABLE - khai NOT NULL ma khong co gia tri mac dinh thi Postgres tu choi.
+     */
+    @Column
+    private Instant editedAt;
+
     protected ForumComment() {
         // JPA can
     }
@@ -57,4 +66,12 @@ public class ForumComment {
     public ForumComment getParent() { return parent; }
     public String getContent() { return content; }
     public Instant getCreatedAt() { return createdAt; }
+
+    public Instant getEditedAt() { return editedAt; }
+
+    /** Doi noi dung va danh dau moc sua - luon di cung nhau, khong tach ra duoc. */
+    public void editContent(String content) {
+        this.content = content;
+        this.editedAt = Instant.now();
+    }
 }

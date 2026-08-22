@@ -43,6 +43,19 @@ public class ForumService {
      */
     private static final int COMMENTS_PREVIEW = 3;
 
+    /**
+     * Cua so sua va cua so xoa, tinh tu luc dang.
+     *
+     * Sua ngan hon xoa co chu y: sua la doi noi dung DUOI CHAN nhung nguoi da doc va da
+     * tra loi, nen chi cho trong luc cuoc noi chuyen con nong. Xoa thi chi lam mat bai
+     * cua chinh minh, khong be cong loi ai, nen rong rai hon.
+     *
+     * Admin khong bi hai cua so nay chan - neu khong thi bai rac dang tu hom qua se
+     * vinh vien khong ai don duoc.
+     */
+    private static final java.time.Duration EDIT_WINDOW = java.time.Duration.ofHours(1);
+    private static final java.time.Duration DELETE_WINDOW = java.time.Duration.ofHours(24);
+
     private final ForumPostRepository postRepo;
     private final ForumCommentRepository commentRepo;
     private final PostLikeRepository likeRepo;
@@ -137,7 +150,93 @@ public class ForumService {
     }
 
     /**
-     * Xoa bai. Tac gia xoa bai cua minh, admin xoa bai bat ky.
+     * Sua phan chu cua bai. Chi tac gia, va chi trong {@link #EDIT_WINDOW} ke tu luc dang.
+     *
+     * Khong cho doi anh: doi anh la thay han noi dung bai, khong con la "sua loi chinh
+     * ta" nua - nguoi da thich hoac da binh luan coi nhu bi doi bai duoi chan.
+     */
+    @Transactional
+    public void editPost(String email, long postId, String rawContent) {
+        User user = getUser(email);
+        ForumPost post = visiblePost(postId);
+
+        if (!post.getAuthor().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not_your_post");
+        }
+        requireWithin(post.getCreatedAt(), EDIT_WINDOW, "edit_window_over");
+
+        String content = rawContent == null ? "" : rawContent.trim();
+        // Bai chi co anh van hop le, nhung khong duoc trong ca hai
+        if (content.isEmpty() && post.getImageUrl() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "post_empty");
+        }
+        if (content.length() > ForumPost.MAX_CONTENT) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "post_too_long");
+        }
+        post.editContent(content);
+        postRepo.save(post);
+    }
+
+    /** Sua binh luan. Chi tac gia, va chi trong {@link #EDIT_WINDOW} ke tu luc go. */
+    @Transactional
+    public void editComment(String email, long commentId, String rawContent) {
+        User user = getUser(email);
+        ForumComment comment = commentRepo.findById(commentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "comment_not_found"));
+
+        if (!comment.getAuthor().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not_your_comment");
+        }
+        requireWithin(comment.getCreatedAt(), EDIT_WINDOW, "edit_window_over");
+
+        String content = rawContent == null ? "" : rawContent.trim();
+        if (content.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "comment_empty");
+        }
+        if (content.length() > ForumComment.MAX_CONTENT) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "comment_too_long");
+        }
+        comment.editContent(content);
+        commentRepo.save(comment);
+    }
+
+    /**
+     * Xoa binh luan. Tac gia trong {@link #DELETE_WINDOW}, admin thi bat ky luc nao.
+     *
+     * Xoa binh luan goc keo theo moi tra loi cua no: de lai thi cac tra loi tro toi mot
+     * dong khong con ton tai (rang buoc khoa ngoai khong cho), va nguoi doc thay nhung
+     * cau tra loi lo lung khong biet dang noi ve cai gi.
+     */
+    @Transactional
+    public void deleteComment(String email, long commentId) {
+        User user = getUser(email);
+        ForumComment comment = commentRepo.findById(commentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "comment_not_found"));
+
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        if (!isAdmin) {
+            if (!comment.getAuthor().getId().equals(user.getId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not_your_comment");
+            }
+            requireWithin(comment.getCreatedAt(), DELETE_WINDOW, "delete_window_over");
+        }
+
+        commentRepo.deleteByParentId(commentId);
+        // Day cac tra loi xuong CSDL TRUOC khi xoa binh luan cha: parent_id la khoa ngoai
+        // tro vao chinh bang nay, xoa cha khi con chua di la vi pham rang buoc
+        commentRepo.flush();
+        commentRepo.delete(comment);
+    }
+
+    /** Con trong han khong? Het han thi bao dung ma loi de frontend dich sang tieng nguoi dung. */
+    private static void requireWithin(java.time.Instant createdAt, java.time.Duration window, String errorCode) {
+        if (createdAt.plus(window).isBefore(java.time.Instant.now())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, errorCode);
+        }
+    }
+
+    /**
+     * Xoa bai. Tac gia xoa bai cua minh trong {@link #DELETE_WINDOW}, admin xoa bai bat ky.
      *
      * Xoa han ca binh luan/thich/bao cao thay vi de lai mo con: chung tro toi mot bai
      * khong con ton tai, giu lai chi lam bang phinh len.
@@ -150,8 +249,11 @@ public class ForumService {
 
         boolean isAuthor = post.getAuthor().getId().equals(user.getId());
         boolean isAdmin = user.getRole() == Role.ADMIN;
-        if (!isAuthor && !isAdmin) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not_your_post");
+        if (!isAdmin) {
+            if (!isAuthor) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not_your_post");
+            }
+            requireWithin(post.getCreatedAt(), DELETE_WINDOW, "delete_window_over");
         }
 
         commentRepo.deleteByPostId(postId);
@@ -209,6 +311,11 @@ public class ForumService {
                 ? Set.of()
                 : new HashSet<>(likeRepo.findLikedPostIds(viewer.getId(), ids));
 
+        boolean viewerIsAdmin = viewer != null && viewer.getRole() == Role.ADMIN;
+        // Mot moc thoi gian dung cho ca trang: hai binh luan cach nhau vai mili giay
+        // khong nen mot cai con sua duoc con cai kia thi khong
+        java.time.Instant now = java.time.Instant.now();
+
         Map<Long, List<ForumDto.Comment>> commentsByPost = new HashMap<>();
         for (ForumComment c : commentRepo.findByPostIds(ids)) {
             commentsByPost.computeIfAbsent(c.getPost().getId(), k -> new ArrayList<>())
@@ -216,10 +323,12 @@ public class ForumService {
                             c.getParent() == null ? null : c.getParent().getId(),
                             c.getAuthor().getId(),
                             c.getAuthor().displayNameOrFallback(), c.getAuthor().getAvatarUrl(),
-                            c.getContent(), c.getCreatedAt()));
+                            c.getContent(), c.getCreatedAt(), c.getEditedAt(),
+                            mine(c.getAuthor(), viewer) && within(c.getCreatedAt(), EDIT_WINDOW, now),
+                            viewerIsAdmin
+                                    || (mine(c.getAuthor(), viewer)
+                                        && within(c.getCreatedAt(), DELETE_WINDOW, now))));
         }
-
-        boolean viewerIsAdmin = viewer != null && viewer.getRole() == Role.ADMIN;
 
         return posts.stream().map(p -> {
             List<ForumDto.Comment> all = commentsByPost.getOrDefault(p.getId(), List.of());
@@ -242,7 +351,8 @@ public class ForumService {
                     .filter(c -> rootIds.contains(c.parentId() == null ? c.id() : c.parentId()))
                     .toList();
             boolean canDelete = viewerIsAdmin
-                    || (viewer != null && p.getAuthor().getId().equals(viewer.getId()));
+                    || (mine(p.getAuthor(), viewer) && within(p.getCreatedAt(), DELETE_WINDOW, now));
+            boolean canEdit = mine(p.getAuthor(), viewer) && within(p.getCreatedAt(), EDIT_WINDOW, now);
             return new ForumDto.Post(
                     p.getId(),
                     p.getAuthor().getId(),
@@ -251,11 +361,23 @@ public class ForumService {
                     p.getContent(),
                     p.getImageUrl(),
                     p.getCreatedAt(),
+                    p.getEditedAt(),
                     likeCounts.getOrDefault(p.getId(), 0L),
                     likedByMe.contains(p.getId()),
+                    canEdit,
                     canDelete,
                     preview);
         }).toList();
+    }
+
+    /** Khach chua dang nhap (viewer null) thi khong phai chu cua bat cu thu gi. */
+    private static boolean mine(User author, User viewer) {
+        return viewer != null && author.getId().equals(viewer.getId());
+    }
+
+    private static boolean within(java.time.Instant createdAt, java.time.Duration window,
+                                  java.time.Instant now) {
+        return !createdAt.plus(window).isBefore(now);
     }
 
     private User getUser(String email) {
