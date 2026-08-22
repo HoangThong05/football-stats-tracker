@@ -93,12 +93,19 @@ export default function GoogleLoginButton({ onSuccess, onError }) {
           },
         })
 
+        /*
+         * shape 'rectangular' + KHONG dat width co dinh.
+         *
+         * Truoc day dat shape 'pill' kem width 320: Google ve nut bo tron BEN TRONG mot
+         * khung rong 320px cua chinh no, thanh ra hai duong vien long nhau. Bo width di
+         * thi nut tu vua khung cua minh, con hinh chu nhat bo goc thi dong bo voi o nhap
+         * va nut xanh phia tren.
+         */
         window.google.accounts.id.renderButton(boxRef.current, {
           theme: 'outline',
           size: 'large',
-          shape: 'pill',
+          shape: 'rectangular',
           text: 'signin_with',
-          width: 320,
         })
       })
       .catch(() => {
