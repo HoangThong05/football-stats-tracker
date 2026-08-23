@@ -184,8 +184,9 @@ export default function PublicProfile({ userId, token, onBack }) {
         )}
 
         {(profile.friendsCount ?? 0) > 0 && (
-          <div className="col-12 col-md-6">
-            <div className="ft-card p-3 h-100 d-flex align-items-center gap-3">
+          /* align-self-start: the ban be chi cao theo noi dung, khong gian bang cot doi yeu thich */
+          <div className="col-12 col-md-6 align-self-start">
+            <div className="ft-card p-3 d-flex align-items-center gap-3">
               <span style={{ fontSize: '1.6rem' }}>🤝</span>
               <div>
                 <div className="ft-num fw-bold fs-4">{profile.friendsCount}</div>
