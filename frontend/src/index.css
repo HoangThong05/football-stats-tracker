@@ -3050,3 +3050,48 @@ tr[role='button']:hover img,
   margin: -6px;
   padding: 6px;
 }
+
+/* ---------- Bieu do vung: tong diem tich luy theo thoi gian ---------- */
+.ft-area-chart {
+  position: relative;
+}
+
+/*
+ * Keo dan het be ngang, cao co dinh 150px = 150 don vi viewBox nen truc doc khong meo.
+ * overflow visible de nhan truc Y o mep trai khong bi cat.
+ */
+.ft-area-svg {
+  display: block;
+  width: 100%;
+  height: 150px;
+}
+
+.ft-area-fill {
+  fill: var(--ft-accent);
+  opacity: 0.14;
+  stroke: none;
+}
+
+.ft-area-line {
+  fill: none;
+  stroke: var(--ft-accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.ft-area-grid {
+  stroke: var(--bs-border-color-translucent);
+  stroke-width: 1;
+}
+
+/* Nhan so o dau moi duong ke ngang, nam de len mep trai bieu do */
+.ft-area-ylabel {
+  position: absolute;
+  left: 0;
+  transform: translateY(-50%);
+  padding-right: 4px;
+  font-size: 0.68rem;
+  color: var(--bs-secondary-color);
+  background: var(--ft-surface);
+}
