@@ -169,17 +169,18 @@ export default function MatchDetail({ matchId, onBack, token }) {
           {hasForm && (
             <div className="border-top pt-3 mt-3">
               <div className="text-secondary small mb-2">{t('match_form_title')}</div>
-              {/* Moi doi MOT hang: ten trai, chuoi form phai. Xep chong thi du form thua
-                  (1 tran hay chua co) van gon, khong bi day ra hai mep de trong khoang giua. */}
-              <div className="d-flex flex-column gap-2">
-                {[[match.homeTeam, form.home], [match.awayTeam, form.away]].map(([name, f], i) => (
-                  <div key={i} className="d-flex align-items-center justify-content-between gap-3">
-                    <span className="text-truncate small fw-medium" style={{ minWidth: 0 }} title={name}>
-                      {shortTeamName(name)}
-                    </span>
-                    <FormDots form={f} />
-                  </div>
-                ))}
+              {/* Luoi 2 cot: ten | form. Ca hai hang chung mot khuon nen cac dot THANG COT
+                  voi nhau, va nam ngay sat sau ten (justify-content:start) chu khong bi
+                  day ra tan mep phai. Cot ten rong theo ten dai nhat. */}
+              <div className="ft-match-form-grid">
+                <span className="small fw-medium text-truncate" title={match.homeTeam}>
+                  {shortTeamName(match.homeTeam)}
+                </span>
+                <FormDots form={form.home} />
+                <span className="small fw-medium text-truncate" title={match.awayTeam}>
+                  {shortTeamName(match.awayTeam)}
+                </span>
+                <FormDots form={form.away} />
               </div>
               <div className="text-secondary mt-2" style={{ fontSize: '0.72rem' }}>
                 {t('standings_form_legend')}

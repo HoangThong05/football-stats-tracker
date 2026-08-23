@@ -3154,3 +3154,21 @@ tr[role='button']:hover img,
   vertical-align: middle;
   white-space: nowrap;
 }
+
+/*
+ * Phong do 2 doi o trang chi tiet tran: luoi 2 cot (ten | chuoi form).
+ *
+ * justify-content:start -> don sat trai; cot ten rong dung bang ten dai nhat, nen form
+ * cua ca hai doi thang cot voi nhau va nam ngay sat sau ten - khong bi day ra mep phai
+ * de trong khoang giua nhu khi dung justify-content:between.
+ */
+.ft-match-form-grid {
+  display: grid;
+  /* minmax(0, ...) cho cot ten co lai duoc tren man hep -> ten dai tu cat bang dau ba
+     cham thay vi day chuoi form tran ra ngoai the. */
+  grid-template-columns: minmax(0, auto) auto;
+  justify-content: start;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 8px;
+}
