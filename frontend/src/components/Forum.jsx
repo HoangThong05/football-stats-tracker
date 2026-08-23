@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
-import { imageUploadEnabled, uploadImage } from '../cloudinary'
-import { relativeTime } from '../utils'
+import { imageUploadEnabled, uploadMedia } from '../cloudinary'
+import { relativeTime, isVideoUrl } from '../utils'
 import Avatar from './Avatar'
 import ReactionBar from './ReactionBar'
 import ReactionsModal from './ReactionsModal'
@@ -58,7 +58,9 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
     post_too_long: t('forum_err_too_long'),
     image_url_invalid: t('forum_err_image'),
     image_type_invalid: t('forum_err_image_type'),
+    media_type_invalid: t('forum_err_media_type'),
     image_too_large: t('forum_err_image_size'),
+    video_too_large: t('forum_err_video_size'),
     image_upload_failed: t('forum_err_image_upload'),
     rate_limited: t('auth_rate_limited'),
     comment_empty: t('forum_err_comment_empty'),
@@ -116,14 +118,14 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
     }
   }
 
-  const pickImage = async (e) => {
+  const pickMedia = async (e) => {
     const file = e.target.files?.[0]
     e.target.value = '' // chon lai cung file van kich hoat duoc
     if (!file) return
     setError(null)
     setUploading(true)
     try {
-      setImageUrl(await uploadImage(file))
+      setImageUrl(await uploadMedia(file))
     } catch (err) {
       setError(errMap[err.message] || err.message)
     } finally {
@@ -355,7 +357,11 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
 
           {imageUrl && (
             <div className="position-relative d-inline-block mt-2">
-              <img src={imageUrl} alt="" style={{ maxHeight: 160, borderRadius: 10 }} />
+              {isVideoUrl(imageUrl) ? (
+                <video src={imageUrl} controls style={{ maxHeight: 160, borderRadius: 10 }} />
+              ) : (
+                <img src={imageUrl} alt="" style={{ maxHeight: 160, borderRadius: 10 }} />
+              )}
               <button type="button" className="btn btn-sm btn-dark position-absolute top-0 end-0 m-1 rounded-circle"
                 onClick={() => setImageUrl(null)} aria-label="X">
                 ✕
@@ -367,7 +373,7 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
             {imageUploadEnabled() && (
               <label className="ft-attach-btn mb-0">
                 {uploading ? t('forum_uploading') : t('forum_add_image')}
-                <input type="file" accept="image/*" hidden onChange={pickImage} disabled={uploading} />
+                <input type="file" accept="image/*,video/*" hidden onChange={pickMedia} disabled={uploading} />
               </label>
             )}
             {text.length >= MAX_POST * 0.8 && (
@@ -429,8 +435,14 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
               )
             )}
 
-            {/* Anh trai het be ngang the, khong chua le hai ben - giong bang tin mang xa hoi */}
-            {p.imageUrl && <img src={p.imageUrl} alt="" loading="lazy" className="ft-post-image" />}
+            {/* Anh/video trai het be ngang the, khong chua le hai ben - giong bang tin mang xa hoi */}
+            {p.imageUrl && (
+              isVideoUrl(p.imageUrl) ? (
+                <video src={p.imageUrl} controls preload="metadata" className="ft-post-image" />
+              ) : (
+                <img src={p.imageUrl} alt="" loading="lazy" className="ft-post-image" />
+              )
+            )}
 
             {/*
               Bieu tuong va so nam CHUNG mot hang, can trai.

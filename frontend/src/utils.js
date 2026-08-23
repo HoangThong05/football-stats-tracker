@@ -1,3 +1,8 @@
+// URL Cloudinary cua video chua '/video/upload/'. Dung de render <video> thay vi <img>.
+export function isVideoUrl(url) {
+  return typeof url === 'string' && url.includes('/video/upload/')
+}
+
 // Bo dau + chuyen thuong, de go "munchen" van tim ra "FC Bayern München"
 export function normalizeText(s) {
   return (s || '')

@@ -18,6 +18,11 @@ export function imageUploadEnabled() {
 const MAX_BYTES = 10 * 1024 * 1024
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
+// Video cho dien dan: nang hon anh nen tran rong hon, nhung van chan de khong "chay"
+// quota free cua Cloudinary va khong bat nguoi dung ngoi cho upload file khong lo.
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024
+const ALLOWED_VIDEO = ['video/mp4', 'video/webm', 'video/quicktime']
+
 /**
  * @returns {Promise<string>} duong dan https cua anh da tai len
  * @throws {Error} ma loi de noi goi tu dich sang tieng nguoi dung
@@ -42,6 +47,48 @@ export async function uploadImage(file) {
   form.append('upload_preset', UPLOAD_PRESET)
 
   const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+    method: 'POST',
+    body: form,
+  })
+  if (!res.ok) {
+    throw new Error('image_upload_failed')
+  }
+  const data = await res.json()
+  return data.secure_url
+}
+
+/**
+ * Tai ANH HOAC VIDEO len cho bai viet dien dan.
+ *
+ * Dung endpoint /auto/ de Cloudinary tu nhan dien la anh hay video; URL tra ve chua
+ * '/video/upload/' neu la video, frontend dua vao do de render <video> thay vi <img>.
+ * (Preset tren Cloudinary phai dat Resource type = Auto thi video moi duoc nhan.)
+ *
+ * @returns {Promise<string>} duong dan https cua tep da tai len
+ * @throws {Error} ma loi de noi goi tu dich sang tieng nguoi dung
+ */
+export async function uploadMedia(file) {
+  if (!imageUploadEnabled()) {
+    throw new Error('image_upload_disabled')
+  }
+  const isImage = ALLOWED.includes(file.type)
+  const isVideo = ALLOWED_VIDEO.includes(file.type)
+  if (!isImage && !isVideo) {
+    throw new Error('media_type_invalid')
+  }
+  // Kiem tra kich thuoc TRUOC khi tai, moi loai mot tran rieng
+  if (isImage && file.size > MAX_BYTES) {
+    throw new Error('image_too_large')
+  }
+  if (isVideo && file.size > MAX_VIDEO_BYTES) {
+    throw new Error('video_too_large')
+  }
+
+  const form = new FormData()
+  form.append('file', file)
+  form.append('upload_preset', UPLOAD_PRESET)
+
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
     method: 'POST',
     body: form,
   })
