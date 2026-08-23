@@ -100,6 +100,23 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
             + "ORDER BY totalPoints DESC")
     List<LeaderboardRow> findLeaderboard();
 
+    /**
+     * BXH du doan chi tinh cac tran co gio bong lan trong [from, to) - dung cho BXH theo
+     * tuan. JOIN p.match m de loc theo m.utcDate.
+     */
+    @Query("SELECT u.id AS userId, "
+            + "u.email AS email, "
+            + "u.displayName AS displayName, "
+            + "u.avatarUrl AS avatarUrl, "
+            + "COALESCE(SUM(p.points), 0) AS totalPoints, "
+            + "COUNT(p) AS totalPredictions "
+            + "FROM Prediction p JOIN p.user u JOIN p.match m "
+            + "WHERE p.points IS NOT NULL AND m.utcDate >= :from AND m.utcDate < :to "
+            + "GROUP BY u.id, u.email, u.displayName, u.avatarUrl "
+            + "ORDER BY totalPoints DESC")
+    List<LeaderboardRow> findLeaderboardBetween(@Param("from") java.time.Instant from,
+                                                @Param("to") java.time.Instant to);
+
     interface LeaderboardRow {
         Long getUserId();
 

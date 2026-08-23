@@ -55,7 +55,8 @@ public class SecurityConfig {
                                 "/api/forum/posts", "/api/forum/posts/*", "/api/forum/unread").permitAll()
                         // Xem lich du doan + BXH du doan la cong khai; GUI du doan (POST /api/predictions)
                         // va xem lich su ca nhan (/api/predictions/mine) van roi vao anyRequest().authenticated().
-                        .requestMatchers("/api/predictions/matches/**", "/api/predictions/leaderboard").permitAll()
+                        .requestMatchers("/api/predictions/matches/**", "/api/predictions/leaderboard",
+                                "/api/predictions/leaderboard/period").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())

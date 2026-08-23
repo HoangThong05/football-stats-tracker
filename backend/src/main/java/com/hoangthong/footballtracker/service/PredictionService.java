@@ -139,8 +139,16 @@ public class PredictionService {
 
     /** Top nguoi du doan diem cao nhat (chi tinh du doan da cham diem). */
     public List<LeaderboardEntryDto> getLeaderboard() {
-        List<PredictionRepository.LeaderboardRow> rows = predictionRepository.findLeaderboard();
+        return toEntries(predictionRepository.findLeaderboard());
+    }
 
+    /** BXH du doan cua cac tran trong [from, to) - dung cho BXH theo tuan. */
+    public List<LeaderboardEntryDto> getLeaderboardBetween(java.time.Instant from, java.time.Instant to) {
+        return toEntries(predictionRepository.findLeaderboardBetween(from, to));
+    }
+
+    /** Danh so thu hang + doi ten hien thi - dung chung cho BXH toan mua va theo tuan. */
+    private List<LeaderboardEntryDto> toEntries(List<PredictionRepository.LeaderboardRow> rows) {
         List<LeaderboardEntryDto> result = new java.util.ArrayList<>();
         int rank = 1;
         for (PredictionRepository.LeaderboardRow row : rows) {

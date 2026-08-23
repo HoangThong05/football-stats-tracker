@@ -74,10 +74,21 @@ public class PredictionController {
         return badgeService.getBadgesForUser(email);
     }
 
-    /** Top nguoi du doan diem cao nhat. Cong khai, ai cung xem duoc. */
+    /** Top nguoi du doan diem cao nhat (toan mua). Cong khai, ai cung xem duoc. */
     @GetMapping("/leaderboard")
     public List<LeaderboardEntryDto> getLeaderboard() {
         return predictionService.getLeaderboard();
+    }
+
+    /**
+     * BXH du doan theo TUAN: chi tinh cac tran co gio bong lan trong [from, to).
+     * Frontend tinh moc dau/cuoi tuan (theo mui gio nguoi xem) roi gui len. Cong khai.
+     */
+    @GetMapping("/leaderboard/period")
+    public List<LeaderboardEntryDto> getLeaderboardForPeriod(
+            @org.springframework.web.bind.annotation.RequestParam java.time.Instant from,
+            @org.springframework.web.bind.annotation.RequestParam java.time.Instant to) {
+        return predictionService.getLeaderboardBetween(from, to);
     }
 
     /**
