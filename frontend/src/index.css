@@ -747,6 +747,37 @@ body,
     padding: 6px 10px;
     font-size: 0.78rem;
   }
+
+  /*
+   * Dien thoai: nut ben phai (chuong, dang nhap) bam len DAU thay vi troi giua, vi khoi
+   * trai gio cao 2 hang (thuong hieu o tren, tab o duoi).
+   */
+  .ft-navbar-row {
+    align-items: flex-start;
+  }
+
+  /*
+   * Nhom 4 tab (Hom nay/BXH/Mini League/Cong dong) truoc day la mot khoi CUNG rong hon
+   * man hinh -> tran sang phai, chui xuong duoi nut "Dang nhap" lam tab bi che.
+   *
+   * Cho no xuong HANG RIENG chiem full be ngang, va CUON NGANG neu van tran. Nho vay
+   * khong con dam len nut ben phai, va tab nao cung cham toi duoc.
+   * Chi ap o dien thoai - PC giu nguyen (nhom van la mot vien pill nhu cu).
+   */
+  .ft-nav-tabs {
+    order: 5;
+    flex-basis: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .ft-nav-tabs::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* ---------- Thanh ty so chay ngang ---------- */

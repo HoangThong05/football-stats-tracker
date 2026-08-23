@@ -459,7 +459,7 @@ export default function App() {
                 </div>
 
                 {/* Cum 1: cac trang con */}
-                <div className="ft-nav-group">
+                <div className="ft-nav-group ft-nav-tabs">
                   <button
                     className="ft-nav-btn"
                     onClick={() => {
