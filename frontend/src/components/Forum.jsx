@@ -260,6 +260,7 @@ export default function Forum({ token, myName, myAvatar, focusPostId, onClearFoc
               <button type="button" className="ft-name-link fw-semibold d-block"
                 style={{ fontSize: '0.8rem' }} onClick={() => onSelectUser(c.authorId)}>
                 {c.authorName}
+                {c.authorIsAdmin && <span className="ft-admin-tag ms-1">{t('role_admin')}</span>}
               </button>
               <span className="small" style={{ overflowWrap: 'anywhere' }}>{c.content}</span>
             </div>
@@ -372,6 +373,7 @@ export default function Forum({ token, myName, myAvatar, focusPostId, onClearFoc
                 <button type="button" className="ft-name-link fw-semibold d-block text-truncate"
                   onClick={() => onSelectUser(p.authorId)}>
                   {p.authorName}
+                  {p.authorIsAdmin && <span className="ft-admin-tag ms-1">{t('role_admin')}</span>}
                 </button>
                 <span className="text-secondary" style={{ fontSize: '0.75rem' }}>
                   {when(p.createdAt)}

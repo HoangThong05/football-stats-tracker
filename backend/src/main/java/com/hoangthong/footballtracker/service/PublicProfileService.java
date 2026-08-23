@@ -55,6 +55,7 @@ public class PublicProfileService {
         return new PublicProfileDto(
                 user.getId(),
                 user.displayNameOrFallback(),
+                user.getRole() == com.hoangthong.footballtracker.entity.Role.ADMIN,
                 user.getAvatarUrl(),
                 user.getCreatedAt().toString(),
                 stats == null || stats.getTotalPoints() == null ? 0 : stats.getTotalPoints(),

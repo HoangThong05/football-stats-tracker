@@ -12,6 +12,8 @@ import java.util.List;
 public record PublicProfileDto(
         long id,
         String name,
+        /** true = tai khoan quan tri -> ho so hien gon, khong co phan nguoi choi. */
+        boolean isAdmin,
         /** Anh dai dien tren Cloudinary. null = chua dat, giao dien ve vong tron chu cai. */
         String avatarUrl,
         String joinedAt,

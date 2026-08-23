@@ -120,24 +120,30 @@ export default function PublicProfile({ userId, token, onBack }) {
           </div>
 
           <div className="ft-profile-id-text">
-            <h3 className="h4 mb-0 text-truncate">{profile.name}</h3>
+            <h3 className="h4 mb-0 text-truncate">
+              {profile.name}
+              {profile.isAdmin && <span className="ft-admin-tag ms-2">{t('role_admin')}</span>}
+            </h3>
             <div className="text-secondary small">{t('pub_joined')} {joined}</div>
           </div>
 
-          <span className="ft-profile-settings-btn">{friendButton()}</span>
+          {/* Admin khong phai nguoi choi xa hoi -> khong co nut ket ban */}
+          {!profile.isAdmin && <span className="ft-profile-settings-btn">{friendButton()}</span>}
         </div>
 
         {error && <div className="alert alert-danger py-2 small mx-3">{error}</div>}
 
-        <div className="ft-profile-stats">
-          {stat(t('stats_points'), profile.totalPoints)}
-          {stat(t('stats_predicted'), profile.totalPredictions)}
-          {stat(t('stats_exact'), profile.exactScores)}
-          {stat(t('stats_hit_rate'), `${profile.hitRate ?? 0}%`)}
-        </div>
+        {!profile.isAdmin && (
+          <div className="ft-profile-stats">
+            {stat(t('stats_points'), profile.totalPoints)}
+            {stat(t('stats_predicted'), profile.totalPredictions)}
+            {stat(t('stats_exact'), profile.exactScores)}
+            {stat(t('stats_hit_rate'), `${profile.hitRate ?? 0}%`)}
+          </div>
+        )}
       </div>
 
-      {profile.badges?.some((b) => b.earned) && (
+      {!profile.isAdmin && profile.badges?.some((b) => b.earned) && (
         <div className="ft-card p-3">
           <h4 className="h6 mb-2">{t('pub_badges')}</h4>
           <div className="d-flex gap-2 flex-wrap">
@@ -150,7 +156,7 @@ export default function PublicProfile({ userId, token, onBack }) {
         </div>
       )}
 
-      {(profile.pointsTimeline?.length ?? 0) >= 3 && (
+      {!profile.isAdmin && (profile.pointsTimeline?.length ?? 0) >= 3 && (
         <div className="ft-card p-3 mt-3">
           <div className="fw-semibold mb-1">{t('myp_chart_points_title')}</div>
           <PointsAreaChart points={profile.pointsTimeline} ariaLabel={t('myp_chart_points_title')} />
@@ -163,6 +169,7 @@ export default function PublicProfile({ userId, token, onBack }) {
         </div>
       )}
 
+      {!profile.isAdmin && (
       <div className="row g-3 mt-0">
         {profile.favorites?.length > 0 && (
           <div className="col-12 col-md-6">
@@ -196,6 +203,7 @@ export default function PublicProfile({ userId, token, onBack }) {
           </div>
         )}
       </div>
+      )}
     </div>
   )
 }

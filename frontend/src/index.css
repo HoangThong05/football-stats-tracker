@@ -3136,3 +3136,21 @@ tr[role='button']:hover img,
   color: var(--bs-secondary-color);
   background: var(--ft-surface);
 }
+
+/*
+ * Huy hieu ADMIN canh ten (o bai viet, binh luan, ho so).
+ *
+ * Nho, mau vang den pha (accent) de noi bat nhu mot nhan vai tro, khong lan voi ten.
+ */
+.ft-admin-tag {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--ft-accent);
+  color: var(--ft-on-accent);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+  white-space: nowrap;
+}

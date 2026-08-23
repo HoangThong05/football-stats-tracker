@@ -22,7 +22,7 @@ import PredictionPointsChart from './PredictionPointsChart'
  * thoang moi dung den mot lan, khong dang chiem cho ngay dau trang.
  */
 export default function Profile({ token, userEmail, hasPassword, viaGoogle, displayName,
-  avatarUrl, onAvatarSaved, onDisplayNameSaved, onSelectUser, favorites, onBack,
+  avatarUrl, isAdmin, onAvatarSaved, onDisplayNameSaved, onSelectUser, favorites, onBack,
   onSelectTeam, onGoToMiniLeague, onTokenRenewed }) {
   const { t } = useTranslation()
   const [leagues, setLeagues] = useState([])
@@ -70,6 +70,7 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
           <div className="ft-profile-id-text">
             <h3 className="h4 mb-0 text-truncate">
               {displayName || (userEmail || '').split('@')[0]}
+              {isAdmin && <span className="ft-admin-tag ms-2">{t('role_admin')}</span>}
             </h3>
             <div className="text-secondary small text-truncate">{userEmail}</div>
           </div>
@@ -80,7 +81,7 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
           </button>
         </div>
 
-        <ProfileStats token={token} />
+        {!isAdmin && <ProfileStats token={token} />}
 
         {showSettings && (
           <div className="ft-profile-settings ft-fade">
@@ -91,6 +92,8 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
         )}
       </div>
 
+      {!isAdmin && (
+      <>
       <div className="row g-3 mb-3">
         <div className="col-12 col-lg-4">
           <FriendsList token={token} onSelectUser={onSelectUser} />
@@ -141,6 +144,8 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
       <Badges token={token} />
 
       <PredictionPointsChart token={token} />
+      </>
+      )}
     </div>
   )
 }

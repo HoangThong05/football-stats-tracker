@@ -413,6 +413,7 @@ export default function App() {
       viaGoogle={viaGoogle}
       displayName={displayName}
       avatarUrl={avatarUrl}
+      isAdmin={userRole === "ADMIN"}
       onAvatarSaved={handleAvatarSaved}
       onDisplayNameSaved={handleDisplayNameSaved}
       onSelectUser={goToUser}

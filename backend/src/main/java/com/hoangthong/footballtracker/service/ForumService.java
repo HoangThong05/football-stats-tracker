@@ -406,6 +406,7 @@ public class ForumService {
                             c.getParent() == null ? null : c.getParent().getId(),
                             c.getAuthor().getId(),
                             c.getAuthor().displayNameOrFallback(), c.getAuthor().getAvatarUrl(),
+                            c.getAuthor().getRole() == Role.ADMIN,
                             c.getContent(), c.getCreatedAt(), c.getEditedAt(),
                             mine(c.getAuthor(), viewer) && within(c.getCreatedAt(), EDIT_WINDOW, now),
                             viewerIsAdmin
@@ -441,6 +442,7 @@ public class ForumService {
                     p.getAuthor().getId(),
                     p.getAuthor().displayNameOrFallback(),
                     p.getAuthor().getAvatarUrl(),
+                    p.getAuthor().getRole() == Role.ADMIN,
                     p.getContent(),
                     p.getImageUrl(),
                     p.getCreatedAt(),
