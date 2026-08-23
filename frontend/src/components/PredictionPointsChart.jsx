@@ -34,7 +34,7 @@ export default function PredictionPointsChart({ token }) {
   if (pointsOverTime.length < 3) return null
 
   return (
-    <div className="ft-card p-3 mb-3">
+    <div className="ft-card ft-chart-card p-3 mb-3">
       <div className="fw-semibold mb-1">{t('myp_chart_points_title')}</div>
       <BarChart
         data={pointsOverTime}

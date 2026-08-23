@@ -2189,6 +2189,28 @@ tr[role='button']:hover img,
 }
 
 /* ---------- Bieu do cot don gian (HTML/CSS, khong dung thu vien) ---------- */
+
+/*
+ * Chua cho tooltip o TREN cac cot.
+ *
+ * Tooltip hien phia tren dinh vung ve (bottom: 100% cua cot). Khong chua san khoang nay
+ * thi no de len tieu de bieu do ngay phia tren. 3.25rem vua du cho tooltip 2 dong.
+ */
+.ft-barchart {
+  padding-top: 3.25rem;
+}
+
+/*
+ * Card CHUA bieu do phai cho tooltip tran ra ngoai theo be ngang.
+ *
+ * .ft-card mac dinh overflow:hidden (bo goc + hieu ung nghieng). Voi bieu do thi no cat
+ * cut tooltip dai o cac cot sat mep - "Manchester United..." bi mat dau chu. Cac card nay
+ * khong dung hieu ung nghieng nen mo overflow an toan.
+ */
+.ft-chart-card {
+  overflow: visible;
+}
+
 .ft-barchart-plot {
   display: flex;
   align-items: flex-end;
@@ -2289,6 +2311,21 @@ tr[role='button']:hover img,
 .ft-bar-col:hover .ft-bar-tooltip,
 .ft-bar-col:focus-visible .ft-bar-tooltip {
   opacity: 1;
+}
+
+/*
+ * Cot dau tien: neo tooltip vao mep TRAI (thay vi can giua) de no khong tran qua le trai.
+ * Cot cuoi cung: neo vao mep PHAI. Cac cot giua van can giua nhu mac dinh.
+ */
+.ft-bar-col-first .ft-bar-tooltip {
+  left: 0;
+  transform: translateX(0) translateY(-6px);
+}
+
+.ft-bar-col-last .ft-bar-tooltip {
+  left: auto;
+  right: 0;
+  transform: translateX(0) translateY(-6px);
 }
 
 /* ---------- Huy hieu thanh tich du doan ---------- */

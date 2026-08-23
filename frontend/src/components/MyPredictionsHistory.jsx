@@ -76,7 +76,7 @@ export default function MyPredictionsHistory({ token, onBack }) {
       {!loading && !error && <PredictionPointsChart token={token} />}
 
       {!loading && !error && accuracyByLeague.length >= 2 && (
-        <div className="ft-card p-3 mb-3">
+        <div className="ft-card ft-chart-card p-3 mb-3">
           <div className="fw-semibold mb-1">{t('myp_chart_accuracy_title')}</div>
           <BarChart
             data={accuracyByLeague.map((l) => ({ label: l.code, fullName: l.name, count: l.count, value: l.value }))}

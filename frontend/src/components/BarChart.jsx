@@ -27,8 +27,10 @@ export default function BarChart({
         ))}
         {data.map((d, i) => {
           const pct = d.value > 0 ? Math.max((d.value / maxValue) * 100, 3) : 0
+          // Cot dau/cuoi: tooltip bam mep thay vi can giua, de khong tran ra ngoai card
+          const edge = i === 0 ? ' ft-bar-col-first' : i === data.length - 1 ? ' ft-bar-col-last' : ''
           return (
-            <div className="ft-bar-col" key={i} tabIndex={0}>
+            <div className={`ft-bar-col${edge}`} key={i} tabIndex={0}>
               <div className="ft-bar-tooltip">
                 <strong>{valueFormatter(d.value)}</strong>
                 <span>{tooltipLabel(d)}</span>
