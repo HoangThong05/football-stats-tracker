@@ -3162,16 +3162,3 @@ tr[role='button']:hover img,
  * cua ca hai doi thang cot voi nhau va nam ngay sat sau ten - khong bi day ra mep phai
  * de trong khoang giua nhu khi dung justify-content:between.
  */
-.ft-match-form-grid {
-  display: grid;
-  /* max-content: cot ten rong DUNG bang ten dai nhat trong hai doi. Nho vay chuoi form
-     cua ca hai doi nam o cung mot cot -> THANG HANG voi nhau. */
-  grid-template-columns: max-content auto;
-  justify-content: start;
-  align-items: center;
-  column-gap: 14px;
-  row-gap: 10px;
-  /* Man hep: cho ca khoi cuon ngang thay vi day tran ra ngoai the */
-  max-width: 100%;
-  overflow-x: auto;
-}
