@@ -363,7 +363,6 @@ export const translations = {
     matches_vs: 'VS',
 
     match_detail_error: 'Không tải được chi tiết trận đấu:',
-    match_halftime: 'Tỉ số hiệp 1',
     match_venue: 'Sân vận động',
     match_referee: 'Trọng tài',
     match_referees: 'Trọng tài',
@@ -799,7 +798,6 @@ export const translations = {
     matches_vs: 'VS',
 
     match_detail_error: 'Failed to load match details:',
-    match_halftime: 'Half-time score',
     match_venue: 'Venue',
     match_referee: 'Referee',
     match_referees: 'Referees',

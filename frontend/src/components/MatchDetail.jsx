@@ -29,30 +29,52 @@ export default function MatchDetail({ matchId, onBack, token }) {
   }, [matchId])
 
   /*
-   * Phong do hai doi lay tu BANG XEP HANG cua giai - o do da co san chuoi 5 tran gan
-   * nhat cho tung doi, va endpoint do duoc cache o backend nen khong ton them han muc.
+   * Phong do gan day cua hai doi, TU TINH tu ket qua that (qua /teams/{id}/matches).
+   *
+   * Khong dung truong "form" cua bang xep hang: dau mua nguon tra ve null cho no nen
+   * phong do khong hien duoc. Tu tinh tu ket qua thi co ngay khi vua da vai tran. Bo
+   * chinh tran dang xem - day la phong do TRUOC tran nay. Endpoint doc tu DB, khong ton
+   * han muc API.
    */
   const [form, setForm] = useState({ home: null, away: null })
 
   useEffect(() => {
-    if (!match?.competitionCode) {
+    if (!match?.homeTeamId || !match?.awayTeamId) {
       setForm({ home: null, away: null })
       return undefined
     }
     let cancelled = false
-    fetch(`${API_BASE}/standings/${match.competitionCode}`)
-      .then((res) => (res.ok ? res.json() : []))
-      .then((rows) => {
+
+    const formOf = (recent, teamId) => [...(recent || [])]
+      .filter((m) => m.id !== matchId && m.homeScore != null && m.awayScore != null)
+      .sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate))
+      .slice(-5)
+      .map((m) => {
+        const isHome = m.homeTeamId === teamId
+        const mine = isHome ? m.homeScore : m.awayScore
+        const theirs = isHome ? m.awayScore : m.homeScore
+        return mine > theirs ? 'W' : mine < theirs ? 'L' : 'D'
+      })
+      .join(',')
+
+    const load = (id) => fetch(`${API_BASE}/teams/${id}/matches`)
+      .then((res) => (res.ok ? res.json() : { recent: [] }))
+      .then((d) => d.recent || [])
+
+    Promise.all([load(match.homeTeamId), load(match.awayTeamId)])
+      .then(([homeRecent, awayRecent]) => {
         if (cancelled) return
-        const of = (id) => rows.find((r) => r.teamId === id)?.form ?? null
-        setForm({ home: of(match.homeTeamId), away: of(match.awayTeamId) })
+        setForm({
+          home: formOf(homeRecent, match.homeTeamId),
+          away: formOf(awayRecent, match.awayTeamId),
+        })
       })
       // Phong do chi la thong tin them: hong thi im lang bo qua
       .catch(() => {})
     return () => {
       cancelled = true
     }
-  }, [match?.competitionCode, match?.homeTeamId, match?.awayTeamId])
+  }, [matchId, match?.homeTeamId, match?.awayTeamId])
 
   // Du doan cua chinh nguoi dung cho tran nay (neu co)
   const [myPrediction, setMyPrediction] = useState(null)
@@ -77,7 +99,6 @@ export default function MatchDetail({ matchId, onBack, token }) {
   const hasForm = parseForm(form.home).length > 0 || parseForm(form.away).length > 0
 
   const hasFullScore = match && match.homeScore != null && match.awayScore != null
-  const hasHalfScore = match && match.homeHalfScore != null && match.awayHalfScore != null
 
   return (
     <div className="ft-fade">
@@ -129,12 +150,6 @@ export default function MatchDetail({ matchId, onBack, token }) {
               </div>
             </div>
           </Pitch3D>
-
-          {hasHalfScore && (
-            <div className="text-center text-secondary small mb-3">
-              {t('match_halftime')}: <span className="ft-num">{match.homeHalfScore} - {match.awayHalfScore}</span>
-            </div>
-          )}
 
           {(match.venue || match.referees?.length > 0) && (
             <div className="d-flex flex-column gap-1 text-secondary small border-top pt-3">
