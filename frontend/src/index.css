@@ -3164,11 +3164,14 @@ tr[role='button']:hover img,
  */
 .ft-match-form-grid {
   display: grid;
-  /* minmax(0, ...) cho cot ten co lai duoc tren man hep -> ten dai tu cat bang dau ba
-     cham thay vi day chuoi form tran ra ngoai the. */
-  grid-template-columns: minmax(0, auto) auto;
+  /* max-content: cot ten rong DUNG bang ten dai nhat trong hai doi. Nho vay chuoi form
+     cua ca hai doi nam o cung mot cot -> THANG HANG voi nhau. */
+  grid-template-columns: max-content auto;
   justify-content: start;
   align-items: center;
-  column-gap: 12px;
-  row-gap: 8px;
+  column-gap: 14px;
+  row-gap: 10px;
+  /* Man hep: cho ca khoi cuon ngang thay vi day tran ra ngoai the */
+  max-width: 100%;
+  overflow-x: auto;
 }
