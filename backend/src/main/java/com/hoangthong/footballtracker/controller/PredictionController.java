@@ -68,6 +68,13 @@ public class PredictionController {
         return predictionService.getMyHistory(email);
     }
 
+    /** Cac lan "Nhat tuan" cua toi - de chuong hien thong bao chuc mung. */
+    @GetMapping("/champions/mine")
+    public List<com.hoangthong.footballtracker.dto.WeeklyChampionDto> myChampions(
+            @AuthenticationPrincipal String email) {
+        return predictionService.myWeeklyChampions(email);
+    }
+
     /** Huy hieu thanh tich cua toi (ca da dat va chua dat, kem tien do). */
     @GetMapping("/badges")
     public List<BadgeDto> getMyBadges(@AuthenticationPrincipal String email) {

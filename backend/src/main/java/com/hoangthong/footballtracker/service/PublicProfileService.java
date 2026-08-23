@@ -22,17 +22,20 @@ public class PublicProfileService {
     private final BadgeService badgeService;
     private final FriendshipService friendshipService;
     private final com.hoangthong.footballtracker.repository.FavoriteTeamRepository favoriteRepository;
+    private final com.hoangthong.footballtracker.repository.WeeklyChampionRepository championRepository;
 
     public PublicProfileService(UserRepository userRepository,
                                 PredictionRepository predictionRepository,
                                 BadgeService badgeService,
                                 FriendshipService friendshipService,
-                                com.hoangthong.footballtracker.repository.FavoriteTeamRepository favoriteRepository) {
+                                com.hoangthong.footballtracker.repository.FavoriteTeamRepository favoriteRepository,
+                                com.hoangthong.footballtracker.repository.WeeklyChampionRepository championRepository) {
         this.friendshipService = friendshipService;
         this.userRepository = userRepository;
         this.predictionRepository = predictionRepository;
         this.badgeService = badgeService;
         this.favoriteRepository = favoriteRepository;
+        this.championRepository = championRepository;
     }
 
     public PublicProfileDto get(long userId, String viewerEmail) {
@@ -65,6 +68,7 @@ public class PublicProfileService {
                 friendshipService.friendsCount(userId),
                 favorites,
                 timeline,
+                championRepository.countByUserId(userId),
                 badgeService.getBadgesForUserId(userId),
                 friendshipService.relationWith(viewerEmail, userId).name());
     }

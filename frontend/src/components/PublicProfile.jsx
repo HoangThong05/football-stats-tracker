@@ -125,6 +125,11 @@ export default function PublicProfile({ userId, token, onBack }) {
               {profile.isAdmin && <span className="ft-admin-tag ms-2">{t('role_admin')}</span>}
             </h3>
             <div className="text-secondary small">{t('pub_joined')} {joined}</div>
+            {profile.weeklyWins > 0 && (
+              <span className="badge text-bg-warning mt-1">
+                🏆 {t('profile_weekly_wins')} ×{profile.weeklyWins}
+              </span>
+            )}
           </div>
 
           {/* Admin khong phai nguoi choi xa hoi -> khong co nut ket ban */}

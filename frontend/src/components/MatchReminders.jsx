@@ -70,6 +70,8 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
   const [notifs, setNotifs] = useState([])
   // Admin da go bai/cmt cua minh (kem ly do)
   const [modNotices, setModNotices] = useState([])
+  // Cac lan minh "Nhat tuan" (dan dau BXH du doan mot tuan)
+  const [champions, setChampions] = useState([])
   /*
    * Moc doc lay MOT LAN luc mo trang, khong doc lai localStorage o moi lan ve.
    * Doc lai thi ngay sau khi bam mo chuong moc se nhay len "bay gio" va cham xanh
@@ -112,6 +114,10 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
       .then((res) => (res.ok ? res.json() : []))
       .then(setModNotices)
       .catch(() => {})
+    fetch(`${API_BASE}/predictions/champions/mine`, opts)
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setChampions)
+      .catch(() => {})
   }, [token])
 
   useEffect(() => {
@@ -150,9 +156,11 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
   const unreadNotifs = notifs.filter((n) => !notifSeen || n.createdAt > notifSeen)
   const unreadAccepted = accepted.filter((a) => !notifSeen || a.since > notifSeen)
   const unreadMod = modNotices.filter((m) => !notifSeen || m.createdAt > notifSeen)
+  const unreadChamp = champions.filter((c) => !notifSeen || c.awardedAt > notifSeen)
 
   // Loi moi DEN luon duoc dem, khong tru theo "da xem"
-  const badgeCount = soonCount + requests.length + unreadNotifs.length + unreadAccepted.length + unreadMod.length
+  const badgeCount = soonCount + requests.length + unreadNotifs.length + unreadAccepted.length
+    + unreadMod.length + unreadChamp.length
 
   const answer = async (userId, method, path) => {
     setBusy(true)
@@ -271,6 +279,28 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
     </button>
   )
 
+  /* Mot dong: chuc mung minh "Nhat tuan". Hien khoang ngay cua tuan + so diem. */
+  const renderChampion = (c, key) => {
+    const monday = new Date(c.weekStart)
+    const sunday = new Date(monday)
+    sunday.setDate(sunday.getDate() + 6)
+    const dm = (d) => d.toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-GB', { day: '2-digit', month: '2-digit' })
+    return (
+      <div key={key} className="ft-user-menu-item ft-notif-item" style={{ cursor: 'default' }}>
+        <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>🏆</span>
+        <span style={{ minWidth: 0 }}>
+          <span className="d-block small fw-semibold text-warning">
+            {(!notifSeenAtOpen || c.awardedAt > notifSeenAtOpen) && <span className="ft-rem-dot" />}
+            {t('champ_congrats').replace('{points}', c.points)}
+          </span>
+          <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
+            {dm(monday)} – {dm(sunday)}
+          </span>
+        </span>
+      </div>
+    )
+  }
+
   /* Mot dong: admin da go bai/cmt cua minh, kem ly do. Khong bam duoc (noi dung da mat). */
   const renderModNotice = (m, key) => (
     <div key={key} className="ft-user-menu-item ft-notif-item" style={{ cursor: 'default' }}>
@@ -366,6 +396,7 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
     ...notifs.map((n) => ({ id: `n-${n.postId}-${n.actorId}-${n.createdAt}`, time: n.createdAt, node: renderForumNotif(n) })),
     ...accepted.map((a) => ({ id: `a-${a.userId}`, time: a.since, node: renderFriendAccepted(a) })),
     ...modNotices.map((m, i) => ({ id: `mod-${m.createdAt}-${i}`, time: m.createdAt, node: renderModNotice(m, `mod-${m.createdAt}-${i}`) })),
+    ...champions.map((c, i) => ({ id: `champ-${c.weekStart}-${i}`, time: c.awardedAt, node: renderChampion(c, `champ-${c.weekStart}-${i}`) })),
     ...finished.map((m) => ({ id: `f-${m.matchId}`, time: m.utcDate, node: renderMatchRow(m) })),
   ].sort((a, b) => new Date(b.time) - new Date(a.time))
 

@@ -26,17 +26,24 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
   onSelectTeam, onGoToMiniLeague, onTokenRenewed }) {
   const { t } = useTranslation()
   const [leagues, setLeagues] = useState([])
+  const [weeklyWins, setWeeklyWins] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
 
   useEffect(() => {
     if (!token) {
       setLeagues([])
+      setWeeklyWins(0)
       return
     }
     fetch(`${API_BASE}/leagues/my`, { headers: authHeaders(token) })
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setLeagues(data))
       .catch(() => setLeagues([]))
+    // So lan "Nhat tuan" - hien huy hieu canh ten
+    fetch(`${API_BASE}/predictions/champions/mine`, { headers: authHeaders(token) })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setWeeklyWins(Array.isArray(data) ? data.length : 0))
+      .catch(() => setWeeklyWins(0))
   }, [token])
 
   /** Mot the danh sach ngan trong hang 3 cot. */
@@ -73,6 +80,11 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
               {isAdmin && <span className="ft-admin-tag ms-2">{t('role_admin')}</span>}
             </h3>
             <div className="text-secondary small text-truncate">{userEmail}</div>
+            {weeklyWins > 0 && (
+              <span className="badge text-bg-warning mt-1">
+                🏆 {t('profile_weekly_wins')} ×{weeklyWins}
+              </span>
+            )}
           </div>
 
           <button type="button" className="btn btn-sm btn-outline-secondary ft-profile-settings-btn"

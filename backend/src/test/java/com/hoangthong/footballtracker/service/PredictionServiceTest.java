@@ -43,7 +43,8 @@ class PredictionServiceTest {
         matchRepository = mock(MatchFixtureRepository.class);
         predictionRepository = mock(PredictionRepository.class);
         userRepository = mock(UserRepository.class);
-        service = new PredictionService(matchRepository, predictionRepository, userRepository);
+        var championRepository = mock(com.hoangthong.footballtracker.repository.WeeklyChampionRepository.class);
+        service = new PredictionService(matchRepository, predictionRepository, userRepository, championRepository);
 
         user = new User(EMAIL, "hash");
         when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));

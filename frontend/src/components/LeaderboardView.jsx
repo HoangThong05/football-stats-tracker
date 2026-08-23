@@ -148,6 +148,17 @@ export default function LeaderboardView({ token, myName, onBack, onSelectUser })
                         <Avatar name={r.name} src={r.avatarUrl} size={28} />
                         <span className="ft-name-link fw-medium text-truncate">{r.name}</span>
                       </button>
+                      {/* Vuong mien: #1 toan mua = dan dau mua; #1 tuan DA QUA = nha vo dich tuan */}
+                      {r.rank === 1 && period === 'all' && (
+                        <span className="badge text-bg-warning flex-shrink-0" title={t('lb_season_leader')}>
+                          👑 {t('lb_season_leader')}
+                        </span>
+                      )}
+                      {r.rank === 1 && period === 'week' && weekOffset < 0 && (
+                        <span className="badge text-bg-warning flex-shrink-0" title={t('lb_week_champion')}>
+                          👑 {t('lb_week_champion')}
+                        </span>
+                      )}
                       {r.name === myName && <span className="badge text-bg-success flex-shrink-0">{t('lb_you')}</span>}
                     </span>
                   </td>

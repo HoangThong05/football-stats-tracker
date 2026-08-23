@@ -28,6 +28,8 @@ public record PublicProfileDto(
         List<FavoriteTeamDto> favorites,
         /** Diem tung du doan da cham, cu -> moi. Frontend cong don ve bieu do. */
         List<Integer> pointsTimeline,
+        /** So lan "Nhat tuan" (dan dau BXH du doan mot tuan). */
+        long weeklyWins,
         List<BadgeDto> badges,
         /** Quan he voi nguoi DANG XEM: NONE / PENDING_SENT / PENDING_RECEIVED / FRIENDS / SELF. */
         String relation

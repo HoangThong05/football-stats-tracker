@@ -33,14 +33,27 @@ public class PredictionService {
     private final MatchFixtureRepository matchRepository;
     private final PredictionRepository predictionRepository;
     private final UserRepository userRepository;
+    private final com.hoangthong.footballtracker.repository.WeeklyChampionRepository championRepository;
 
     public PredictionService(
             MatchFixtureRepository matchRepository,
             PredictionRepository predictionRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            com.hoangthong.footballtracker.repository.WeeklyChampionRepository championRepository) {
         this.matchRepository = matchRepository;
         this.predictionRepository = predictionRepository;
         this.userRepository = userRepository;
+        this.championRepository = championRepository;
+    }
+
+    /** Cac lan "Nhat tuan" cua chinh nguoi dung (moi nhat truoc) - cho chuong thong bao. */
+    public List<com.hoangthong.footballtracker.dto.WeeklyChampionDto> myWeeklyChampions(String email) {
+        User user = findUser(email);
+        var page = org.springframework.data.domain.PageRequest.of(0, 12);
+        return championRepository.findByUserIdOrderByWeekStartDesc(user.getId(), page).stream()
+                .map(c -> new com.hoangthong.footballtracker.dto.WeeklyChampionDto(
+                        c.getWeekStart(), c.getPoints(), c.getCreatedAt()))
+                .toList();
     }
 
     /**
