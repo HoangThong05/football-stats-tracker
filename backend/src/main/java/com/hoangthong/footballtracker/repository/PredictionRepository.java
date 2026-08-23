@@ -13,6 +13,14 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
 
     Optional<Prediction> findByUserIdAndMatchId(Long userId, long matchId);
 
+    /** Du doan dang dat x2 cua user cho cac tran trong [from, to) - kiem "1 x2/tuan". */
+    @Query("SELECT p FROM Prediction p JOIN FETCH p.match m "
+            + "WHERE p.user.id = :userId AND p.doubled = true "
+            + "AND m.utcDate >= :from AND m.utcDate < :to")
+    List<Prediction> findDoubledInWeek(@Param("userId") Long userId,
+                                       @Param("from") java.time.Instant from,
+                                       @Param("to") java.time.Instant to);
+
     /** Du doan chua cham diem cua 1 tran cu the -> dung khi tran vua ket thuc. */
     List<Prediction> findByMatchAndPointsIsNull(MatchFixture match);
 

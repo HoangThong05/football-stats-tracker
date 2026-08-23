@@ -75,6 +75,24 @@ public class PredictionController {
         return predictionService.myWeeklyChampions(email);
     }
 
+    /** Dat / go x2 (nhan doi diem) cho du doan mot tran. Body: { matchId, doubled }. */
+    @PostMapping("/double")
+    public ResponseEntity<Void> setDouble(@AuthenticationPrincipal String email,
+                                          @RequestBody java.util.Map<String, Object> body) {
+        long matchId = ((Number) body.get("matchId")).longValue();
+        boolean doubled = Boolean.TRUE.equals(body.get("doubled"));
+        predictionService.setDouble(email, matchId, doubled);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Tran dang dat x2 tuan nay (cho banner). 204 = chua dung luot tuan nay. */
+    @GetMapping("/double/current-week")
+    public ResponseEntity<com.hoangthong.footballtracker.dto.CurrentDoubleDto> currentWeekDouble(
+            @AuthenticationPrincipal String email) {
+        var dto = predictionService.currentWeekDouble(email);
+        return dto == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(dto);
+    }
+
     /** Huy hieu thanh tich cua toi (ca da dat va chua dat, kem tien do). */
     @GetMapping("/badges")
     public List<BadgeDto> getMyBadges(@AuthenticationPrincipal String email) {

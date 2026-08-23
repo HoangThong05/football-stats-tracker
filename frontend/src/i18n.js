@@ -392,6 +392,15 @@ export const translations = {
     predict_saving: '...',
     predict_invalid_score: 'Tỉ số không hợp lệ, vui lòng nhập lại.',
     predict_scoring_rule: 'Đúng chính xác tỉ số: 3 điểm · Đúng thắng/hòa/thua: 1 điểm · Có thể sửa dự đoán tới trước giờ bóng lăn.',
+    predict_x2_btn: 'x2',
+    predict_x2_on_hint: 'Nhân đôi điểm trận này (1 lượt/tuần)',
+    predict_x2_off_hint: 'Bỏ nhân đôi',
+    predict_x2_available: 'Tuần này bạn còn 1 lượt Nhân đôi điểm — bấm x2 trên một trận (chỉ tính khi đoán đúng, không dùng thì mất).',
+    predict_x2_used: '⭐ Tuần này bạn đã đặt x2 cho: {match}',
+    predict_x2_need_predict: 'Hãy dự đoán trận này trước rồi mới đặt x2.',
+    predict_x2_started: 'Trận đã bắt đầu, không đặt x2 được nữa.',
+    predict_x2_not_week: 'Chỉ đặt x2 được cho trận trong tuần này.',
+    predict_x2_locked: 'Tuần này bạn đã dùng lượt x2 cho một trận đã bắt đầu, không chuyển sang trận khác được.',
 
 
 
@@ -836,6 +845,15 @@ export const translations = {
     predict_saving: '...',
     predict_invalid_score: 'Invalid score, please try again.',
     predict_scoring_rule: 'Exact score: 3 points · Correct outcome: 1 point · You can edit your prediction until kickoff.',
+    predict_x2_btn: 'x2',
+    predict_x2_on_hint: 'Double this match (1 per week)',
+    predict_x2_off_hint: 'Remove double',
+    predict_x2_available: 'You have 1 Double left this week — tap x2 on a match (only counts if you predict right; use it or lose it).',
+    predict_x2_used: '⭐ Your x2 this week is on: {match}',
+    predict_x2_need_predict: 'Predict this match first, then set x2.',
+    predict_x2_started: 'The match has started, x2 can no longer be set.',
+    predict_x2_not_week: 'x2 can only be set on matches in the current week.',
+    predict_x2_locked: 'Your x2 this week is on a match that has already started, so it cannot be moved.',
 
 
     nav_mini_league: '🏆 Mini League',

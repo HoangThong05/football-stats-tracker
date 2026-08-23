@@ -9,6 +9,10 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
   const [drafts, setDrafts] = useState({})
   const [savingId, setSavingId] = useState(null)
   const [errorId, setErrorId] = useState(null)
+  // Tran dang dat x2 tuan nay (null = chua dung luot). Cho banner.
+  const [currentDouble, setCurrentDouble] = useState(null)
+  const [doublingId, setDoublingId] = useState(null)
+  const [x2Error, setX2Error] = useState(null)
 
   useEffect(() => {
     const initial = {}
@@ -20,6 +24,20 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
     }
     setDrafts(initial)
   }, [matches])
+
+  // Trang thai luot x2 tuan nay - dung MOT lan chung cho ca 6 giai
+  const fetchCurrentDouble = () => {
+    if (!token) {
+      setCurrentDouble(null)
+      return
+    }
+    fetch(`${API_BASE}/predictions/double/current-week`, { headers: authHeaders(token) })
+      .then((res) => (res.status === 204 ? null : res.ok ? res.json() : null))
+      .then(setCurrentDouble)
+      .catch(() => {})
+  }
+
+  useEffect(fetchCurrentDouble, [token])
 
   const setDraft = (matchId, field, value) => {
     setDrafts((prev) => ({ ...prev, [matchId]: { ...prev[matchId], [field]: value } }))
@@ -50,6 +68,37 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
       .finally(() => setSavingId(null))
   }
 
+  // Ma loi tu backend -> cau tieng nguoi dung doc duoc
+  const x2ErrMap = {
+    must_predict_first: t('predict_x2_need_predict'),
+    match_started: t('predict_x2_started'),
+    not_current_week: t('predict_x2_not_week'),
+    double_used_this_week: t('predict_x2_locked'),
+    rate_limited: t('auth_rate_limited'),
+  }
+
+  const toggleDouble = (m) => {
+    setDoublingId(m.matchId)
+    setX2Error(null)
+    fetch(`${API_BASE}/predictions/double`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+      body: JSON.stringify({ matchId: m.matchId, doubled: !m.myDoubled }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}))
+          throw new Error(body.message || `Error ${res.status}`)
+        }
+      })
+      .then(() => {
+        onRefresh()
+        fetchCurrentDouble()
+      })
+      .catch((err) => setX2Error(x2ErrMap[err.message] || err.message))
+      .finally(() => setDoublingId(null))
+  }
+
   if (matches.length === 0) {
     return (
       <div className="alert alert-secondary d-flex align-items-center gap-2">
@@ -59,12 +108,39 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
     )
   }
 
+  const hasEligible = matches.some((m) => m.weekEligible)
+
   return (
     <div>
       {!token && (
         <div className="alert alert-warning d-flex align-items-center gap-2">
           <span style={{ fontSize: '1.3rem' }}>🔒</span>
           <span>{t('predict_login_hint')}</span>
+        </div>
+      )}
+
+      {/* Banner luot x2 tuan nay - hien moi lan mo tab cho toi khi da dung */}
+      {token && currentDouble && (
+        <div className="alert alert-warning py-2 small d-flex align-items-center gap-2">
+          <span>⭐</span>
+          <span>
+            {t('predict_x2_used').replace(
+              '{match}',
+              `${shortTeamName(currentDouble.homeTeam)} - ${shortTeamName(currentDouble.awayTeam)}`,
+            )}
+          </span>
+        </div>
+      )}
+      {token && !currentDouble && hasEligible && (
+        <div className="alert alert-warning py-2 small d-flex align-items-center gap-2">
+          <span style={{ fontSize: '1.2rem' }}>🔥</span>
+          <span>{t('predict_x2_available')}</span>
+        </div>
+      )}
+
+      {x2Error && (
+        <div className="alert alert-danger py-2 small" role="button" onClick={() => setX2Error(null)}>
+          {x2Error}
         </div>
       )}
 
@@ -91,6 +167,7 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
                   </small>
 
                   <div className="ft-predict-home d-flex align-items-center justify-content-end gap-2">
+                    {m.myDoubled && <span className="badge text-bg-warning">x2</span>}
                     <span className="text-truncate fw-medium" title={m.homeTeam}>{shortTeamName(m.homeTeam)}</span>
                     {m.homeCrest && <img src={m.homeCrest} alt="" width="22" height="22" loading="lazy" />}
                   </div>
@@ -127,15 +204,26 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
                   </div>
 
                   {token && (
-                    <button
-                      className={already
-                        ? 'ft-predict-btn btn btn-outline-success btn-sm'
-                        : 'ft-predict-btn btn btn-success btn-sm'}
-                      onClick={() => submit(m.matchId)}
-                      disabled={savingId === m.matchId}
-                    >
-                      {savingId === m.matchId ? t('predict_saving') : already ? t('predict_update_btn') : t('predict_submit_btn')}
-                    </button>
+                    <div className="ft-predict-btn d-flex flex-column gap-1">
+                      <button
+                        className={already ? 'btn btn-outline-success btn-sm' : 'btn btn-success btn-sm'}
+                        onClick={() => submit(m.matchId)}
+                        disabled={savingId === m.matchId}
+                      >
+                        {savingId === m.matchId ? t('predict_saving') : already ? t('predict_update_btn') : t('predict_submit_btn')}
+                      </button>
+                      {/* Nut x2: chi khi DA du doan va tran trong tuan nay */}
+                      {already && m.weekEligible && (
+                        <button
+                          className={m.myDoubled ? 'btn btn-warning btn-sm' : 'btn btn-outline-warning btn-sm'}
+                          onClick={() => toggleDouble(m)}
+                          disabled={doublingId === m.matchId}
+                          title={m.myDoubled ? t('predict_x2_off_hint') : t('predict_x2_on_hint')}
+                        >
+                          {m.myDoubled ? `✓ ${t('predict_x2_btn')}` : t('predict_x2_btn')}
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
 

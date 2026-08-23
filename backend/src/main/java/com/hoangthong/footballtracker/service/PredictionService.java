@@ -14,7 +14,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.DayOfWeek;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.TemporalAdjusters;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +89,9 @@ public class PredictionService {
                             m.getAwayTeam(),
                             m.getAwayCrest(),
                             mine != null ? mine.getPredictedHomeScore() : null,
-                            mine != null ? mine.getPredictedAwayScore() : null
+                            mine != null ? mine.getPredictedAwayScore() : null,
+                            mine != null && mine.isDoubled(),
+                            inCurrentWeek(m.getUtcDate()) && Instant.now().isBefore(m.getUtcDate())
                     );
                 })
                 .toList();
@@ -179,5 +185,69 @@ public class PredictionService {
     private User findUser(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nguoi dung khong ton tai"));
+    }
+
+    // ===== Nhan doi diem (x2) - moi tuan mot luot, chi cho tran trong TUAN NAY (gio VN) =====
+
+    private static final ZoneId VN = ZoneId.of("Asia/Ho_Chi_Minh");
+
+    /** [thu 2 00:00, thu 2 tuan sau 00:00) cua tuan chua moc 'when', theo gio VN. */
+    private static Instant[] weekBounds(Instant when) {
+        LocalDate monday = when.atZone(VN).toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        return new Instant[] { monday.atStartOfDay(VN).toInstant(), monday.plusWeeks(1).atStartOfDay(VN).toInstant() };
+    }
+
+    private static boolean inCurrentWeek(Instant when) {
+        Instant[] wk = weekBounds(Instant.now());
+        return !when.isBefore(wk[0]) && when.isBefore(wk[1]);
+    }
+
+    /**
+     * Dat / go x2 cho du doan cua mot tran. Chi cho tran TUAN NAY va chua bat dau; moi
+     * tuan chi mot luot -> dat x2 cho tran moi se GO x2 o tran cu cung tuan.
+     */
+    @org.springframework.transaction.annotation.Transactional
+    public void setDouble(String email, long matchId, boolean doubled) {
+        User user = findUser(email);
+        Prediction p = predictionRepository.findByUserIdAndMatchId(user.getId(), matchId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "must_predict_first"));
+        MatchFixture m = p.getMatch();
+
+        if (!inCurrentWeek(m.getUtcDate())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "not_current_week");
+        }
+        if (!Instant.now().isBefore(m.getUtcDate())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "match_started");
+        }
+
+        if (doubled) {
+            Instant[] wk = weekBounds(Instant.now());
+            // Go x2 o tran khac cung tuan (chuyen luot). Tran cu neu da bat dau thi khoa -> khong chuyen duoc.
+            for (Prediction ex : predictionRepository.findDoubledInWeek(user.getId(), wk[0], wk[1])) {
+                if (ex.getMatch().getId() == matchId) {
+                    continue;
+                }
+                if (!Instant.now().isBefore(ex.getMatch().getUtcDate())) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "double_used_this_week");
+                }
+                ex.setDoubled(false);
+                predictionRepository.save(ex);
+            }
+        }
+        p.setDoubled(doubled);
+        predictionRepository.save(p);
+    }
+
+    /** Tran dang dat x2 tuan nay (cho banner tab Du doan). null = chua dung luot tuan nay. */
+    public com.hoangthong.footballtracker.dto.CurrentDoubleDto currentWeekDouble(String email) {
+        User user = findUser(email);
+        Instant[] wk = weekBounds(Instant.now());
+        var doubled = predictionRepository.findDoubledInWeek(user.getId(), wk[0], wk[1]);
+        if (doubled.isEmpty()) {
+            return null;
+        }
+        MatchFixture m = doubled.get(0).getMatch();
+        return new com.hoangthong.footballtracker.dto.CurrentDoubleDto(
+                m.getId(), m.getCompetition(), m.getHomeTeam(), m.getAwayTeam());
     }
 }

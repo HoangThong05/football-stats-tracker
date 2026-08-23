@@ -46,6 +46,16 @@ public class Prediction {
     /** Null = chua cham diem (tran chua ket thuc). */
     private Integer points;
 
+    /**
+     * Du doan nay duoc dat "nhan doi diem" (x2) tuan nay.
+     *
+     * Kieu Boolean cho phep null: bang prediction DA co du lieu, Hibernate che do update
+     * them cot bang ALTER TABLE - khai NOT NULL khong mac dinh thi Postgres tu choi. null
+     * coi nhu false (isDoubled() xu ly).
+     */
+    @Column
+    private Boolean doubled;
+
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -96,6 +106,15 @@ public class Prediction {
 
     public void setPoints(Integer points) {
         this.points = points;
+    }
+
+    /** null = khong nhan doi. */
+    public boolean isDoubled() {
+        return doubled != null && doubled;
+    }
+
+    public void setDoubled(boolean doubled) {
+        this.doubled = doubled;
     }
 
     public Instant getCreatedAt() {

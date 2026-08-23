@@ -13,6 +13,10 @@ public record PredictableMatchDto(
         String awayTeam,
         String awayCrest,
         Integer myHomeScore,
-        Integer myAwayScore
+        Integer myAwayScore,
+        /** true = du doan cua toi cho tran nay dang duoc dat x2. */
+        boolean myDoubled,
+        /** true = tran nam trong TUAN NAY (gio VN) va chua bat dau -> duoc dat x2. */
+        boolean weekEligible
 ) {
 }

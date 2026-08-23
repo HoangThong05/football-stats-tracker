@@ -56,6 +56,10 @@ public class PredictionScoringService {
                 int points = computePoints(
                         prediction.getPredictedHomeScore(), prediction.getPredictedAwayScore(),
                         match.getHomeScore(), match.getAwayScore());
+                // Dat x2 tuan nay -> nhan doi diem (0 van la 0)
+                if (prediction.isDoubled()) {
+                    points *= 2;
+                }
                 prediction.setPoints(points);
                 predictionRepository.save(prediction);
                 affectedUserIds.add(prediction.getUser().getId());
