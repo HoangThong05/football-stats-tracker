@@ -2197,7 +2197,8 @@ tr[role='button']:hover img,
  * thi no de len tieu de bieu do ngay phia tren. 3.25rem vua du cho tooltip 2 dong.
  */
 .ft-barchart {
-  padding-top: 3.25rem;
+  /* Chua cho tooltip MOT DONG o tren cac cot, khong de len tieu de. */
+  padding-top: 2rem;
 }
 
 /*
@@ -2236,8 +2237,9 @@ tr[role='button']:hover img,
 }
 
 .ft-bar-col {
+  /* Khong gioi han be rong cot -> cot chia deu het be ngang, cac cot (moi cot canh giua
+     mot thanh 22px) trai deu ra thay vi don cum ben trai khi it cot. */
   flex: 1 1 0;
-  max-width: 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2300,11 +2302,13 @@ tr[role='button']:hover img,
 }
 
 .ft-bar-tooltip strong {
-  display: block;
   color: var(--ft-accent-strong);
 }
 
+/* margin-left tach khoi so o truoc; ca hai nam tren MOT dong nen tooltip thap, chi
+   can chua it cho o tren (padding-top cua .ft-barchart). */
 .ft-bar-tooltip span {
+  margin-left: 6px;
   color: var(--bs-secondary-color);
 }
 
