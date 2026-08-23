@@ -19,27 +19,29 @@ export default function MatchList({ matches, showScore, onSelectMatch }) {
         {matches.map((m) => (
           <li
             key={m.id}
-            className="list-group-item d-flex align-items-center flex-wrap gap-2 py-3"
+            className="list-group-item ft-fixture-row py-3"
             role="button"
             onClick={() => onSelectMatch(m.id)}
           >
-            <small className="text-secondary" style={{ minWidth: 132 }}>
-              {formatKickoff(m.utcDate, lang)}
+            <small className="text-secondary ft-fixture-time">
+              <span className="d-block ft-predict-when">{formatKickoff(m.utcDate, lang)}</span>
               {m.matchday != null && (
-                <span className="text-body-tertiary"> {t('matches_matchday_prefix')} {m.matchday}</span>
+                <span className="d-block text-body-tertiary">
+                  {t('matchday_label')} {m.matchday}
+                </span>
               )}
             </small>
 
-            <div className="d-flex align-items-center justify-content-end gap-2 flex-grow-1" style={{ minWidth: 0 }}>
+            <div className="ft-fixture-home d-flex align-items-center justify-content-end gap-2">
               <span className="text-truncate fw-medium" title={m.homeTeam}>{shortTeamName(m.homeTeam)}</span>
               {m.homeCrest && <img src={m.homeCrest} alt="" width="22" height="22" loading="lazy" />}
             </div>
 
-            <span className={showScore ? 'ft-score-badge played text-center' : 'ft-score-badge upcoming text-center'}>
+            <span className={`ft-fixture-score ft-score-badge text-center ${showScore ? 'played' : 'upcoming'}`}>
               {showScore ? `${m.homeScore} - ${m.awayScore}` : t('matches_vs')}
             </span>
 
-            <div className="d-flex align-items-center gap-2 flex-grow-1" style={{ minWidth: 0 }}>
+            <div className="ft-fixture-away d-flex align-items-center gap-2">
               {m.awayCrest && <img src={m.awayCrest} alt="" width="22" height="22" loading="lazy" />}
               <span className="text-truncate fw-medium" title={m.awayTeam}>{shortTeamName(m.awayTeam)}</span>
             </div>

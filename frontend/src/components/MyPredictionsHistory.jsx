@@ -95,33 +95,30 @@ export default function MyPredictionsHistory({ token, onBack }) {
           <ul className="list-group list-group-flush ft-stagger">
             {history.map((h) => (
               <li key={h.matchId} className="list-group-item py-3">
-                <div className="d-flex align-items-center flex-wrap gap-3">
-                  <small className="text-secondary" style={{ minWidth: 132 }}>
-                    {formatKickoff(h.utcDate, lang)}
-                    <div className="text-body-tertiary">{h.competition}</div>
+                <div className="ft-predict-row">
+                  <small className="text-secondary ft-predict-time">
+                    <span className="d-block ft-predict-when">{formatKickoff(h.utcDate, lang)}</span>
+                    <span className="d-block text-body-tertiary">{h.competition}</span>
                   </small>
 
-                  <div
-                    className="d-flex align-items-center justify-content-end gap-2 flex-grow-1"
-                    style={{ minWidth: 0 }}
-                  >
+                  <div className="ft-predict-home d-flex align-items-center justify-content-end gap-2">
                     <span className="text-truncate fw-medium" title={h.homeTeam}>{shortTeamName(h.homeTeam)}</span>
                     {h.homeCrest && <img src={h.homeCrest} alt="" width="20" height="20" loading="lazy" />}
                   </div>
 
-                  <div className="text-center" style={{ minWidth: 90 }}>
+                  <div className="ft-predict-score text-center">
                     <div className="small text-secondary">{t('myp_your_guess')}</div>
                     <div className="fw-bold">
                       {h.predictedHomeScore} - {h.predictedAwayScore}
                     </div>
                   </div>
 
-                  <div className="d-flex align-items-center gap-2 flex-grow-1" style={{ minWidth: 0 }}>
+                  <div className="ft-predict-away d-flex align-items-center gap-2">
                     {h.awayCrest && <img src={h.awayCrest} alt="" width="20" height="20" loading="lazy" />}
                     <span className="text-truncate fw-medium" title={h.awayTeam}>{shortTeamName(h.awayTeam)}</span>
                   </div>
 
-                  <div style={{ minWidth: 96 }} className="text-center">
+                  <div className="ft-predict-btn text-center">
                     {h.points != null ? (
                       <>
                         <div className="small text-secondary">

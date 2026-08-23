@@ -2513,6 +2513,47 @@ tr[role='button']:hover img,
   }
 }
 
+/*
+ * Hang tran o "Lich thi dau" / "Ket qua": luoi CO DINH giong hang du doan.
+ *
+ * Truoc day dung flex-grow-1 cho ca hai doi -> ho troi ve GIUA, moi hang mot cho khac
+ * nhau tuy do dai ten, nhin lech lac. Luoi thi doi nha luon can phai o cot cua no, doi
+ * khach can trai o cot cua no, o ty so nam giua - moi hang thang mot cot nhu rang cua.
+ */
+.ft-fixture-row {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+/* Man hinh hep: gio tach thanh hang rieng o tren, cap dau van thang cot */
+@media (max-width: 767.98px) {
+  .ft-fixture-row {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas:
+      'time time time'
+      'home score away';
+    row-gap: 8px;
+  }
+
+  .ft-fixture-time {
+    grid-area: time;
+  }
+
+  .ft-fixture-home {
+    grid-area: home;
+  }
+
+  .ft-fixture-score {
+    grid-area: score;
+  }
+
+  .ft-fixture-away {
+    grid-area: away;
+  }
+}
+
 /* Mot dong cai dat trong the "Tai khoan" o trang Ho so */
 .ft-account-row {
   padding: 12px 14px;
