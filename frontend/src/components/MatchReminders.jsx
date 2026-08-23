@@ -68,6 +68,8 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
   const [accepted, setAccepted] = useState([])
   // Ai vua binh luan / tra loi / thich bai cua minh
   const [notifs, setNotifs] = useState([])
+  // Admin da go bai/cmt cua minh (kem ly do)
+  const [modNotices, setModNotices] = useState([])
   /*
    * Moc doc lay MOT LAN luc mo trang, khong doc lai localStorage o moi lan ve.
    * Doc lai thi ngay sau khi bam mo chuong moc se nhay len "bay gio" va cham xanh
@@ -106,6 +108,10 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
       .then((res) => (res.ok ? res.json() : []))
       .then(setAccepted)
       .catch(() => {})
+    fetch(`${API_BASE}/forum/moderation-notices`, opts)
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setModNotices)
+      .catch(() => {})
   }, [token])
 
   useEffect(() => {
@@ -143,9 +149,10 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
   // chung moc "da xem hoat dong" voi thong bao dien dan (cung la viec da xay ra voi minh).
   const unreadNotifs = notifs.filter((n) => !notifSeen || n.createdAt > notifSeen)
   const unreadAccepted = accepted.filter((a) => !notifSeen || a.since > notifSeen)
+  const unreadMod = modNotices.filter((m) => !notifSeen || m.createdAt > notifSeen)
 
   // Loi moi DEN luon duoc dem, khong tru theo "da xem"
-  const badgeCount = soonCount + requests.length + unreadNotifs.length + unreadAccepted.length
+  const badgeCount = soonCount + requests.length + unreadNotifs.length + unreadAccepted.length + unreadMod.length
 
   const answer = async (userId, method, path) => {
     setBusy(true)
@@ -264,6 +271,30 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
     </button>
   )
 
+  /* Mot dong: admin da go bai/cmt cua minh, kem ly do. Khong bam duoc (noi dung da mat). */
+  const renderModNotice = (m, key) => (
+    <div key={key} className="ft-user-menu-item ft-notif-item" style={{ cursor: 'default' }}>
+      <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>🗑️</span>
+      <span style={{ minWidth: 0 }}>
+        <span className="d-block small fw-semibold text-danger">
+          {(!notifSeenAtOpen || m.createdAt > notifSeenAtOpen) && <span className="ft-rem-dot" />}
+          {m.targetType === 'POST' ? t('mod_post_removed') : t('mod_comment_removed')}
+        </span>
+        {m.reason && (
+          <span className="d-block small">{t('mod_reason_label')} {m.reason}</span>
+        )}
+        {m.excerpt && (
+          <span className="d-block text-secondary text-truncate" style={{ fontSize: '0.75rem' }}>
+            “{m.excerpt}”
+          </span>
+        )}
+        <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
+          {relativeTime(m.createdAt, t, lang)}
+        </span>
+      </span>
+    </div>
+  )
+
   /* Mot dong: nguoi khac vua chap nhan loi moi ket ban cua minh. Bam vao mo ho so ho. */
   const renderFriendAccepted = (a) => (
     <button
@@ -334,6 +365,7 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
     ...requests.map((r) => ({ id: `r-${r.userId}`, time: r.since, node: renderFriendRequest(r) })),
     ...notifs.map((n) => ({ id: `n-${n.postId}-${n.actorId}-${n.createdAt}`, time: n.createdAt, node: renderForumNotif(n) })),
     ...accepted.map((a) => ({ id: `a-${a.userId}`, time: a.since, node: renderFriendAccepted(a) })),
+    ...modNotices.map((m, i) => ({ id: `mod-${m.createdAt}-${i}`, time: m.createdAt, node: renderModNotice(m, `mod-${m.createdAt}-${i}`) })),
     ...finished.map((m) => ({ id: `f-${m.matchId}`, time: m.utcDate, node: renderMatchRow(m) })),
   ].sort((a, b) => new Date(b.time) - new Date(a.time))
 

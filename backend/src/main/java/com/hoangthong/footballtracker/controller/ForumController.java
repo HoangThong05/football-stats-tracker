@@ -66,6 +66,12 @@ public class ForumController {
         return service.notifications(email);
     }
 
+    /** Thong bao admin go bai/cmt cua minh, kem ly do - hien tren chuong. */
+    @GetMapping("/moderation-notices")
+    public List<ForumDto.ModerationNotice> moderationNotices(@AuthenticationPrincipal String email) {
+        return service.moderationNotices(email);
+    }
+
     @PostMapping("/posts")
     public void create(@AuthenticationPrincipal String email,
                        @RequestBody ForumDto.CreatePostRequest body) {
@@ -81,10 +87,11 @@ public class ForumController {
         service.editPost(email, id, body.content());
     }
 
-    /** Xoa bai. Tac gia trong 24 gio dau, admin thi bat ky luc nao. */
+    /** Xoa bai. Tac gia trong 24 gio dau, admin thi bat ky luc nao. reason: admin go cua nguoi khac. */
     @DeleteMapping("/posts/{id}")
-    public void delete(@AuthenticationPrincipal String email, @PathVariable long id) {
-        service.deletePost(email, id);
+    public void delete(@AuthenticationPrincipal String email, @PathVariable long id,
+                       @RequestParam(required = false) String reason) {
+        service.deletePost(email, id, reason);
     }
 
     /** Sua binh luan. Chi tac gia, va chi trong 1 gio dau. */
@@ -95,10 +102,11 @@ public class ForumController {
         service.editComment(email, id, body.content());
     }
 
-    /** Xoa binh luan. Tac gia trong 24 gio dau, admin thi bat ky luc nao. */
+    /** Xoa binh luan. Tac gia trong 24 gio dau, admin thi bat ky luc nao. reason: admin go cua nguoi khac. */
     @DeleteMapping("/comments/{id}")
-    public void deleteComment(@AuthenticationPrincipal String email, @PathVariable long id) {
-        service.deleteComment(email, id);
+    public void deleteComment(@AuthenticationPrincipal String email, @PathVariable long id,
+                              @RequestParam(required = false) String reason) {
+        service.deleteComment(email, id, reason);
     }
 
     /**

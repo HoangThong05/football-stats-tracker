@@ -707,6 +707,8 @@ export default function App() {
               token={token}
               myName={displayName}
               myAvatar={avatarUrl}
+              myUserId={userId}
+              isAdmin={userRole === "ADMIN"}
               focusPostId={focusPostId}
               onClearFocus={() => setFocusPostId(null)}
               onBack={() => setShowForum(false)}

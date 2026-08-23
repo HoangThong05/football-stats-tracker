@@ -74,5 +74,14 @@ public class ForumDto {
     /** Dung chung cho sua bai va sua binh luan - ca hai chi doi phan chu. */
     public record EditRequest(String content) {}
 
+    /**
+     * Mot thong bao: admin da go bai/binh luan cua nguoi nay, kem ly do.
+     *
+     * @param targetType POST hoac COMMENT.
+     * @param reason     ly do admin nhap (co the rong).
+     * @param excerpt    trich ngan noi dung da go.
+     */
+    public record ModerationNotice(String targetType, String reason, String excerpt, Instant createdAt) {}
+
     public record ReportRequest(String reason) {}
 }

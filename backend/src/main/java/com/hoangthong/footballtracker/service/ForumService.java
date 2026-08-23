@@ -67,15 +67,18 @@ public class ForumService {
     private final PostLikeRepository likeRepo;
     private final PostReportRepository reportRepo;
     private final UserRepository userRepo;
+    private final com.hoangthong.footballtracker.repository.ModerationNoticeRepository moderationRepo;
 
     public ForumService(ForumPostRepository postRepo, ForumCommentRepository commentRepo,
                         PostLikeRepository likeRepo, PostReportRepository reportRepo,
-                        UserRepository userRepo) {
+                        UserRepository userRepo,
+                        com.hoangthong.footballtracker.repository.ModerationNoticeRepository moderationRepo) {
         this.postRepo = postRepo;
         this.commentRepo = commentRepo;
         this.likeRepo = likeRepo;
         this.reportRepo = reportRepo;
         this.userRepo = userRepo;
+        this.moderationRepo = moderationRepo;
     }
 
     public List<ForumDto.Post> feed(String viewerEmail, int page) {
@@ -231,17 +234,23 @@ public class ForumService {
      * cau tra loi lo lung khong biet dang noi ve cai gi.
      */
     @Transactional
-    public void deleteComment(String email, long commentId) {
+    public void deleteComment(String email, long commentId, String reason) {
         User user = getUser(email);
         ForumComment comment = commentRepo.findById(commentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "comment_not_found"));
 
+        boolean isAuthor = comment.getAuthor().getId().equals(user.getId());
         boolean isAdmin = user.getRole() == Role.ADMIN;
         if (!isAdmin) {
-            if (!comment.getAuthor().getId().equals(user.getId())) {
+            if (!isAuthor) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not_your_comment");
             }
             requireWithin(comment.getCreatedAt(), DELETE_WINDOW, "delete_window_over");
+        }
+
+        // Admin go cua NGUOI KHAC -> bao cho tac gia biet ly do (luu truoc khi xoa)
+        if (isAdmin && !isAuthor) {
+            notifyRemoval(comment.getAuthor(), "COMMENT", reason, comment.getContent());
         }
 
         commentRepo.deleteByParentId(commentId);
@@ -265,7 +274,7 @@ public class ForumService {
      * khong con ton tai, giu lai chi lam bang phinh len.
      */
     @Transactional
-    public void deletePost(String email, long postId) {
+    public void deletePost(String email, long postId, String reason) {
         User user = getUser(email);
         ForumPost post = postRepo.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "post_not_found"));
@@ -277,6 +286,11 @@ public class ForumService {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not_your_post");
             }
             requireWithin(post.getCreatedAt(), DELETE_WINDOW, "delete_window_over");
+        }
+
+        // Admin go cua NGUOI KHAC -> bao cho tac gia biet ly do (luu truoc khi xoa)
+        if (isAdmin && !isAuthor) {
+            notifyRemoval(post.getAuthor(), "POST", reason, post.getContent());
         }
 
         commentRepo.deleteByPostId(postId);
@@ -463,6 +477,29 @@ public class ForumService {
     private static boolean within(java.time.Instant createdAt, java.time.Duration window,
                                   java.time.Instant now) {
         return !createdAt.plus(window).isBefore(now);
+    }
+
+    /** Luu mot thong bao "da bi go" cho tac gia, cat gon ly do va trich doan cho vua cot. */
+    private void notifyRemoval(User author, String targetType, String reason, String content) {
+        int maxReason = com.hoangthong.footballtracker.entity.ModerationNotice.MAX_REASON;
+        int maxExcerpt = com.hoangthong.footballtracker.entity.ModerationNotice.MAX_EXCERPT;
+        String cleanReason = reason == null ? null
+                : (reason.trim().length() > maxReason ? reason.trim().substring(0, maxReason) : reason.trim());
+        String flat = content == null ? "" : content.strip().replaceAll("\\s+", " ");
+        String excerpt = flat.length() > maxExcerpt ? flat.substring(0, maxExcerpt) + "…" : flat;
+        moderationRepo.save(new com.hoangthong.footballtracker.entity.ModerationNotice(
+                author, targetType, cleanReason, excerpt));
+    }
+
+    /** Thong bao go bai/cmt gui den nguoi nay (30 ngay gan nhat) - noi dung cho chuong. */
+    @Transactional(readOnly = true)
+    public List<ForumDto.ModerationNotice> moderationNotices(String email) {
+        User user = getUser(email);
+        var since = java.time.Instant.now().minus(java.time.Duration.ofDays(30));
+        return moderationRepo.findForRecipient(user.getId(), since, PageRequest.of(0, NOTIFICATION_LIMIT)).stream()
+                .map(n -> new ForumDto.ModerationNotice(
+                        n.getTargetType(), n.getReason(), n.getExcerpt(), n.getCreatedAt()))
+                .toList();
     }
 
     private User getUser(String email) {

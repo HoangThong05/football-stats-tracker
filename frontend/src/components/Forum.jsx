@@ -26,7 +26,7 @@ const REFRESH_MS = 20_000
  * Khach chua dang nhap DOC duoc het nhung khong dang/thich/binh luan duoc - de nguoi
  * moi ghe qua thay noi dung that truoc khi quyet dinh co dang ky khong.
  */
-export default function Forum({ token, myName, myAvatar, focusPostId, onClearFocus,
+export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focusPostId, onClearFocus,
   onBack, onSelectUser }) {
   const { t, lang } = useTranslation()
   const [posts, setPosts] = useState(null)
@@ -184,12 +184,21 @@ export default function Forum({ token, myName, myAvatar, focusPostId, onClearFoc
    * Hoi lai truoc khi xoa. Xoa la khong lay lai duoc, va nut xoa nam ngay canh nut sua -
    * bam nham mot ly la mat ca bai.
    */
-  const confirmDelete = (kind, id) => {
+  const confirmDelete = (kind, id, authorId) => {
+    const path = kind === 'post' ? 'posts' : 'comments'
+    // Admin go bai/cmt cua NGUOI KHAC -> hoi ly do (se bao cho nguoi dang qua chuong)
+    if (isAdmin && authorId !== myUserId) {
+      const reason = prompt(t('forum_delete_reason_prompt'))
+      if (reason === null) return // bam Huy o hop nhap ly do
+      if (editing?.kind === kind && editing.id === id) setEditing(null)
+      act(`/${path}/${id}?reason=${encodeURIComponent(reason.trim())}`, 'DELETE')
+      return
+    }
+    // Tu xoa cua chinh minh -> chi hoi xac nhan
     const question = kind === 'post' ? t('forum_confirm_delete_post') : t('forum_confirm_delete_comment')
     if (!confirm(question)) return
-    // Dang sua dung thu vua xoa thi dong o sua lai, khong de no lo lung
     if (editing?.kind === kind && editing.id === id) setEditing(null)
-    act(`/${kind === 'post' ? 'posts' : 'comments'}/${id}`, 'DELETE')
+    act(`/${path}/${id}`, 'DELETE')
   }
 
   /** O sua dung chung cho bai va binh luan - khac nhau moi so dong va gioi han ky tu. */
@@ -280,7 +289,7 @@ export default function Forum({ token, myName, myAvatar, focusPostId, onClearFoc
               )}
               {c.canDelete && (
                 <button type="button" className="ft-name-link text-secondary"
-                  onClick={() => confirmDelete('comment', c.id)}>
+                  onClick={() => confirmDelete('comment', c.id, c.authorId)}>
                   {t('forum_delete')}
                 </button>
               )}
@@ -388,7 +397,7 @@ export default function Forum({ token, myName, myAvatar, focusPostId, onClearFoc
               )}
               {p.canDelete && (
                 <button className="ft-post-menu" title={t('forum_delete')}
-                  onClick={() => confirmDelete('post', p.id)}>
+                  onClick={() => confirmDelete('post', p.id, p.authorId)}>
                   ✕
                 </button>
               )}

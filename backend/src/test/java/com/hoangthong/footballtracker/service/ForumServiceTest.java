@@ -53,12 +53,13 @@ class ForumServiceTest {
         ForumCommentRepository commentRepo = mock(ForumCommentRepository.class);
         PostReportRepository reportRepo = mock(PostReportRepository.class);
         UserRepository userRepo = mock(UserRepository.class);
+        var moderationRepo = mock(com.hoangthong.footballtracker.repository.ModerationNoticeRepository.class);
 
         when(userRepo.findByEmail("an@example.com")).thenReturn(Optional.of(an));
         when(userRepo.findByEmail("binh@example.com")).thenReturn(Optional.of(binh));
         when(userRepo.findByEmail("admin@example.com")).thenReturn(Optional.of(admin));
 
-        service = new ForumService(postRepo, commentRepo, likeRepo, reportRepo, userRepo);
+        service = new ForumService(postRepo, commentRepo, likeRepo, reportRepo, userRepo, moderationRepo);
     }
 
     private ForumPost baiCuaAn() {
@@ -104,7 +105,7 @@ class ForumServiceTest {
     void khong_xoa_duoc_bai_cua_nguoi_khac() {
         baiCuaAn();
 
-        assertThatThrownBy(() -> service.deletePost("binh@example.com", 10L))
+        assertThatThrownBy(() -> service.deletePost("binh@example.com", 10L, null))
                 .hasMessageContaining("not_your_post");
         verify(postRepo, never()).delete(any());
     }
@@ -113,7 +114,7 @@ class ForumServiceTest {
     void tac_gia_xoa_duoc_bai_cua_minh() {
         ForumPost post = baiCuaAn();
 
-        service.deletePost("an@example.com", 10L);
+        service.deletePost("an@example.com", 10L, null);
 
         verify(postRepo).delete(post);
     }
@@ -123,7 +124,7 @@ class ForumServiceTest {
     void admin_xoa_duoc_bai_cua_nguoi_khac() {
         ForumPost post = baiCuaAn();
 
-        service.deletePost("admin@example.com", 10L);
+        service.deletePost("admin@example.com", 10L, "spam");
 
         verify(postRepo).delete(post);
     }
