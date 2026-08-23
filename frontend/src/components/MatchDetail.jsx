@@ -169,17 +169,19 @@ export default function MatchDetail({ matchId, onBack, token }) {
           {hasForm && (
             <div className="border-top pt-3 mt-3">
               <div className="text-secondary small mb-2">{t('match_form_title')}</div>
-              <div className="d-flex justify-content-between align-items-center gap-3 flex-wrap">
-                <div className="d-flex align-items-center gap-2" style={{ minWidth: 0 }}>
-                  <span className="text-truncate small fw-medium">{shortTeamName(match.homeTeam)}</span>
-                  <FormDots form={form.home} />
-                </div>
-                <div className="d-flex align-items-center gap-2" style={{ minWidth: 0 }}>
-                  <FormDots form={form.away} />
-                  <span className="text-truncate small fw-medium">{shortTeamName(match.awayTeam)}</span>
-                </div>
+              {/* Moi doi MOT hang: ten trai, chuoi form phai. Xep chong thi du form thua
+                  (1 tran hay chua co) van gon, khong bi day ra hai mep de trong khoang giua. */}
+              <div className="d-flex flex-column gap-2">
+                {[[match.homeTeam, form.home], [match.awayTeam, form.away]].map(([name, f], i) => (
+                  <div key={i} className="d-flex align-items-center justify-content-between gap-3">
+                    <span className="text-truncate small fw-medium" style={{ minWidth: 0 }} title={name}>
+                      {shortTeamName(name)}
+                    </span>
+                    <FormDots form={f} />
+                  </div>
+                ))}
               </div>
-              <div className="text-secondary mt-1" style={{ fontSize: '0.72rem' }}>
+              <div className="text-secondary mt-2" style={{ fontSize: '0.72rem' }}>
                 {t('standings_form_legend')}
               </div>
             </div>
