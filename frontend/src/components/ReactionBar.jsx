@@ -13,7 +13,7 @@ import { useTranslation } from '../i18n'
  *
  * Bam nut mo bang chon 6 cam xuc; may co chuot thi ro chuot vao cung mo.
  */
-export default function ReactionBar({ current, counts, total, onReact, disabled, compact }) {
+export default function ReactionBar({ current, counts, total, onReact, onShowReactors, disabled, compact }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const cur = REACTIONS.find((r) => r.type === current)
@@ -38,7 +38,16 @@ export default function ReactionBar({ current, counts, total, onReact, disabled,
         onClick={() => setOpen((o) => !o)}
         onMouseEnter={() => !disabled && setOpen(true)}
       >
-        <span className="ft-react-btn-emoji">{cur ? cur.emoji : '👍'}</span>
+        {cur ? (
+          <span className="ft-react-btn-emoji">{cur.emoji}</span>
+        ) : (
+          /* Chua tha gi: ngon cai VIEN RONG mau xam - khong phai emoji vang day trong
+             giong nhu da like san. Theo currentColor nen tu lay mau xam cua nut. */
+          <svg className="ft-react-thumb" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+          </svg>
+        )}
         <span className="ft-react-btn-label">{cur ? t(cur.labelKey) : t('react_like')}</span>
       </button>
 
@@ -59,9 +68,10 @@ export default function ReactionBar({ current, counts, total, onReact, disabled,
       )}
 
       {total > 0 && (
-        <span className="ft-react-summary" title={`${total}`}>
+        <button type="button" className="ft-react-summary" title={t('reactors_see')}
+          onClick={onShowReactors}>
           {topEmojis.join('')} <span className="ft-num">{total}</span>
-        </span>
+        </button>
       )}
     </span>
   )

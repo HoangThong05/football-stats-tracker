@@ -152,6 +152,18 @@ public class ForumController {
         service.reactToComment(email, id, com.hoangthong.footballtracker.entity.ReactionType.fromString(body == null ? null : body.get("type")));
     }
 
+    /** Ai da tha cam xuc vao bai nay - cho hop "ai da tha". Doc cong khai. */
+    @GetMapping("/posts/{id}/reactions")
+    public List<ForumDto.Reactor> postReactors(@PathVariable long id) {
+        return service.postReactors(id);
+    }
+
+    /** Ai da tha cam xuc vao binh luan nay. Doc cong khai. */
+    @GetMapping("/comments/{id}/reactions")
+    public List<ForumDto.Reactor> commentReactors(@PathVariable long id) {
+        return service.commentReactors(id);
+    }
+
     @PostMapping("/posts/{id}/report")
     public void report(@AuthenticationPrincipal String email, @PathVariable long id,
                        @RequestBody(required = false) ForumDto.ReportRequest body) {

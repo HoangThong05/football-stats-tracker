@@ -192,6 +192,40 @@ public class ForumService {
                 () -> commentReactionRepo.save(new com.hoangthong.footballtracker.entity.CommentReaction(comment, user, type)));
     }
 
+    /**
+     * Ai da tha cam xuc vao mot bai - danh sach cho hop "ai da tha".
+     *
+     * Doc cong khai nhu bang tin: khach chua dang nhap van xem duoc.
+     */
+    @Transactional(readOnly = true)
+    public List<ForumDto.Reactor> postReactors(long postId) {
+        visiblePost(postId);
+        return likeRepo.findReactorsByPostId(postId).stream()
+                .map(l -> new ForumDto.Reactor(
+                        l.getUser().getId(),
+                        l.getUser().displayNameOrFallback(),
+                        l.getUser().getAvatarUrl(),
+                        l.getType().name()))
+                .toList();
+    }
+
+    /** Ai da tha cam xuc vao mot binh luan - danh sach cho hop "ai da tha". */
+    @Transactional(readOnly = true)
+    public List<ForumDto.Reactor> commentReactors(long commentId) {
+        ForumComment comment = commentRepo.findById(commentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "comment_not_found"));
+        if (comment.getPost().isHidden()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "comment_not_found");
+        }
+        return commentReactionRepo.findReactorsByCommentId(commentId).stream()
+                .map(r -> new ForumDto.Reactor(
+                        r.getUser().getId(),
+                        r.getUser().displayNameOrFallback(),
+                        r.getUser().getAvatarUrl(),
+                        r.getType().name()))
+                .toList();
+    }
+
     /** [id, ReactionType|null, count] -> id -> {tenLoai -> so}. Loai null (luot cu) = LIKE. */
     private static Map<Long, Map<String, Long>> reactionCountsFrom(List<Object[]> rows) {
         Map<Long, Map<String, Long>> out = new HashMap<>();

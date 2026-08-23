@@ -38,6 +38,15 @@ public interface CommentReactionRepository extends JpaRepository<CommentReaction
     List<CommentReaction> findForViewer(@Param("viewerId") Long viewerId,
                                         org.springframework.data.domain.Pageable pageable);
 
+    /** Ai da tha cam xuc vao mot binh luan, moi nhat truoc - cho danh sach "ai da tha". */
+    @Query("""
+            SELECT r FROM CommentReaction r
+            JOIN FETCH r.user
+            WHERE r.comment.id = :commentId
+            ORDER BY r.createdAt DESC
+            """)
+    List<CommentReaction> findReactorsByCommentId(@Param("commentId") Long commentId);
+
     /** Xoa cam xuc cua mot binh luan VA cac tra loi cua no - khi xoa binh luan goc. */
     @Modifying
     @Query("DELETE FROM CommentReaction r WHERE r.comment.id = :commentId OR r.comment.parent.id = :commentId")

@@ -5,6 +5,7 @@ import { imageUploadEnabled, uploadImage } from '../cloudinary'
 import { relativeTime } from '../utils'
 import Avatar from './Avatar'
 import ReactionBar from './ReactionBar'
+import ReactionsModal from './ReactionsModal'
 import Loading from './Loading'
 
 const MAX_POST = 2000
@@ -49,6 +50,8 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
    */
   const [editing, setEditing] = useState(null)
   const [savingEdit, setSavingEdit] = useState(false)
+  // Hop "ai da tha cam xuc" dang mo: { kind: 'posts'|'comments', id }, null = dong
+  const [reactorsFor, setReactorsFor] = useState(null)
 
   const errMap = {
     post_empty: t('forum_err_empty'),
@@ -292,6 +295,7 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                 total={c.totalReactions}
                 disabled={!token}
                 onReact={(type) => react('comments', c.id, type)}
+                onShowReactors={() => setReactorsFor({ kind: 'comments', id: c.id })}
               />
               {c.canEdit && (
                 <button type="button" className="ft-name-link text-secondary"
@@ -440,6 +444,7 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                 total={p.totalReactions}
                 disabled={!token}
                 onReact={(type) => react('posts', p.id, type)}
+                onShowReactors={() => setReactorsFor({ kind: 'posts', id: p.id })}
               />
               <button className="ft-post-action" disabled={!token} title={t('forum_comment')}
                 onClick={() => setOpenComment((m) => ({ ...m, [p.id]: !m[p.id] }))}>
@@ -495,6 +500,16 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
             )}
           </article>
         ))
+      )}
+
+      {reactorsFor && (
+        <ReactionsModal
+          kind={reactorsFor.kind}
+          id={reactorsFor.id}
+          token={token}
+          onClose={() => setReactorsFor(null)}
+          onSelectUser={onSelectUser}
+        />
       )}
     </div>
   )

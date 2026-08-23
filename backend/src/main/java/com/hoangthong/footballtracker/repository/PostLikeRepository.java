@@ -42,5 +42,19 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     List<PostLike> findForViewer(@Param("viewerId") Long viewerId,
                                  org.springframework.data.domain.Pageable pageable);
 
+    /**
+     * Ai da tha cam xuc vao mot bai, moi nhat truoc - cho danh sach "ai da tha".
+     *
+     * NULLS LAST: cac luot thich cu (truoc khi co cot createdAt) khong biet luc nao nen
+     * day xuong cuoi, khong chen len tren nhung luot moi that.
+     */
+    @Query("""
+            SELECT l FROM PostLike l
+            JOIN FETCH l.user
+            WHERE l.post.id = :postId
+            ORDER BY l.createdAt DESC NULLS LAST
+            """)
+    List<PostLike> findReactorsByPostId(@Param("postId") Long postId);
+
     void deleteByPostId(Long postId);
 }

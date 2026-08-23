@@ -97,4 +97,11 @@ public class ForumDto {
     public record ModerationNotice(String targetType, String reason, String excerpt, Instant createdAt) {}
 
     public record ReportRequest(String reason) {}
+
+    /**
+     * Mot nguoi da tha cam xuc, cho danh sach "ai da tha" khi bam vao phan tom tat.
+     *
+     * @param type loai cam xuc (LIKE/LOVE...) - de hien dung bieu tuong canh ten.
+     */
+    public record Reactor(long userId, String name, String avatar, String type) {}
 }
