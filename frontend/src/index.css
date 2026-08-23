@@ -749,34 +749,55 @@ body,
   }
 
   /*
-   * Dien thoai: nut ben phai (chuong, dang nhap) bam len DAU thay vi troi giua, vi khoi
-   * trai gio cao 2 hang (thuong hieu o tren, tab o duoi).
+   * Dien thoai: bo HOP .ft-navbar-left di (display:contents) de cac phan tu ben trong
+   * (thuong hieu, nhom tab, nhom tuy chon) thanh con TRUC TIEP cua hang nav. Nho vay
+   * hang tab khong con bi bo hep trong be rong khoi trai, ma trai duoc FULL be ngang.
+   * Chi trong media query nay - PC giu nguyen hop .ft-navbar-left nhu cu.
    */
+  .ft-navbar-left {
+    display: contents;
+  }
+
   .ft-navbar-row {
-    align-items: flex-start;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 8px;
+  }
+
+  .ft-navbar-brand {
+    order: 0;
+  }
+
+  /* Nhom tuy chon (ngon ngu / sang-toi) nam canh thuong hieu tren hang dau */
+  .ft-navbar-left .ft-nav-group:not(.ft-nav-tabs) {
+    order: 1;
+  }
+
+  /* Chuong + dang nhap day sang phai tren hang dau */
+  .ft-navbar-right {
+    order: 2;
+    margin-left: auto;
   }
 
   /*
-   * Nhom 4 tab (Hom nay/BXH/Mini League/Cong dong) truoc day la mot khoi CUNG rong hon
-   * man hinh -> tran sang phai, chui xuong duoi nut "Dang nhap" lam tab bi che.
-   *
-   * Cho no xuong HANG RIENG chiem full be ngang, va CUON NGANG neu van tran. Nho vay
-   * khong con dam len nut ben phai, va tab nao cung cham toi duoc.
-   * Chi ap o dien thoai - PC giu nguyen (nhom van la mot vien pill nhu cu).
+   * Nhom 4 tab (Hom nay/BXH/Mini League/Cong dong) truoc day la khoi CUNG rong hon man
+   * hinh -> tran sang phai lam "Cong dong" bi che. Gio cho xuong HANG RIENG chiem FULL
+   * be ngang, va cho cac tab TU XUONG 2 HANG (flex-wrap) - tat ca 4 tab deu HIEN va bam
+   * duoc, khong phai vuot, khong bi che.
    */
   .ft-nav-tabs {
-    order: 5;
+    order: 3;
     flex-basis: 100%;
     max-width: 100%;
-    min-width: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    flex-wrap: wrap;
+    /* Bo bo goc cung cua vien pill khi xuong 2 hang cho do gay goc */
+    border-radius: 16px;
   }
 
-  .ft-nav-tabs::-webkit-scrollbar {
-    display: none;
+  /* Xuong hang thi vach ngan doc giua nut trong nhu treo lo lung -> bo di, dung khoang
+     cach nho thay the cho gon. */
+  .ft-nav-tabs .ft-nav-btn {
+    border-left: 0;
   }
 }
 
