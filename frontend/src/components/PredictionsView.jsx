@@ -8,7 +8,8 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
   // Luu ti so dang nhap cho tung tran: { [matchId]: { home: '2', away: '1' } }
   const [drafts, setDrafts] = useState({})
   const [savingId, setSavingId] = useState(null)
-  const [errorId, setErrorId] = useState(null)
+  // Loi cua tung tran: { id, msg } - msg tuy ly do (ti so sai / tran da bat dau)
+  const [error, setError] = useState(null)
   // Tran dang dat x2 tuan nay (null = chua dung luot). Cho banner.
   const [currentDouble, setCurrentDouble] = useState(null)
   const [doublingId, setDoublingId] = useState(null)
@@ -48,11 +49,11 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
     const home = Number(draft?.home)
     const away = Number(draft?.away)
     if (draft?.home === '' || draft?.away === '' || Number.isNaN(home) || Number.isNaN(away) || home < 0 || away < 0) {
-      setErrorId(matchId)
+      setError({ id: matchId, msg: t('predict_invalid_score') })
       return
     }
 
-    setErrorId(null)
+    setError(null)
     setSavingId(matchId)
 
     fetch(`${API_BASE}/predictions`, {
@@ -61,10 +62,18 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
       body: JSON.stringify({ matchId, homeScore: home, awayScore: away }),
     })
       .then((res) => {
-        if (!res.ok) throw new Error(`Loi ${res.status}`)
-        onRefresh()
+        if (res.ok) {
+          onRefresh()
+          return
+        }
+        // 409 = tran da bat dau (may chu chan). Phan biet voi ti so sai (400) de
+        // khong bao nham "ti so khong hop le" khi nguoi dung nhap ti so binh thuong.
+        setError({
+          id: matchId,
+          msg: res.status === 409 ? t('predict_started') : t('predict_invalid_score'),
+        })
       })
-      .catch(() => setErrorId(matchId))
+      .catch(() => setError({ id: matchId, msg: t('predict_invalid_score') }))
       .finally(() => setSavingId(null))
   }
 
@@ -149,6 +158,9 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
           {matches.map((m) => {
             const draft = drafts[m.matchId] || { home: '', away: '' }
             const already = m.myHomeScore != null
+            // Tran da lan bong -> khoa o nhap, an nut. Phong khi danh sach con sot tran
+            // vua bat dau: de nguoi dung go so roi bam moi bao loi thi rat kho hieu.
+            const started = m.utcDate && new Date(m.utcDate).getTime() <= Date.now()
 
             return (
               <li key={m.matchId} className="list-group-item py-3">
@@ -181,6 +193,7 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
                         className="form-control form-control-sm text-center"
                         style={{ width: 52 }}
                         value={draft.home}
+                        disabled={started}
                         onChange={(e) => setDraft(m.matchId, 'home', e.target.value)}
                       />
                       <span className="text-secondary">-</span>
@@ -191,6 +204,7 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
                         className="form-control form-control-sm text-center"
                         style={{ width: 52 }}
                         value={draft.away}
+                        disabled={started}
                         onChange={(e) => setDraft(m.matchId, 'away', e.target.value)}
                       />
                     </div>
@@ -203,7 +217,7 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
                     <span className="text-truncate fw-medium" title={m.awayTeam}>{shortTeamName(m.awayTeam)}</span>
                   </div>
 
-                  {token && (
+                  {token && !started && (
                     <div className="ft-predict-btn d-flex flex-column gap-1">
                       <button
                         className={already ? 'btn btn-outline-success btn-sm' : 'btn btn-success btn-sm'}
@@ -225,10 +239,13 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
                       )}
                     </div>
                   )}
+                  {token && started && (
+                    <span className="ft-predict-btn text-secondary small text-center">{t('predict_started')}</span>
+                  )}
                 </div>
 
-                {errorId === m.matchId && (
-                  <div className="text-danger small mt-1">{t('predict_invalid_score')}</div>
+                {error?.id === m.matchId && (
+                  <div className="text-danger small mt-1">{error.msg}</div>
                 )}
               </li>
             )
