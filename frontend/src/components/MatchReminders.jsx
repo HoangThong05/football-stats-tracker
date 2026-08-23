@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import { relativeTime, shortTeamName } from '../utils'
+import { REACTION_EMOJI } from '../constants'
 import Avatar from './Avatar'
 
 /*
@@ -22,7 +23,11 @@ const SEEN_KEY = 'ft_seen_matches'
 const NOTIF_SEEN_KEY = 'ft_forum_notif_seen'
 
 /** Cau mo ta cho tung loai thong bao. */
-const NOTIF_TEXT = { COMMENT: 'notif_comment', REPLY: 'notif_reply', LIKE: 'notif_like' }
+const NOTIF_TEXT = {
+  COMMENT: 'notif_comment', REPLY: 'notif_reply',
+  REACT_POST: 'notif_react_post', REACT_COMMENT: 'notif_react_comment',
+  LIKE: 'notif_react_post', // du lieu cu (neu con) coi nhu tha cam xuc bai viet
+}
 
 /*
  * Cac tran da xem duoc ghi o localStorage chu khong luu tren may chu.
@@ -265,7 +270,7 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
       <span style={{ minWidth: 0 }}>
         <span className="d-block small">
           {(!notifSeenAtOpen || n.createdAt > notifSeenAtOpen) && <span className="ft-rem-dot" />}
-          <strong>{n.actorName}</strong> {t(NOTIF_TEXT[n.kind])}
+          <strong>{n.actorName}</strong> {t(NOTIF_TEXT[n.kind])}          {n.reactionType && REACTION_EMOJI[n.reactionType] ? ` ${REACTION_EMOJI[n.reactionType]}` : ''}
         </span>
         {n.excerpt && (
           <span className="d-block text-secondary text-truncate" style={{ fontSize: '0.75rem' }}>

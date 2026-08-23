@@ -13,16 +13,17 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
 
     Optional<PostLike> findByPostIdAndUserId(Long postId, Long userId);
 
-    /** So luot thich cua nhieu bai cung luc: [postId, count]. */
-    @Query("SELECT l.post.id, COUNT(l) FROM PostLike l WHERE l.post.id IN :postIds GROUP BY l.post.id")
-    List<Object[]> countByPostIds(@Param("postIds") Collection<Long> postIds);
+    /** Dem cam xuc theo LOAI cho nhieu bai: [postId, ReactionType (co the null=cu), count]. */
+    @Query("SELECT l.post.id, l.type, COUNT(l) FROM PostLike l WHERE l.post.id IN :postIds "
+            + "GROUP BY l.post.id, l.type")
+    List<Object[]> countByTypePerPost(@Param("postIds") Collection<Long> postIds);
 
-    /** Cac bai ma NGUOI NAY da thich - de to sang nut thich. */
-    @Query("SELECT l.post.id FROM PostLike l WHERE l.user.id = :userId AND l.post.id IN :postIds")
-    List<Long> findLikedPostIds(@Param("userId") Long userId, @Param("postIds") Collection<Long> postIds);
+    /** Cam xuc cua NGUOI NAY tren cac bai: [postId, ReactionType]. */
+    @Query("SELECT l.post.id, l.type FROM PostLike l WHERE l.user.id = :userId AND l.post.id IN :postIds")
+    List<Object[]> findMyReactions(@Param("userId") Long userId, @Param("postIds") Collection<Long> postIds);
 
     /**
-     * Luot thich vao bai cua nguoi xem, moi nhat truoc. Nguon cho chuong thong bao.
+     * Cam xuc vao bai cua nguoi xem, moi nhat truoc. Nguon cho chuong thong bao.
      *
      * Loai bo createdAt null - do la cac luot thich co TRUOC khi cot nay ton tai, khong
      * biet chung xay ra luc nao nen khong xep duoc vao dong thoi gian.

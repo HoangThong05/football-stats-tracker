@@ -15,6 +15,11 @@ public class ForumDto {
                           String content, Instant createdAt,
                           /** Lan sua gan nhat. null = chua sua -> khong hien nhan "da chinh sua". */
                           Instant editedAt,
+                          /** So cam xuc theo loai: {"LIKE":3,"LOVE":1}. */
+                          java.util.Map<String, Long> reactions,
+                          long totalReactions,
+                          /** Loai cam xuc cua NGUOI XEM (LIKE/LOVE...), null = chua tha. */
+                          String myReaction,
                           /** true = nguoi xem con trong han sua binh luan nay. */
                           boolean canEdit,
                           /** true = nguoi xem con trong han xoa, hoac la admin. */
@@ -39,8 +44,11 @@ public class ForumDto {
             Instant createdAt,
             /** Lan sua gan nhat. null = chua sua -> khong hien nhan "da chinh sua". */
             Instant editedAt,
-            long likeCount,
-            boolean likedByMe,
+            /** So cam xuc theo loai: {"LIKE":5,"HAHA":2}. */
+            java.util.Map<String, Long> reactions,
+            long totalReactions,
+            /** Loai cam xuc cua NGUOI XEM, null = chua tha. */
+            String myReaction,
             /** true = nguoi xem con trong han sua bai nay. */
             boolean canEdit,
             /** true = nguoi xem con trong han xoa, hoac la admin. */
@@ -56,14 +64,19 @@ public class ForumDto {
      * hoat dong, roi phai don khi bai bi xoa; suy ra luc doc thi khong bao gio lech.
      */
     public record Notification(
-            /** COMMENT = binh luan vao bai minh; REPLY = tra loi binh luan minh; LIKE = thich bai minh. */
+            /**
+             * COMMENT = binh luan vao bai minh; REPLY = tra loi binh luan minh;
+             * REACT_POST = tha cam xuc bai minh; REACT_COMMENT = tha cam xuc binh luan minh.
+             */
             String kind,
             long postId,
             long actorId,
             String actorName,
             String actorAvatar,
-            /** Trich ngan de nhan ra dang noi ve bai nao. */
+            /** Trich ngan de nhan ra dang noi ve bai/binh luan nao. */
             String excerpt,
+            /** Loai cam xuc (LIKE/LOVE...) - chi co o REACT_POST / REACT_COMMENT. */
+            String reactionType,
             Instant createdAt
     ) {}
 

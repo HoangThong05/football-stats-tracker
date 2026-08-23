@@ -36,13 +36,22 @@ public class PostLike {
     @Column
     private Instant createdAt = Instant.now();
 
+    /**
+     * Loai cam xuc. null = luot "thich" cu (co truoc khi co cam xuc) -> coi la LIKE.
+     * De null duoc vi bang da co du lieu, khong the ep NOT NULL qua ALTER TABLE.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10)
+    private ReactionType type;
+
     protected PostLike() {
         // JPA can
     }
 
-    public PostLike(ForumPost post, User user) {
+    public PostLike(ForumPost post, User user, ReactionType type) {
         this.post = post;
         this.user = user;
+        this.type = type;
     }
 
     public Long getId() { return id; }
@@ -51,4 +60,8 @@ public class PostLike {
 
     /** null = luot thich co truoc khi co cot nay. */
     public Instant getCreatedAt() { return createdAt; }
+
+    /** null (luot cu) = LIKE. */
+    public ReactionType getType() { return type == null ? ReactionType.LIKE : type; }
+    public void setType(ReactionType type) { this.type = type; }
 }

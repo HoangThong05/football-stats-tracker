@@ -3214,3 +3214,126 @@ tr[role='button']:hover img,
  * cua ca hai doi thang cot voi nhau va nam ngay sat sau ten - khong bi day ra mep phai
  * de trong khoang giua nhu khi dung justify-content:between.
  */
+
+/* ============================================================
+   Thanh cam xuc kieu Facebook (bai viet + binh luan)
+   ============================================================ */
+.ft-react {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Nut chinh - dung nhip voi .ft-post-action ben canh */
+.ft-react-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 0;
+  background: none;
+  color: var(--bs-secondary-color);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.ft-react-btn:hover:not(:disabled) {
+  background: var(--bs-tertiary-bg);
+}
+
+.ft-react-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.ft-react-btn-emoji {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+/* Da tha cam xuc: chu doi mau theo loai cho de nhan */
+.ft-react-btn.reacted-like { color: #1877f2; }
+.ft-react-btn.reacted-love { color: #e0245e; }
+.ft-react-btn.reacted-haha,
+.ft-react-btn.reacted-wow { color: #f7b125; }
+.ft-react-btn.reacted-sad { color: #f7b125; }
+.ft-react-btn.reacted-angry { color: #e0603a; }
+
+/* Bang chon 6 cam xuc, noi len tren nut */
+.ft-react-picker {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 6px;
+  display: flex;
+  gap: 2px;
+  padding: 4px 6px;
+  background: var(--ft-surface);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 999px;
+  box-shadow: var(--ft-card-shadow);
+  z-index: 20;
+}
+
+.ft-react-opt {
+  border: 0;
+  background: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 2px 4px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: transform 0.12s ease;
+}
+
+.ft-react-opt:hover {
+  transform: scale(1.35);
+}
+
+.ft-react-opt.active {
+  background: var(--ft-accent-soft);
+}
+
+/* Tom tat: cac bieu tuong nhieu nhat + tong so */
+.ft-react-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.82rem;
+  color: var(--bs-secondary-color);
+  letter-spacing: -2px;
+}
+
+.ft-react-summary .ft-num {
+  letter-spacing: 0;
+  margin-left: 3px;
+}
+
+/* Ban gon cho binh luan: nut nho, chu nho, hoa vao hang cong cu */
+.ft-react-compact .ft-react-btn {
+  padding: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+  background: none;
+}
+
+.ft-react-compact .ft-react-btn:hover:not(:disabled) {
+  background: none;
+  text-decoration: underline;
+}
+
+.ft-react-compact .ft-react-btn-emoji {
+  font-size: 0.9rem;
+}
+
+.ft-react-compact .ft-react-summary {
+  font-size: 0.72rem;
+}
+
+.ft-react-compact .ft-react-opt {
+  font-size: 1.25rem;
+}

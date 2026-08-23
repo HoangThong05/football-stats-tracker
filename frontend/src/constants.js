@@ -32,3 +32,15 @@ export const COMPARE_METRICS = [
 ]
 
 export const RANK_MEDALS = { 1: '🥇', 2: '🥈', 3: '🥉' }
+
+// Cam xuc kieu Facebook cho bai viet + binh luan. type khop enum backend.
+export const REACTIONS = [
+  { type: 'LIKE', emoji: '👍', labelKey: 'react_like' },
+  { type: 'LOVE', emoji: '❤️', labelKey: 'react_love' },
+  { type: 'HAHA', emoji: '😆', labelKey: 'react_haha' },
+  { type: 'WOW', emoji: '😮', labelKey: 'react_wow' },
+  { type: 'SAD', emoji: '😢', labelKey: 'react_sad' },
+  { type: 'ANGRY', emoji: '😡', labelKey: 'react_angry' },
+]
+
+export const REACTION_EMOJI = REACTIONS.reduce((m, r) => { m[r.type] = r.emoji; return m }, {})

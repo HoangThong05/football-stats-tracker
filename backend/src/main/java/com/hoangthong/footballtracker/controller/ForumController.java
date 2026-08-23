@@ -136,11 +136,20 @@ public class ForumController {
         service.comment(email, id, body.content(), body.parentId());
     }
 
-    /** Bam lan nua thi bo thich. */
-    @PostMapping("/posts/{id}/like")
-    public void like(@AuthenticationPrincipal String email, @PathVariable long id) {
-        limiter.check("forum-like", email, LIKE_PER_MIN, ONE_MIN);
-        service.toggleLike(email, id);
+    /** Tha / doi / go cam xuc bai viet. Body: { "type": "LIKE"|"LOVE"|"HAHA"|"WOW"|"SAD"|"ANGRY" }. */
+    @PostMapping("/posts/{id}/react")
+    public void reactPost(@AuthenticationPrincipal String email, @PathVariable long id,
+                          @RequestBody(required = false) java.util.Map<String, String> body) {
+        limiter.check("forum-react", email, LIKE_PER_MIN, ONE_MIN);
+        service.reactToPost(email, id, com.hoangthong.footballtracker.entity.ReactionType.fromString(body == null ? null : body.get("type")));
+    }
+
+    /** Tha / doi / go cam xuc BINH LUAN. Body: { "type": ... }. */
+    @PostMapping("/comments/{id}/react")
+    public void reactComment(@AuthenticationPrincipal String email, @PathVariable long id,
+                             @RequestBody(required = false) java.util.Map<String, String> body) {
+        limiter.check("forum-react", email, LIKE_PER_MIN, ONE_MIN);
+        service.reactToComment(email, id, com.hoangthong.footballtracker.entity.ReactionType.fromString(body == null ? null : body.get("type")));
     }
 
     @PostMapping("/posts/{id}/report")

@@ -54,12 +54,13 @@ class ForumServiceTest {
         PostReportRepository reportRepo = mock(PostReportRepository.class);
         UserRepository userRepo = mock(UserRepository.class);
         var moderationRepo = mock(com.hoangthong.footballtracker.repository.ModerationNoticeRepository.class);
+        var commentReactionRepo = mock(com.hoangthong.footballtracker.repository.CommentReactionRepository.class);
 
         when(userRepo.findByEmail("an@example.com")).thenReturn(Optional.of(an));
         when(userRepo.findByEmail("binh@example.com")).thenReturn(Optional.of(binh));
         when(userRepo.findByEmail("admin@example.com")).thenReturn(Optional.of(admin));
 
-        service = new ForumService(postRepo, commentRepo, likeRepo, reportRepo, userRepo, moderationRepo);
+        service = new ForumService(postRepo, commentRepo, likeRepo, reportRepo, userRepo, moderationRepo, commentReactionRepo);
     }
 
     private ForumPost baiCuaAn() {
@@ -137,7 +138,7 @@ class ForumServiceTest {
 
         assertThatThrownBy(() -> service.comment("binh@example.com", 10L, "hay qua", null))
                 .hasMessageContaining("post_not_found");
-        assertThatThrownBy(() -> service.toggleLike("binh@example.com", 10L))
+        assertThatThrownBy(() -> service.reactToPost("binh@example.com", 10L, com.hoangthong.footballtracker.entity.ReactionType.LIKE))
                 .hasMessageContaining("post_not_found");
     }
 
@@ -154,10 +155,10 @@ class ForumServiceTest {
     void bam_thich_lan_hai_thi_bo_thich() {
         baiCuaAn();
         var daThich = new com.hoangthong.footballtracker.entity.PostLike(
-                new ForumPost(an, "x", null), binh);
+                new ForumPost(an, "x", null), binh, com.hoangthong.footballtracker.entity.ReactionType.LIKE);
         when(likeRepo.findByPostIdAndUserId(anyLong(), any())).thenReturn(Optional.of(daThich));
 
-        service.toggleLike("binh@example.com", 10L);
+        service.reactToPost("binh@example.com", 10L, com.hoangthong.footballtracker.entity.ReactionType.LIKE);
 
         verify(likeRepo).delete(daThich);
         verify(likeRepo, never()).save(any());
@@ -168,7 +169,7 @@ class ForumServiceTest {
         baiCuaAn();
         when(likeRepo.findByPostIdAndUserId(anyLong(), any())).thenReturn(Optional.empty());
 
-        service.toggleLike("binh@example.com", 10L);
+        service.reactToPost("binh@example.com", 10L, com.hoangthong.footballtracker.entity.ReactionType.LIKE);
 
         verify(likeRepo).save(any());
     }

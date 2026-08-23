@@ -4,6 +4,7 @@ import { useTranslation } from '../i18n'
 import { imageUploadEnabled, uploadImage } from '../cloudinary'
 import { relativeTime } from '../utils'
 import Avatar from './Avatar'
+import ReactionBar from './ReactionBar'
 import Loading from './Loading'
 
 const MAX_POST = 2000
@@ -240,11 +241,14 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
    * Cho may chu tra loi xong moi doi thi bam tim co do tre thay ro - nhat la khi may
    * chu goi free vua ngu day. Goi that that bai thi load() ben duoi tra lai dung trang thai.
    */
-  const toggleLike = async (post) => {
-    setPosts((list) => list.map((p) => (p.id === post.id
-      ? { ...p, likedByMe: !p.likedByMe, likeCount: p.likeCount + (p.likedByMe ? -1 : 1) }
-      : p)))
-    await act(`/posts/${post.id}/like`)
+  /** Tha / doi / go cam xuc. kind = 'posts' hoac 'comments'. */
+  const react = async (kind, id, type) => {
+    try {
+      await call(`/${kind}/${id}/react`, { method: 'POST', body: JSON.stringify({ type }) })
+      load()
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   const startReply = (postId, comment) => {
@@ -281,6 +285,14 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                   {t('forum_reply')}
                 </button>
               )}
+              <ReactionBar
+                compact
+                current={c.myReaction}
+                counts={c.reactions}
+                total={c.totalReactions}
+                disabled={!token}
+                onReact={(type) => react('comments', c.id, type)}
+              />
               {c.canEdit && (
                 <button type="button" className="ft-name-link text-secondary"
                   onClick={() => startEdit('comment', c.id, c.content)}>
@@ -422,11 +434,13 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
               phan chan cao hon ca phan noi dung.
             */}
             <div className="ft-post-actions">
-              <button className={p.likedByMe ? 'ft-post-action liked' : 'ft-post-action'}
-                disabled={!token} onClick={() => toggleLike(p)} title={t('forum_like')}>
-                <span className="ft-action-icon">{p.likedByMe ? '♥' : '♡'}</span>
-                {p.likeCount > 0 && <span className="ft-num">{p.likeCount}</span>}
-              </button>
+              <ReactionBar
+                current={p.myReaction}
+                counts={p.reactions}
+                total={p.totalReactions}
+                disabled={!token}
+                onReact={(type) => react('posts', p.id, type)}
+              />
               <button className="ft-post-action" disabled={!token} title={t('forum_comment')}
                 onClick={() => setOpenComment((m) => ({ ...m, [p.id]: !m[p.id] }))}>
                 <span className="ft-action-icon">💬</span>

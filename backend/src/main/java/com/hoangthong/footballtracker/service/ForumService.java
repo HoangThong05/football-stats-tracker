@@ -68,17 +68,20 @@ public class ForumService {
     private final PostReportRepository reportRepo;
     private final UserRepository userRepo;
     private final com.hoangthong.footballtracker.repository.ModerationNoticeRepository moderationRepo;
+    private final com.hoangthong.footballtracker.repository.CommentReactionRepository commentReactionRepo;
 
     public ForumService(ForumPostRepository postRepo, ForumCommentRepository commentRepo,
                         PostLikeRepository likeRepo, PostReportRepository reportRepo,
                         UserRepository userRepo,
-                        com.hoangthong.footballtracker.repository.ModerationNoticeRepository moderationRepo) {
+                        com.hoangthong.footballtracker.repository.ModerationNoticeRepository moderationRepo,
+                        com.hoangthong.footballtracker.repository.CommentReactionRepository commentReactionRepo) {
         this.postRepo = postRepo;
         this.commentRepo = commentRepo;
         this.likeRepo = likeRepo;
         this.reportRepo = reportRepo;
         this.userRepo = userRepo;
         this.moderationRepo = moderationRepo;
+        this.commentReactionRepo = commentReactionRepo;
     }
 
     public List<ForumDto.Post> feed(String viewerEmail, int page) {
@@ -151,13 +154,71 @@ public class ForumService {
         commentRepo.save(new ForumComment(post, author, content, parent));
     }
 
-    /** Bam lan nua thi bo thich - mot nut lam ca hai chieu. */
+    /** Tha / doi / go cam xuc bai viet. Bam lai dung loai dang co = go. */
     @Transactional
-    public void toggleLike(String email, long postId) {
+    public void reactToPost(String email, long postId, com.hoangthong.footballtracker.entity.ReactionType type) {
         User user = getUser(email);
         ForumPost post = visiblePost(postId);
-        likeRepo.findByPostIdAndUserId(postId, user.getId())
-                .ifPresentOrElse(likeRepo::delete, () -> likeRepo.save(new PostLike(post, user)));
+        likeRepo.findByPostIdAndUserId(postId, user.getId()).ifPresentOrElse(
+                existing -> {
+                    if (existing.getType() == type) {
+                        likeRepo.delete(existing);
+                    } else {
+                        existing.setType(type);
+                        likeRepo.save(existing);
+                    }
+                },
+                () -> likeRepo.save(new PostLike(post, user, type)));
+    }
+
+    /** Tha / doi / go cam xuc BINH LUAN. */
+    @Transactional
+    public void reactToComment(String email, long commentId, com.hoangthong.footballtracker.entity.ReactionType type) {
+        User user = getUser(email);
+        ForumComment comment = commentRepo.findById(commentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "comment_not_found"));
+        if (comment.getPost().isHidden()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "comment_not_found");
+        }
+        commentReactionRepo.findByCommentIdAndUserId(commentId, user.getId()).ifPresentOrElse(
+                existing -> {
+                    if (existing.getType() == type) {
+                        commentReactionRepo.delete(existing);
+                    } else {
+                        existing.setType(type);
+                        commentReactionRepo.save(existing);
+                    }
+                },
+                () -> commentReactionRepo.save(new com.hoangthong.footballtracker.entity.CommentReaction(comment, user, type)));
+    }
+
+    /** [id, ReactionType|null, count] -> id -> {tenLoai -> so}. Loai null (luot cu) = LIKE. */
+    private static Map<Long, Map<String, Long>> reactionCountsFrom(List<Object[]> rows) {
+        Map<Long, Map<String, Long>> out = new HashMap<>();
+        for (Object[] row : rows) {
+            long id = ((Number) row[0]).longValue();
+            String type = row[1] == null ? com.hoangthong.footballtracker.entity.ReactionType.LIKE.name() : ((com.hoangthong.footballtracker.entity.ReactionType) row[1]).name();
+            long count = ((Number) row[2]).longValue();
+            out.computeIfAbsent(id, k -> new HashMap<>()).merge(type, count, Long::sum);
+        }
+        return out;
+    }
+
+    private static Map<Long, String> myReactionsFrom(List<Object[]> rows) {
+        Map<Long, String> out = new HashMap<>();
+        for (Object[] row : rows) {
+            long id = ((Number) row[0]).longValue();
+            out.put(id, row[1] == null ? com.hoangthong.footballtracker.entity.ReactionType.LIKE.name() : ((com.hoangthong.footballtracker.entity.ReactionType) row[1]).name());
+        }
+        return out;
+    }
+
+    private static long sumReactions(Map<String, Long> m) {
+        long t = 0;
+        for (long v : m.values()) {
+            t += v;
+        }
+        return t;
     }
 
     @Transactional
@@ -253,6 +314,8 @@ public class ForumService {
             notifyRemoval(comment.getAuthor(), "COMMENT", reason, comment.getContent());
         }
 
+        commentReactionRepo.deleteByCommentOrParent(commentId);
+        commentReactionRepo.flush();
         commentRepo.deleteByParentId(commentId);
         // Day cac tra loi xuong CSDL TRUOC khi xoa binh luan cha: parent_id la khoa ngoai
         // tro vao chinh bang nay, xoa cha khi con chua di la vi pham rang buoc
@@ -293,6 +356,8 @@ public class ForumService {
             notifyRemoval(post.getAuthor(), "POST", reason, post.getContent());
         }
 
+        commentReactionRepo.deleteByPostId(postId);
+        commentReactionRepo.flush();
         commentRepo.deleteByPostId(postId);
         likeRepo.deleteByPostId(postId);
         reportRepo.deleteByPostId(postId);
@@ -345,20 +410,33 @@ public class ForumService {
                     c.getAuthor().displayNameOrFallback(),
                     c.getAuthor().getAvatarUrl(),
                     excerpt(c.getContent()),
+                    null,
                     c.getCreatedAt()));
         }
 
         for (PostLike l : likeRepo.findForViewer(viewer.getId(), page)) {
             all.add(new ForumDto.Notification(
-                    "LIKE",
+                    "REACT_POST",
                     l.getPost().getId(),
                     l.getUser().getId(),
                     l.getUser().displayNameOrFallback(),
                     l.getUser().getAvatarUrl(),
-                    // Voi luot thich thi trich chinh BAI CUA MINH: nguoi doc can nho
-                    // la bai nao duoc thich, chu khong phai luot thich noi gi
+                    // Trich chinh BAI CUA MINH: nguoi doc can nho la bai nao duoc tha cam xuc
                     excerpt(l.getPost().getContent()),
+                    l.getType().name(),
                     l.getCreatedAt()));
+        }
+
+        for (com.hoangthong.footballtracker.entity.CommentReaction r : commentReactionRepo.findForViewer(viewer.getId(), page)) {
+            all.add(new ForumDto.Notification(
+                    "REACT_COMMENT",
+                    r.getComment().getPost().getId(),
+                    r.getUser().getId(),
+                    r.getUser().displayNameOrFallback(),
+                    r.getUser().getAvatarUrl(),
+                    excerpt(r.getComment().getContent()),
+                    r.getType().name(),
+                    r.getCreatedAt()));
         }
 
         all.sort(java.util.Comparator.comparing(ForumDto.Notification::createdAt).reversed());
@@ -399,22 +477,30 @@ public class ForumService {
         }
         List<Long> ids = posts.stream().map(ForumPost::getId).toList();
 
-        Map<Long, Long> likeCounts = new HashMap<>();
-        for (Object[] row : likeRepo.countByPostIds(ids)) {
-            likeCounts.put(((Number) row[0]).longValue(), ((Number) row[1]).longValue());
-        }
-
-        Set<Long> likedByMe = viewer == null
-                ? Set.of()
-                : new HashSet<>(likeRepo.findLikedPostIds(viewer.getId(), ids));
+        // Cam xuc cua tung bai (theo loai) + cam xuc cua nguoi xem
+        Map<Long, Map<String, Long>> postReactions = reactionCountsFrom(likeRepo.countByTypePerPost(ids));
+        Map<Long, String> postMyReaction = viewer == null
+                ? Map.of()
+                : myReactionsFrom(likeRepo.findMyReactions(viewer.getId(), ids));
 
         boolean viewerIsAdmin = viewer != null && viewer.getRole() == Role.ADMIN;
         // Mot moc thoi gian dung cho ca trang: hai binh luan cach nhau vai mili giay
         // khong nen mot cai con sua duoc con cai kia thi khong
         java.time.Instant now = java.time.Instant.now();
 
+        // Tat ca binh luan cua cac bai, kem cam xuc tung binh luan
+        List<ForumComment> comments = commentRepo.findByPostIds(ids);
+        List<Long> commentIds = comments.stream().map(ForumComment::getId).toList();
+        Map<Long, Map<String, Long>> commentReactions = commentIds.isEmpty()
+                ? Map.of()
+                : reactionCountsFrom(commentReactionRepo.countByTypePerComment(commentIds));
+        Map<Long, String> commentMyReaction = (viewer == null || commentIds.isEmpty())
+                ? Map.of()
+                : myReactionsFrom(commentReactionRepo.findMyReactions(viewer.getId(), commentIds));
+
         Map<Long, List<ForumDto.Comment>> commentsByPost = new HashMap<>();
-        for (ForumComment c : commentRepo.findByPostIds(ids)) {
+        for (ForumComment c : comments) {
+            Map<String, Long> rc = commentReactions.getOrDefault(c.getId(), Map.of());
             commentsByPost.computeIfAbsent(c.getPost().getId(), k -> new ArrayList<>())
                     .add(new ForumDto.Comment(c.getId(),
                             c.getParent() == null ? null : c.getParent().getId(),
@@ -422,6 +508,7 @@ public class ForumService {
                             c.getAuthor().displayNameOrFallback(), c.getAuthor().getAvatarUrl(),
                             c.getAuthor().getRole() == Role.ADMIN,
                             c.getContent(), c.getCreatedAt(), c.getEditedAt(),
+                            rc, sumReactions(rc), commentMyReaction.get(c.getId()),
                             mine(c.getAuthor(), viewer) && within(c.getCreatedAt(), EDIT_WINDOW, now),
                             viewerIsAdmin
                                     || (mine(c.getAuthor(), viewer)
@@ -461,8 +548,9 @@ public class ForumService {
                     p.getImageUrl(),
                     p.getCreatedAt(),
                     p.getEditedAt(),
-                    likeCounts.getOrDefault(p.getId(), 0L),
-                    likedByMe.contains(p.getId()),
+                    postReactions.getOrDefault(p.getId(), Map.of()),
+                    sumReactions(postReactions.getOrDefault(p.getId(), Map.of())),
+                    postMyReaction.get(p.getId()),
                     canEdit,
                     canDelete,
                     preview);
