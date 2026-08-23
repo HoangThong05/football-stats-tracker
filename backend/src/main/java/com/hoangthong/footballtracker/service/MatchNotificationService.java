@@ -122,19 +122,22 @@ public class MatchNotificationService {
 
     private boolean sendMatchEmail(User user, FavoriteTeam follow, MatchFixture match) {
         String kickoff = VN_FORMAT.format(match.getUtcDate());
+        // So phut con lai tinh tu luc gui - job chay 15 phut/lan nen thuong 45-60 phut
+        long minutesLeft = Math.max(0, Duration.between(Instant.now(), match.getUtcDate()).toMinutes());
         String subject = "⚽ " + follow.getTeamName() + " sắp thi đấu!";
         String body = """
                 Xin chào,
 
-                Đội bạn theo dõi - %s - sắp có trận đấu:
+                Đội bạn theo dõi - %s - sắp thi đấu, còn khoảng %d phút nữa là bóng lăn:
 
                   %s  vs  %s
-                  Thời gian: %s (giờ Việt Nam)
+                  Giờ bóng lăn: %s (giờ Việt Nam)
 
                 Đừng bỏ lỡ nhé!
 
                 -- Football Stats Tracker
-                """.formatted(follow.getTeamName(), match.getHomeTeam(), match.getAwayTeam(), kickoff);
+                """.formatted(follow.getTeamName(), minutesLeft,
+                match.getHomeTeam(), match.getAwayTeam(), kickoff);
 
         return emailService.send(user.getEmail(), subject, body);
     }
