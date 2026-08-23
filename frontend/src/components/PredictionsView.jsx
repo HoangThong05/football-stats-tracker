@@ -244,7 +244,7 @@ export default function PredictionsView({ matches, token, onRefresh, onSelectMat
                   )}
                 </div>
 
-                {error?.id === m.matchId && (
+                {error && error.id === m.matchId && (
                   <div className="text-danger small mt-1">{error.msg}</div>
                 )}
               </li>
