@@ -3278,6 +3278,17 @@ tr[role='button']:hover img,
   z-index: 20;
 }
 
+/* Cau noi trong suot lap khoang trong giua nut va bang: khong co no, ro chuot
+   len bang se bang qua vung trong, mouseleave ban ra va dong bang truoc khi kip bam */
+.ft-react-picker::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 10px;
+}
+
 .ft-react-opt {
   border: 0;
   background: none;
