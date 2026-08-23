@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
+import { shortTeamName } from '../utils'
 import Avatar from './Avatar'
 import Loading from './Loading'
+import PointsAreaChart from './PointsAreaChart'
 
 /**
  * Ho so cong khai cua mot nguoi choi.
@@ -131,6 +133,7 @@ export default function PublicProfile({ userId, token, onBack }) {
           {stat(t('stats_points'), profile.totalPoints)}
           {stat(t('stats_predicted'), profile.totalPredictions)}
           {stat(t('stats_exact'), profile.exactScores)}
+          {stat(t('stats_hit_rate'), `${profile.hitRate ?? 0}%`)}
         </div>
       </div>
 
@@ -146,6 +149,52 @@ export default function PublicProfile({ userId, token, onBack }) {
           </div>
         </div>
       )}
+
+      {(profile.pointsTimeline?.length ?? 0) >= 3 && (
+        <div className="ft-card p-3 mt-3">
+          <div className="fw-semibold mb-1">{t('myp_chart_points_title')}</div>
+          <PointsAreaChart points={profile.pointsTimeline} ariaLabel={t('myp_chart_points_title')} />
+          <div className="text-secondary small mt-2">
+            {t('myp_points_cumulative_total')}{' '}
+            <strong className="text-body ft-num">
+              {profile.pointsTimeline.reduce((s, p) => s + p, 0)} {t('myp_points_suffix')}
+            </strong>
+          </div>
+        </div>
+      )}
+
+      <div className="row g-3 mt-0">
+        {profile.favorites?.length > 0 && (
+          <div className="col-12 col-md-6">
+            <div className="ft-card p-3 h-100">
+              <div className="fw-semibold mb-2">
+                {t('profile_favorites_title')}{' '}
+                <span className="text-secondary ft-num">({profile.favorites.length})</span>
+              </div>
+              <ul className="list-group list-group-flush">
+                {profile.favorites.map((f) => (
+                  <li key={f.teamId} className="list-group-item d-flex align-items-center gap-2 px-0">
+                    {f.teamCrest && <img src={f.teamCrest} alt="" width="22" height="22" loading="lazy" />}
+                    <span className="fw-medium text-truncate" title={f.teamName}>{shortTeamName(f.teamName)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {(profile.friendsCount ?? 0) > 0 && (
+          <div className="col-12 col-md-6">
+            <div className="ft-card p-3 h-100 d-flex align-items-center gap-3">
+              <span style={{ fontSize: '1.6rem' }}>🤝</span>
+              <div>
+                <div className="ft-num fw-bold fs-4">{profile.friendsCount}</div>
+                <div className="text-secondary small">{t('pub_friends_count')}</div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

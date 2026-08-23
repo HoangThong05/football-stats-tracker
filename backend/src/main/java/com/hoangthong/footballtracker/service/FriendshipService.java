@@ -130,6 +130,11 @@ public class FriendshipService {
                 .toList();
     }
 
+    /** So ban be (quan he da chap nhan) - dung cho ho so cong khai. */
+    public long friendsCount(long userId) {
+        return friendshipRepository.countAcceptedOf(userId);
+    }
+
     private static FriendDto toDto(User u, Friendship f) {
         return new FriendDto(u.getId(), u.displayNameOrFallback(), u.getAvatarUrl(),
                 f.getCreatedAt().toString());

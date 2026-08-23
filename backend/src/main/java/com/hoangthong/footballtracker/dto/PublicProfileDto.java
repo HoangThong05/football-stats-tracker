@@ -18,6 +18,14 @@ public record PublicProfileDto(
         long totalPoints,
         long totalPredictions,
         long exactScores,
+        /** % du doan CO DIEM (gom ca dung ket qua), 0-100. */
+        int hitRate,
+        /** So ban be. Chi con so, KHONG kem danh sach ten - tranh lo quan he. */
+        long friendsCount,
+        /** Doi dang theo doi. */
+        List<FavoriteTeamDto> favorites,
+        /** Diem tung du doan da cham, cu -> moi. Frontend cong don ve bieu do. */
+        List<Integer> pointsTimeline,
         List<BadgeDto> badges,
         /** Quan he voi nguoi DANG XEM: NONE / PENDING_SENT / PENDING_RECEIVED / FRIENDS / SELF. */
         String relation

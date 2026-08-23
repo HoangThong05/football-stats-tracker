@@ -32,6 +32,14 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
             """)
     List<Friendship> findAcceptedOf(@Param("userId") Long userId);
 
+    /** Dem ban be (quan he da chap nhan) - nhe hon findAcceptedOf vi khong nap user. */
+    @Query("""
+            SELECT COUNT(f) FROM Friendship f
+            WHERE (f.requester.id = :userId OR f.addressee.id = :userId)
+              AND f.status = com.hoangthong.footballtracker.entity.Friendship$Status.ACCEPTED
+            """)
+    long countAcceptedOf(@Param("userId") Long userId);
+
     /**
      * Loi moi MINH da gui vua duoc chap nhan, moi nhat truoc. Nguon cho thong bao chuong.
      *
