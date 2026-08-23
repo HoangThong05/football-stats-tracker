@@ -54,12 +54,20 @@ export default function HeadToHead({ teamAId, teamBId, perspectiveTeamId }) {
                     : 'text-secondary'
 
             return (
-              <div key={m.id} className="d-flex align-items-center justify-content-between small">
-                <span className="text-secondary" style={{ minWidth: 150 }}>
-                  {formatKickoff(m.utcDate, lang, { includeYear: true })}
+              <div key={m.id} className="ft-fixture-row small">
+                <span className="text-secondary ft-fixture-time">
+                  <span className="d-block ft-predict-when">
+                    {formatKickoff(m.utcDate, lang, { includeYear: true })}
+                  </span>
                 </span>
-                <span className="flex-grow-1 text-center">
-                  {shortTeamName(m.homeTeam)} <span className={`fw-bold ${outcomeClass}`}>{m.homeScore} - {m.awayScore}</span> {shortTeamName(m.awayTeam)}
+                <span className="ft-fixture-home d-block text-truncate text-end fw-medium" title={m.homeTeam}>
+                  {shortTeamName(m.homeTeam)}
+                </span>
+                <span className={`ft-fixture-score fw-bold text-center ${outcomeClass}`}>
+                  {m.homeScore} - {m.awayScore}
+                </span>
+                <span className="ft-fixture-away d-block text-truncate fw-medium" title={m.awayTeam}>
+                  {shortTeamName(m.awayTeam)}
                 </span>
               </div>
             )
