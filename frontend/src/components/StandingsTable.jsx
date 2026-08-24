@@ -135,13 +135,15 @@ export default function StandingsTable({ rows, zones, onSelectTeam, fetchedAt })
                     className={rowClass(r.position, rows.length, activeZones, isFullTable)}
                   >
                     <td>
-                      {/* Top 3 hien huy chuong THAY so o cot thu hang (giong BXH du doan),
-                          de cot Doi chi con logo + ten, thang hang voi tieu de */}
-                      {teamsAtPosition[r.position] === 1 && RANK_MEDALS[r.position] ? (
-                        <span className="ft-rank-medal" aria-hidden="true">{RANK_MEDALS[r.position]}</span>
-                      ) : (
+                      {/* Giu badge so (co mau vung) cho MOI doi; top 3 them huy chuong ben canh.
+                          Huy chuong nam trong cot # nen khong day logo doi - moi o cung cot
+                          co chung be rong, logo van thang hang. */}
+                      <span className="d-inline-flex align-items-center gap-1">
                         <span className={posClass(r.position, rows.length, activeZones)}>{r.position}</span>
-                      )}
+                        {teamsAtPosition[r.position] === 1 && RANK_MEDALS[r.position] && (
+                          <span className="ft-rank-medal" aria-hidden="true">{RANK_MEDALS[r.position]}</span>
+                        )}
+                      </span>
                     </td>
                     <td className="ft-team-cell">
                       <div className="d-flex align-items-center gap-2">
