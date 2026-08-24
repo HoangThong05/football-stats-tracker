@@ -98,3 +98,29 @@ export async function uploadMedia(file) {
   const data = await res.json()
   return data.secure_url
 }
+
+/**
+ * Tai mot anh/GIF tu URL ben ngoai (vd GIF cua Giphy) LEN Cloudinary, tra ve URL Cloudinary.
+ *
+ * Cloudinary tu di lay tep tu URL do (khong can trinh duyet tai ve truoc). Nho vay du
+ * chon GIF tu Giphy, thu cuoi cung luu van la URL Cloudinary - giu nguyen tac backend
+ * chi nhan res.cloudinary.com.
+ */
+export async function uploadFromUrl(remoteUrl) {
+  if (!imageUploadEnabled()) {
+    throw new Error('image_upload_disabled')
+  }
+  const form = new FormData()
+  form.append('file', remoteUrl)
+  form.append('upload_preset', UPLOAD_PRESET)
+
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+    method: 'POST',
+    body: form,
+  })
+  if (!res.ok) {
+    throw new Error('image_upload_failed')
+  }
+  const data = await res.json()
+  return data.secure_url
+}

@@ -28,6 +28,10 @@ public class RoomMessage {
     @Column(nullable = false, length = MAX_LENGTH)
     private String content;
 
+    /** Anh/GIF dinh kem (Cloudinary). null = tin chi co chu. */
+    @Column(length = 500)
+    private String imageUrl;
+
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -45,5 +49,9 @@ public class RoomMessage {
     public MiniLeague getLeague() { return league; }
     public User getAuthor() { return author; }
     public String getContent() { return content; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = (imageUrl == null || imageUrl.isBlank()) ? null : imageUrl;
+    }
     public Instant getCreatedAt() { return createdAt; }
 }

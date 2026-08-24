@@ -3,6 +3,8 @@ import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import Avatar from './Avatar'
 import BadgeFlair from './BadgeFlair'
+import GifPicker from './GifPicker'
+import { giphyEnabled } from '../giphy'
 
 const MAX_LENGTH = 500
 const REFRESH_MS = 15_000
@@ -18,6 +20,7 @@ export default function RoomChat({ token, leagueId, myUserId, onSelectUser }) {
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
+  const [showGif, setShowGif] = useState(false)
   const boxRef = useRef(null)
   // Chi tu cuon xuong khi nguoi dung DANG o duoi cung - dang doc tin cu thi de yen
   const stickToBottom = useRef(true)
@@ -60,6 +63,24 @@ export default function RoomChat({ token, leagueId, myUserId, onSelectUser }) {
       }
     } finally {
       setSending(false)
+    }
+  }
+
+  // GIF gui ngay thanh mot tin rieng (url da la Cloudinary tu GifPicker)
+  const sendGif = async (url) => {
+    setShowGif(false)
+    try {
+      const res = await fetch(`${API_BASE}/leagues/${leagueId}/messages`, {
+        method: 'POST',
+        headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: '', imageUrl: url }),
+      })
+      if (res.ok) {
+        stickToBottom.current = true
+        load()
+      }
+    } catch {
+      /* bo qua */
     }
   }
 
@@ -115,9 +136,14 @@ export default function RoomChat({ token, leagueId, myUserId, onSelectUser }) {
                         <BadgeFlair code={m.authorBadge} />
                       </button>
                     )}
-                    <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
-                      {m.content}
-                    </span>
+                    {m.content && (
+                      <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+                        {m.content}
+                      </span>
+                    )}
+                    {m.imageUrl && (
+                      <img src={m.imageUrl} alt="" loading="lazy" className="ft-comment-image" />
+                    )}
                   </div>
                 </div>
               )
@@ -133,12 +159,19 @@ export default function RoomChat({ token, leagueId, myUserId, onSelectUser }) {
             maxLength={MAX_LENGTH}
             onChange={(e) => setText(e.target.value)}
           />
+          {giphyEnabled() && (
+            <button type="button" className="ft-gif-open-btn flex-shrink-0" onClick={() => setShowGif(true)}>
+              {t('gif_btn')}
+            </button>
+          )}
           <button className="btn btn-success rounded-pill px-3 flex-shrink-0"
             disabled={sending || !text.trim()}>
             {t('chat_send')}
           </button>
         </form>
       </div>
+
+      {showGif && <GifPicker onPick={sendGif} onClose={() => setShowGif(false)} />}
     </div>
   )
 }

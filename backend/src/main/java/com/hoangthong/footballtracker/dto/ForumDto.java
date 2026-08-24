@@ -14,7 +14,10 @@ public class ForumDto {
                           boolean authorIsAdmin,
                           /** Ma huy hieu nguoi viet ghim canh ten. null = khong ghim. */
                           String authorBadge,
-                          String content, Instant createdAt,
+                          String content,
+                          /** Anh/GIF dinh kem. null = khong co. */
+                          String imageUrl,
+                          Instant createdAt,
                           /** Lan sua gan nhat. null = chua sua -> khong hien nhan "da chinh sua". */
                           Instant editedAt,
                           /** So cam xuc theo loai: {"LIKE":3,"LOVE":1}. */
@@ -86,7 +89,7 @@ public class ForumDto {
 
     public record CreatePostRequest(String content, String imageUrl) {}
 
-    public record CommentRequest(String content, Long parentId) {}
+    public record CommentRequest(String content, String imageUrl, Long parentId) {}
 
     /** Dung chung cho sua bai va sua binh luan - ca hai chi doi phan chu. */
     public record EditRequest(String content) {}

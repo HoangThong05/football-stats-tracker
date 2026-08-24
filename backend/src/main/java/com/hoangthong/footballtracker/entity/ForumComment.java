@@ -37,6 +37,10 @@ public class ForumComment {
     @Column(nullable = false, length = MAX_CONTENT)
     private String content;
 
+    /** Anh/GIF dinh kem (Cloudinary). null = binh luan chi co chu. */
+    @Column(length = 500)
+    private String imageUrl;
+
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -65,6 +69,10 @@ public class ForumComment {
     public User getAuthor() { return author; }
     public ForumComment getParent() { return parent; }
     public String getContent() { return content; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = (imageUrl == null || imageUrl.isBlank()) ? null : imageUrl;
+    }
     public Instant getCreatedAt() { return createdAt; }
 
     public Instant getEditedAt() { return editedAt; }

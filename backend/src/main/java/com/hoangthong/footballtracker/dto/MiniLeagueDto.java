@@ -66,7 +66,10 @@ public class MiniLeagueDto {
                                  String authorAvatar,
                                  /** Ma huy hieu nguoi nhan ghim canh ten. null = khong ghim. */
                                  String authorBadge,
-                                 String content, Instant createdAt) {}
+                                 String content,
+                                 /** Anh/GIF dinh kem. null = khong co. */
+                                 String imageUrl,
+                                 Instant createdAt) {}
 
     /** BXH day du cua phong */
     public record LeagueLeaderboardResponse(

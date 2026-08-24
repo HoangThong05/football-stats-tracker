@@ -132,11 +132,13 @@ public class ForumService {
     }
 
     @Transactional
-    public void comment(String email, long postId, String rawContent, Long parentId) {
+    public void comment(String email, long postId, String rawContent, String rawImageUrl, Long parentId) {
         User author = getUser(email);
         ForumPost post = visiblePost(postId);
         String content = rawContent == null ? "" : rawContent.trim();
-        if (content.isEmpty()) {
+        // Binh luan chi co GIF/anh van hop le - nhung khong duoc trong ca hai
+        String image = cleanImageUrl(rawImageUrl);
+        if (content.isEmpty() && image == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "comment_empty");
         }
         if (content.length() > ForumComment.MAX_CONTENT) {
@@ -159,7 +161,9 @@ public class ForumService {
                 parent = parent.getParent();
             }
         }
-        commentRepo.save(new ForumComment(post, author, content, parent));
+        ForumComment saved = new ForumComment(post, author, content, parent);
+        saved.setImageUrl(image);
+        commentRepo.save(saved);
 
         // Day thong bao: tra loi -> bao chu binh luan goc; binh luan bai -> bao chu bai.
         // Khong bao cho chinh minh.
@@ -590,7 +594,7 @@ public class ForumService {
                             c.getAuthor().displayNameOrFallback(), c.getAuthor().getAvatarUrl(),
                             c.getAuthor().getRole() == Role.ADMIN,
                             c.getAuthor().getFeaturedBadge(),
-                            c.getContent(), c.getCreatedAt(), c.getEditedAt(),
+                            c.getContent(), c.getImageUrl(), c.getCreatedAt(), c.getEditedAt(),
                             rc, sumReactions(rc), commentMyReaction.get(c.getId()),
                             mine(c.getAuthor(), viewer) && within(c.getCreatedAt(), EDIT_WINDOW, now),
                             viewerIsAdmin

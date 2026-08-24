@@ -85,7 +85,7 @@ public class MiniLeagueController {
                             @PathVariable Long id,
                             @RequestBody java.util.Map<String, String> body) {
         limiter.check("league-message", email, MESSAGE_PER_MIN, Duration.ofMinutes(1));
-        service.postMessage(email, id, body.get("content"));
+        service.postMessage(email, id, body.get("content"), body.get("imageUrl"));
     }
 
     @DeleteMapping("/{id}/leave")

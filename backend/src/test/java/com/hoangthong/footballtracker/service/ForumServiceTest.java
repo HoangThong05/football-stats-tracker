@@ -137,7 +137,7 @@ class ForumServiceTest {
         ForumPost post = baiCuaAn();
         post.setHidden(true);
 
-        assertThatThrownBy(() -> service.comment("binh@example.com", 10L, "hay qua", null))
+        assertThatThrownBy(() -> service.comment("binh@example.com", 10L, "hay qua", null, null))
                 .hasMessageContaining("post_not_found");
         assertThatThrownBy(() -> service.reactToPost("binh@example.com", 10L, com.hoangthong.footballtracker.entity.ReactionType.LIKE))
                 .hasMessageContaining("post_not_found");
@@ -147,7 +147,7 @@ class ForumServiceTest {
     void binh_luan_trong_thi_bi_tu_choi() {
         baiCuaAn();
 
-        assertThatThrownBy(() -> service.comment("binh@example.com", 10L, "  ", null))
+        assertThatThrownBy(() -> service.comment("binh@example.com", 10L, "  ", null, null))
                 .hasMessageContaining("comment_empty");
     }
 

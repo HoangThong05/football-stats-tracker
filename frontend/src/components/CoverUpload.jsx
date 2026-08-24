@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { imageUploadEnabled, uploadMedia } from '../cloudinary'
 import { useTranslation } from '../i18n'
+import { giphyEnabled } from '../giphy'
 import CoverMedia from './CoverMedia'
+import GifPicker from './GifPicker'
 
 const clamp = (v) => Math.max(0, Math.min(100, v))
 
@@ -18,6 +20,7 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const [moving, setMoving] = useState(false) // dang keo chinh vi tri
+  const [showGif, setShowGif] = useState(false)
   const [pos, setPos] = useState(coverPos ?? 50)
   const drag = useRef(null)
 
@@ -130,6 +133,12 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
                 onClick={() => fileRef.current?.click()}>
                 {busy ? '…' : `📷 ${coverUrl ? t('profile_cover_change') : t('profile_cover_add')}`}
               </button>
+              {giphyEnabled() && (
+                <button type="button" className="ft-cover-btn" disabled={busy}
+                  onClick={() => setShowGif(true)}>
+                  {t('gif_btn')}
+                </button>
+              )}
               {coverUrl && (
                 <button type="button" className="ft-cover-btn" disabled={busy}
                   onClick={() => setMoving(true)}>
@@ -151,6 +160,13 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
 
       {moving && <div className="ft-cover-hint">{t('profile_cover_drag_hint')}</div>}
       {error && <div className="ft-cover-error small">{error}</div>}
+
+      {showGif && (
+        <GifPicker
+          onClose={() => setShowGif(false)}
+          onPick={(url) => { setShowGif(false); run(async () => save(url, 50)) }}
+        />
+      )}
     </div>
   )
 }

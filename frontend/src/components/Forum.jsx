@@ -2,11 +2,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import { imageUploadEnabled, uploadMedia } from '../cloudinary'
+import { giphyEnabled } from '../giphy'
 import { relativeTime, isVideoUrl } from '../utils'
 import Avatar from './Avatar'
 import BadgeFlair from './BadgeFlair'
 import ReactionBar from './ReactionBar'
 import ReactionsModal from './ReactionsModal'
+import GifPicker from './GifPicker'
 import Lightbox from './Lightbox'
 import Loading from './Loading'
 import { toast } from '../ui/toast'
@@ -60,6 +62,10 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
   const [lightbox, setLightbox] = useState(null)
   // Bai nao dang gui binh luan - khoa nut Gui de bam nhieu lan khong ra nhieu cmt
   const [sendingPost, setSendingPost] = useState(null)
+  // O chon GIF dang mo cho muc tieu nao: 'post' | postId (so, cho o binh luan) | null
+  const [gifTarget, setGifTarget] = useState(null)
+  // GIF/anh dinh kem cho o binh luan tung bai: { [postId]: url }
+  const [commentImage, setCommentImage] = useState({})
 
   const errMap = {
     post_empty: t('forum_err_empty'),
@@ -161,16 +167,18 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
 
   const submitComment = async (postId) => {
     const content = (commentText[postId] || '').trim()
-    if (!content) return
+    const image = commentImage[postId] || null
+    if (!content && !image) return
     // Dang gui bai nay roi -> bo qua, tranh bam nhieu lan ra nhieu cmt trung
     if (sendingPost === postId) return
     setSendingPost(postId)
     try {
       await call(`/posts/${postId}/comments`, {
         method: 'POST',
-        body: JSON.stringify({ content, parentId: replyTo[postId]?.id ?? null }),
+        body: JSON.stringify({ content, imageUrl: image, parentId: replyTo[postId]?.id ?? null }),
       })
       setCommentText((m) => ({ ...m, [postId]: '' }))
+      setCommentImage((m) => ({ ...m, [postId]: null }))
       setReplyTo((m) => ({ ...m, [postId]: null }))
       load()
     } catch (err) {
@@ -285,6 +293,17 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
     }
   }
 
+  // Chon GIF xong (da la URL Cloudinary): gan vao dung muc tieu
+  const onGifPick = (url) => {
+    if (gifTarget === 'post') {
+      setImageUrl(url)
+    } else if (typeof gifTarget === 'number') {
+      setCommentImage((m) => ({ ...m, [gifTarget]: url }))
+      setOpenComment((m) => ({ ...m, [gifTarget]: true }))
+    }
+    setGifTarget(null)
+  }
+
   const startReply = (postId, comment) => {
     setReplyTo((m) => ({ ...m, [postId]: comment }))
     setOpenComment((m) => ({ ...m, [postId]: true }))
@@ -310,7 +329,11 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                 {c.authorIsAdmin && <span className="ft-admin-tag ms-1">{t('role_admin')}</span>}
                 <BadgeFlair code={c.authorBadge} />
               </button>
-              <span className="small" style={{ overflowWrap: 'anywhere' }}>{c.content}</span>
+              {c.content && <span className="small" style={{ overflowWrap: 'anywhere' }}>{c.content}</span>}
+              {c.imageUrl && (
+                <img src={c.imageUrl} alt="" loading="lazy" className="ft-comment-image"
+                  role="button" onClick={() => setLightbox(c.imageUrl)} />
+              )}
             </div>
 
             <div className="ft-comment-tools">
@@ -405,6 +428,11 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                 {uploading ? t('forum_uploading') : t('forum_add_image')}
                 <input type="file" accept="image/*,video/*" hidden onChange={pickMedia} disabled={uploading} />
               </label>
+            )}
+            {giphyEnabled() && (
+              <button type="button" className="ft-gif-open-btn" onClick={() => setGifTarget('post')}>
+                {t('gif_btn')}
+              </button>
             )}
             {text.length >= MAX_POST * 0.8 && (
               <span className="text-secondary small">{text.length}/{MAX_POST}</span>
@@ -528,6 +556,14 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                       </button>
                     </div>
                   )}
+                  {/* GIF/anh dinh kem dang cho gui */}
+                  {commentImage[p.id] && (
+                    <div className="ft-comment-attach">
+                      <img src={commentImage[p.id]} alt="" />
+                      <button type="button" className="ft-comment-attach-x"
+                        onClick={() => setCommentImage((m) => ({ ...m, [p.id]: null }))} aria-label="X">✕</button>
+                    </div>
+                  )}
                   <div className="d-flex gap-2 align-items-center">
                     <Avatar name={myName} src={myAvatar} size={28} />
                     <input
@@ -539,8 +575,14 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                       onChange={(e) => setCommentText((m) => ({ ...m, [p.id]: e.target.value }))}
                       onKeyDown={(e) => e.key === 'Enter' && !e.repeat && submitComment(p.id)}
                     />
+                    {giphyEnabled() && (
+                      <button type="button" className="ft-gif-open-btn flex-shrink-0"
+                        onClick={() => setGifTarget(p.id)}>
+                        {t('gif_btn')}
+                      </button>
+                    )}
                     <button className="btn btn-sm btn-success rounded-pill flex-shrink-0"
-                      disabled={sendingPost === p.id || !(commentText[p.id] || '').trim()}
+                      disabled={sendingPost === p.id || (!(commentText[p.id] || '').trim() && !commentImage[p.id])}
                       onClick={() => submitComment(p.id)}>
                       {t('chat_send')}
                     </button>
@@ -564,6 +606,10 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
       )}
 
       <Lightbox url={lightbox} onClose={() => setLightbox(null)} />
+
+      {gifTarget !== null && (
+        <GifPicker onPick={onGifPick} onClose={() => setGifTarget(null)} />
+      )}
     </div>
   )
 }

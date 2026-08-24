@@ -133,7 +133,7 @@ public class ForumController {
     public void comment(@AuthenticationPrincipal String email, @PathVariable long id,
                         @RequestBody ForumDto.CommentRequest body) {
         limiter.check("forum-comment", email, COMMENT_PER_10MIN, TEN_MIN);
-        service.comment(email, id, body.content(), body.parentId());
+        service.comment(email, id, body.content(), body.imageUrl(), body.parentId());
     }
 
     /** Tha / doi / go cam xuc bai viet. Body: { "type": "LIKE"|"LOVE"|"HAHA"|"WOW"|"SAD"|"ANGRY" }. */

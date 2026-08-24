@@ -175,22 +175,26 @@ public class MiniLeagueService {
                         m.getAuthor().getAvatarUrl(),
                         m.getAuthor().getFeaturedBadge(),
                         m.getContent(),
+                        m.getImageUrl(),
                         m.getCreatedAt()))
                 .toList();
     }
 
     @Transactional
-    public void postMessage(String email, Long leagueId, String rawContent) {
+    public void postMessage(String email, Long leagueId, String rawContent, String rawImageUrl) {
         MiniLeague league = requireMember(email, leagueId);
         String content = rawContent == null ? "" : rawContent.trim();
-        if (content.isEmpty()) {
+        // Tin chi co GIF/anh van hop le - nhung khong duoc trong ca hai
+        String image = com.hoangthong.footballtracker.service.ImageUrl.clean(rawImageUrl);
+        if (content.isEmpty() && image == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "message_empty");
         }
         if (content.length() > com.hoangthong.footballtracker.entity.RoomMessage.MAX_LENGTH) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "message_too_long");
         }
-        messageRepo.save(new com.hoangthong.footballtracker.entity.RoomMessage(
-                league, getUser(email), content));
+        var msg = new com.hoangthong.footballtracker.entity.RoomMessage(league, getUser(email), content);
+        msg.setImageUrl(image);
+        messageRepo.save(msg);
     }
 
     /**
