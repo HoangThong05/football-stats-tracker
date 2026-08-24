@@ -5,6 +5,7 @@ import { useTranslation } from '../i18n'
 import { giphyEnabled } from '../giphy'
 import CoverMedia from './CoverMedia'
 import GifPicker from './GifPicker'
+import CoverAddDialog from './CoverAddDialog'
 
 const clamp = (v) => Math.max(0, Math.min(100, v))
 
@@ -21,6 +22,7 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
   const [error, setError] = useState(null)
   const [moving, setMoving] = useState(false) // dang keo chinh vi tri
   const [showGif, setShowGif] = useState(false)
+  const [showAdd, setShowAdd] = useState(false) // hop 2 o kieu Discord
   const [pos, setPos] = useState(coverPos ?? 50)
   const drag = useRef(null)
 
@@ -130,15 +132,9 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
           ) : (
             <>
               <button type="button" className="ft-cover-btn" disabled={busy}
-                onClick={() => fileRef.current?.click()}>
+                onClick={() => (giphyEnabled() ? setShowAdd(true) : fileRef.current?.click())}>
                 {busy ? '…' : `📷 ${coverUrl ? t('profile_cover_change') : t('profile_cover_add')}`}
               </button>
-              {giphyEnabled() && (
-                <button type="button" className="ft-cover-btn" disabled={busy}
-                  onClick={() => setShowGif(true)}>
-                  {t('gif_btn')}
-                </button>
-              )}
               {coverUrl && (
                 <button type="button" className="ft-cover-btn" disabled={busy}
                   onClick={() => setMoving(true)}>
@@ -159,6 +155,14 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
 
       {moving && <div className="ft-cover-hint">{t('profile_cover_drag_hint')}</div>}
       {error && <div className="ft-cover-error small">{error}</div>}
+
+      {showAdd && (
+        <CoverAddDialog
+          onClose={() => setShowAdd(false)}
+          onUpload={() => { setShowAdd(false); fileRef.current?.click() }}
+          onGif={() => { setShowAdd(false); setShowGif(true) }}
+        />
+      )}
 
       {showGif && (
         <GifPicker

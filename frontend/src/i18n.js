@@ -185,6 +185,10 @@ export const translations = {
     profile_cover_reposition: 'Chỉnh vị trí',
     profile_cover_save_pos: 'Lưu vị trí',
     profile_cover_drag_hint: 'Kéo ảnh lên/xuống để chọn phần hiển thị',
+    cover_pick_title: 'Chọn ảnh bìa',
+    cover_pick_upload: 'Tải lên ảnh',
+    cover_pick_gif: 'Chọn GIF',
+    cover_pick_note: 'Ảnh PNG, JPG hoặc GIF, dưới 10MB.',
 
     standings_search_placeholder: '🔍 Tìm đội bóng...',
     standings_no_match_prefix: 'Không tìm thấy đội nào khớp',
@@ -689,6 +693,10 @@ export const translations = {
     profile_cover_reposition: 'Reposition',
     profile_cover_save_pos: 'Save position',
     profile_cover_drag_hint: 'Drag the photo up/down to choose what shows',
+    cover_pick_title: 'Choose a cover',
+    cover_pick_upload: 'Upload image',
+    cover_pick_gif: 'Choose GIF',
+    cover_pick_note: 'PNG, JPG or GIF image, under 10MB.',
 
     standings_search_placeholder: '🔍 Search teams...',
     standings_no_match_prefix: 'No team matches',

@@ -3032,6 +3032,65 @@ video.ft-post-image {
   border-top: 1px solid var(--bs-border-color-translucent);
 }
 
+/* Hop chon anh bia kieu Discord (2 o) */
+.ft-cover-dialog {
+  width: 100%;
+  max-width: 460px;
+  background: var(--ft-surface);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 14px;
+  box-shadow: var(--ft-card-shadow);
+  overflow: hidden;
+}
+.ft-cover-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+.ft-cover-dialog-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 14px;
+}
+.ft-cover-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 120px;
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 12px;
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.ft-cover-card:hover {
+  border-color: var(--ft-accent-strong);
+  background: var(--ft-accent-soft);
+}
+.ft-cover-card-icon { font-size: 1.8rem; line-height: 1; }
+.ft-cover-card-badge {
+  font-size: 0.9rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--ft-accent-strong);
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+.ft-cover-dialog-note {
+  margin: 0;
+  padding: 0 14px 14px;
+  font-size: 0.78rem;
+  color: var(--bs-secondary-color);
+}
+
 /* Nut mo o chon GIF - dung nhip voi nut them anh */
 .ft-gif-open-btn {
   border: 1px solid var(--bs-border-color-translucent);
