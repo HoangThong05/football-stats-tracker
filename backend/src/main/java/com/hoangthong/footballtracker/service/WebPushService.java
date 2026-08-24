@@ -94,7 +94,8 @@ public class WebPushService {
                 || auth == null || auth.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_subscription");
         }
-        if (endpoint.length() > 1000) {
+        // Endpoint that cua dich vu push luon la https - chan luu chuoi rac / URL la
+        if (endpoint.length() > 1000 || !endpoint.startsWith("https://")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_subscription");
         }
         repo.findByEndpoint(endpoint).ifPresent(repo::delete);
@@ -102,11 +103,15 @@ public class WebPushService {
         repo.save(new PushSubscription(user, endpoint, p256dh, auth));
     }
 
-    /** Quen mot dang ky (khi nguoi dung tat thong bao tren thiet bi do). */
+    /**
+     * Quen mot dang ky cua CHINH nguoi goi (khi ho tat thong bao tren thiet bi do).
+     *
+     * Xoa gioi han theo userId: khong cho ai xoa dang ky cua nguoi khac du co biet endpoint.
+     */
     @Transactional
-    public void unsubscribe(String endpoint) {
-        if (endpoint != null && !endpoint.isBlank()) {
-            repo.deleteByEndpoint(endpoint);
+    public void unsubscribe(User user, String endpoint) {
+        if (user != null && endpoint != null && !endpoint.isBlank()) {
+            repo.deleteByEndpointAndUserId(endpoint, user.getId());
         }
     }
 

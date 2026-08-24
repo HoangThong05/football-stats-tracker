@@ -103,6 +103,7 @@ public class PredictionController {
     @org.springframework.web.bind.annotation.PostMapping("/badges/featured")
     public void setFeaturedBadge(@AuthenticationPrincipal String email,
                                  @RequestBody(required = false) java.util.Map<String, String> body) {
+        limiter.check("badge-featured", email, 30, java.time.Duration.ofMinutes(1));
         badgeService.setFeaturedBadge(email, body == null ? null : body.get("code"));
     }
 

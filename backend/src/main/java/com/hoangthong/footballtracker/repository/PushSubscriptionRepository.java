@@ -17,4 +17,8 @@ public interface PushSubscriptionRepository extends JpaRepository<PushSubscripti
     // @Transactional: derived delete phai chay trong giao dich, khong thi nem loi
     @Transactional
     void deleteByEndpoint(String endpoint);
+
+    /** Xoa dang ky CHI khi endpoint thuoc dung nguoi goi - tranh xoa nham cua nguoi khac. */
+    @Transactional
+    void deleteByEndpointAndUserId(String endpoint, Long userId);
 }

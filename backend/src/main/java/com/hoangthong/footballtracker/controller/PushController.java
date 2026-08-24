@@ -3,6 +3,7 @@ package com.hoangthong.footballtracker.controller;
 import com.hoangthong.footballtracker.entity.User;
 import com.hoangthong.footballtracker.repository.UserRepository;
 import com.hoangthong.footballtracker.service.WebPushService;
+import com.hoangthong.footballtracker.service.WriteRateLimiter;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,12 +25,18 @@ import java.util.Map;
 @RequestMapping("/api/push")
 public class PushController {
 
+    // Nguong rong rai - nguoi that bat/tat vai lan la cung; chi chan script goi lien tuc
+    private static final int PUSH_PER_MIN = 30;
+    private static final java.time.Duration ONE_MIN = java.time.Duration.ofMinutes(1);
+
     private final WebPushService webPush;
     private final UserRepository userRepo;
+    private final WriteRateLimiter limiter;
 
-    public PushController(WebPushService webPush, UserRepository userRepo) {
+    public PushController(WebPushService webPush, UserRepository userRepo, WriteRateLimiter limiter) {
         this.webPush = webPush;
         this.userRepo = userRepo;
+        this.limiter = limiter;
     }
 
     /**
@@ -47,6 +54,7 @@ public class PushController {
     @PostMapping("/subscribe")
     @SuppressWarnings("unchecked")
     public void subscribe(@AuthenticationPrincipal String email, @RequestBody Map<String, Object> body) {
+        limiter.check("push-sub", email, PUSH_PER_MIN, ONE_MIN);
         User user = requireUser(email);
         Object endpoint = body.get("endpoint");
         Object keysObj = body.get("keys");
@@ -65,8 +73,9 @@ public class PushController {
     /** Xoa mot dang ky. Body: { endpoint }. */
     @PostMapping("/unsubscribe")
     public void unsubscribe(@AuthenticationPrincipal String email, @RequestBody Map<String, String> body) {
-        requireUser(email);
-        webPush.unsubscribe(body == null ? null : body.get("endpoint"));
+        limiter.check("push-sub", email, PUSH_PER_MIN, ONE_MIN);
+        User user = requireUser(email);
+        webPush.unsubscribe(user, body == null ? null : body.get("endpoint"));
     }
 
     private User requireUser(String email) {
