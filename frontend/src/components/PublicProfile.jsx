@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import { shortTeamName } from '../utils'
+import { BADGE_META } from '../constants'
 import Avatar from './Avatar'
 import Loading from './Loading'
 import PointsAreaChart from './PointsAreaChart'
@@ -152,11 +153,16 @@ export default function PublicProfile({ userId, token, onBack }) {
         <div className="ft-card p-3">
           <h4 className="h6 mb-2">{t('pub_badges')}</h4>
           <div className="d-flex gap-2 flex-wrap">
-            {profile.badges.filter((b) => b.earned).map((b) => (
-              <span key={b.code} className="badge text-bg-success">
-                {t(`badge_${b.code === 'PROPHET' ? 'prophet' : 'streak'}_title`)}
-              </span>
-            ))}
+            {profile.badges.filter((b) => b.earned).map((b) => {
+              const meta = BADGE_META[b.code]
+              if (!meta) return null
+              return (
+                <span key={b.code} className="ft-badge-chip" title={t(meta.descKey)}>
+                  <span className="ft-badge-chip-icon">{meta.icon}</span>
+                  {t(meta.titleKey)}
+                </span>
+              )
+            })}
           </div>
         </div>
       )}

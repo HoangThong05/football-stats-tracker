@@ -2392,6 +2392,21 @@ tr[role='button']:hover img,
   margin-bottom: 16px;
 }
 
+/* Chip huy hieu da dat - dung o ho so cong khai (chi khoe cai da mo khoa, co icon) */
+.ft-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--bs-border-color-translucent);
+  background: var(--ft-surface);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--bs-body-color);
+}
+.ft-badge-chip-icon { font-size: 1.05rem; line-height: 1; }
+
 .ft-badge {
   display: flex;
   align-items: center;

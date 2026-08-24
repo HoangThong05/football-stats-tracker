@@ -1,19 +1,8 @@
 import { useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
+import { BADGE_META } from '../constants'
 import { useTranslation } from '../i18n'
 import { useTilt } from '../useTilt'
-
-// Meta hien thi cho tung ma badge tra ve tu API (BadgeType o backend).
-const BADGE_META = {
-  ROOKIE: { icon: '🐣', titleKey: 'badge_rookie_title', descKey: 'badge_rookie_desc' },
-  SHARP: { icon: '🎯', titleKey: 'badge_sharp_title', descKey: 'badge_sharp_desc' },
-  PROPHET: { icon: '🔮', titleKey: 'badge_prophet_title', descKey: 'badge_prophet_desc' },
-  ORACLE: { icon: '🧿', titleKey: 'badge_oracle_title', descKey: 'badge_oracle_desc' },
-  WIN_STREAK: { icon: '🔥', titleKey: 'badge_streak_title', descKey: 'badge_streak_desc' },
-  ON_FIRE: { icon: '🌋', titleKey: 'badge_onfire_title', descKey: 'badge_onfire_desc' },
-  CENTURION: { icon: '💯', titleKey: 'badge_centurion_title', descKey: 'badge_centurion_desc' },
-  WEEKLY_KING: { icon: '👑', titleKey: 'badge_weeklyking_title', descKey: 'badge_weeklyking_desc' },
-}
 
 /** Hang huy hieu thanh tich cua user. Tu fetch, khong render gi neu chua co du lieu/loi. */
 export default function Badges({ token }) {

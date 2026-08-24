@@ -44,3 +44,16 @@ export const REACTIONS = [
 ]
 
 export const REACTION_EMOJI = REACTIONS.reduce((m, r) => { m[r.type] = r.emoji; return m }, {})
+
+// Meta hien thi cho tung huy hieu (khop ma o BadgeType backend). Dung chung cho trang
+// ho so cua minh (Badges) va ho so cong khai (PublicProfile) - de mot cho, khong lech nhau.
+export const BADGE_META = {
+  ROOKIE: { icon: '🐣', titleKey: 'badge_rookie_title', descKey: 'badge_rookie_desc' },
+  SHARP: { icon: '🎯', titleKey: 'badge_sharp_title', descKey: 'badge_sharp_desc' },
+  PROPHET: { icon: '🔮', titleKey: 'badge_prophet_title', descKey: 'badge_prophet_desc' },
+  ORACLE: { icon: '🧿', titleKey: 'badge_oracle_title', descKey: 'badge_oracle_desc' },
+  WIN_STREAK: { icon: '🔥', titleKey: 'badge_streak_title', descKey: 'badge_streak_desc' },
+  ON_FIRE: { icon: '🌋', titleKey: 'badge_onfire_title', descKey: 'badge_onfire_desc' },
+  CENTURION: { icon: '💯', titleKey: 'badge_centurion_title', descKey: 'badge_centurion_desc' },
+  WEEKLY_KING: { icon: '👑', titleKey: 'badge_weeklyking_title', descKey: 'badge_weeklyking_desc' },
+}
