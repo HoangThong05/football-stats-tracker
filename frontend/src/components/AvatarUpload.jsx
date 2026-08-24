@@ -59,7 +59,7 @@ export default function AvatarUpload({ token, name, avatarUrl, onSaved, size = 1
   }
 
   const remove = async () => {
-    setBusy(true)
+    setBusy(true) 
     setError(null)
     try {
       await save('')

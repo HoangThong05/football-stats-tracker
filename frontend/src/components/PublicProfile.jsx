@@ -111,7 +111,10 @@ export default function PublicProfile({ userId, token, onBack }) {
       <button className="btn btn-link ps-0 mb-3" onClick={onBack}>{t('back')}</button>
 
       <div className="ft-card ft-profile-hero mb-3">
-        <div className="ft-profile-cover" />
+        <div className="ft-profile-cover" style={profile.coverUrl ? {
+          backgroundImage: `url(${profile.coverUrl})`, backgroundSize: 'cover',
+          backgroundPosition: 'center', backgroundRepeat: 'no-repeat',
+        } : undefined} />
 
         <div className="ft-profile-id">
           <div className="ft-avatar-upload">

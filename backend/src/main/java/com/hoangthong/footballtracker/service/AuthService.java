@@ -203,6 +203,22 @@ public class AuthService {
         return toAuthResponse(user);
     }
 
+    /** Anh bia hien tai cua nguoi nay (null = chua dat). */
+    public String getCover(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials"))
+                .getCoverUrl();
+    }
+
+    /** Dat / go anh bia. Chi nhan duong dan Cloudinary (xem {@link ImageUrl}). Tra ve URL da luu. */
+    public String setCover(String email, String rawUrl) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials"));
+        user.setCoverUrl(ImageUrl.clean(rawUrl));
+        userRepository.save(user);
+        return user.getCoverUrl();
+    }
+
     private AuthResponse toAuthResponse(User user) {
         String role = user.getRole().name();
         String token = jwtService.generateToken(user.getEmail(), role, user.getTokenVersion());

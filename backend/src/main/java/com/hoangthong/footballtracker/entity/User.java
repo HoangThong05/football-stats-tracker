@@ -75,6 +75,13 @@ public class User {
     private String featuredBadge;
 
     /**
+     * Anh bia (banner tren dau trang ho so). null = chua dat -> giao dien ve vach san co
+     * mac dinh. Chi luu duong dan Cloudinary; nhan ca GIF de lam anh bia dong.
+     */
+    @Column(length = 500)
+    private String coverUrl;
+
+    /**
      * Tang len moi lan doi mat khau, de vo hieu toan bo token da phat truoc do.
      *
      * Khong co no thi doi mat khau gan nhu vo nghia ve bao mat: JWT song 24 gio va
@@ -165,6 +172,15 @@ public class User {
 
     public void setFeaturedBadge(String featuredBadge) {
         this.featuredBadge = (featuredBadge == null || featuredBadge.isBlank()) ? null : featuredBadge;
+    }
+
+    public String getCoverUrl() {
+        return coverUrl;
+    }
+
+    /** null hoac rong deu luu thanh null - "go anh bia" va "chua bao gio dat" la mot. */
+    public void setCoverUrl(String coverUrl) {
+        this.coverUrl = (coverUrl == null || coverUrl.isBlank()) ? null : coverUrl;
     }
 
     /** Ten de hien ra ngoai. Chua dat thi lay phan truoc dau @ - khong bao gio lo ca dia chi. */

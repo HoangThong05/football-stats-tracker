@@ -4,6 +4,7 @@ import { API_BASE, authHeaders } from '../api'
 import { BADGE_META } from '../constants'
 import { useTranslation } from '../i18n'
 import AvatarUpload from './AvatarUpload'
+import CoverUpload from './CoverUpload'
 import Badges from './Badges'
 import ChangePassword from './ChangePassword'
 import DisplayName from './DisplayName'
@@ -30,6 +31,7 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
   const [leagues, setLeagues] = useState([])
   const [weeklyWins, setWeeklyWins] = useState(0)
   const [badges, setBadges] = useState([])
+  const [coverUrl, setCoverUrl] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
 
   // Tach rieng de goi lai duoc sau khi doi huy hieu ghim
@@ -62,6 +64,18 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
   }, [token])
 
   useEffect(loadBadges, [loadBadges])
+
+  // Anh bia hien tai (endpoint rieng, khong nam trong phien dang nhap)
+  useEffect(() => {
+    if (!token) {
+      setCoverUrl(null)
+      return
+    }
+    fetch(`${API_BASE}/auth/cover`, { headers: authHeaders(token) })
+      .then((res) => (res.ok ? res.json() : {}))
+      .then((data) => setCoverUrl(data.coverUrl || null))
+      .catch(() => setCoverUrl(null))
+  }, [token])
 
   // Chon / bo ghim huy hieu canh ten, roi tai lai de hero + luoi cap nhat
   const setFeatured = (code) => {
@@ -99,7 +113,7 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
 
       <div className="ft-card ft-profile-hero mb-3">
         {/* Bia: vach san co cua chinh app, khong phai anh tai ve - khong ton request nao */}
-        <div className="ft-profile-cover" />
+        <CoverUpload token={token} coverUrl={coverUrl} onSaved={setCoverUrl} />
 
         <div className="ft-profile-id">
           <AvatarUpload token={token} name={displayName || userEmail} avatarUrl={avatarUrl}

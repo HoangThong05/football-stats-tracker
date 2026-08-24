@@ -166,6 +166,21 @@ public class AuthController {
         return authService.setAvatar(principal.getName(), body.get("avatarUrl"));
     }
 
+    /** Anh bia hien tai cua toi. Tra { "coverUrl": ... } (null neu chua dat). */
+    @org.springframework.web.bind.annotation.GetMapping("/cover")
+    public java.util.Map<String, String> getCover(java.security.Principal principal) {
+        return java.util.Collections.singletonMap("coverUrl", authService.getCover(principal.getName()));
+    }
+
+    /** Dat / go anh bia. Body: { "coverUrl": "https://res.cloudinary.com/..." }. Rong = go. */
+    @PostMapping("/cover")
+    public java.util.Map<String, String> setCover(@RequestBody java.util.Map<String, String> body,
+                                                  java.security.Principal principal) {
+        limit("cover:email:" + normalize(principal.getName()), CHANGE_PER_EMAIL, QUARTER_HOUR);
+        return java.util.Collections.singletonMap("coverUrl",
+                authService.setCover(principal.getName(), body.get("coverUrl")));
+    }
+
     @PostMapping("/reset-password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void resetPassword(@RequestBody java.util.Map<String, String> body, HttpServletRequest http) {

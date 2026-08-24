@@ -16,6 +16,8 @@ public record PublicProfileDto(
         boolean isAdmin,
         /** Anh dai dien tren Cloudinary. null = chua dat, giao dien ve vong tron chu cai. */
         String avatarUrl,
+        /** Anh bia (banner). null = chua dat -> giao dien ve vach san co mac dinh. */
+        String coverUrl,
         String joinedAt,
         long totalPoints,
         long totalPredictions,

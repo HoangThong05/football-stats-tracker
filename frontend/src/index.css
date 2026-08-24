@@ -3203,8 +3203,42 @@ video.ft-post-image {
  * dep san khong hut thoi gian cua ai ca.
  */
 .ft-profile-cover {
+  position: relative;
   height: 132px;
   background-image: var(--ft-header-stripe), var(--ft-header-grad);
+}
+
+/* Nut doi/go anh bia, goc phai tren cua bia */
+.ft-cover-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+}
+
+.ft-cover-btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 5px 12px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(2px);
+}
+.ft-cover-btn:hover:not(:disabled) { background: rgba(0, 0, 0, 0.68); }
+.ft-cover-btn:disabled { opacity: 0.6; cursor: default; }
+
+.ft-cover-error {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  color: #fff;
+  background: rgba(180, 40, 40, 0.85);
+  border-radius: 6px;
+  padding: 2px 8px;
 }
 
 /*

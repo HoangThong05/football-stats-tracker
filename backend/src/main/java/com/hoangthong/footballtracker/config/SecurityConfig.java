@@ -46,7 +46,7 @@ public class SecurityConfig {
                         // PHAI dung TRUOC dong /api/auth/** duoi day: Spring lay luat khop
                         // dau tien, dat sau thi permitAll nuot mat va principal se la null.
                         .requestMatchers("/api/auth/change-password", "/api/auth/display-name",
-                                "/api/auth/avatar").authenticated()
+                                "/api/auth/avatar", "/api/auth/cover").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/standings/**", "/api/matches/**", "/api/teams/**", "/api/scorers/**",
                                 "/api/users/*/profile").permitAll()
