@@ -2881,6 +2881,57 @@ video.ft-post-image {
 .ft-ptr-spin.spinning { animation: ft-spin 0.7s linear infinite; }
 @keyframes ft-spin { to { transform: rotate(360deg); } }
 
+/* ================= Widget nhung (/embed) + hop sinh ma ================= */
+.ft-embed-btn { white-space: nowrap; }
+.ft-embed-code { font-family: monospace; font-size: 0.75rem; }
+
+.ft-embed {
+  min-height: 100vh;
+  padding: 12px 14px 8px;
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+}
+.ft-embed-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+.ft-embed-title { font-weight: 700; font-size: 1rem; }
+.ft-embed-sub { color: var(--bs-secondary-color); font-size: 0.8rem; }
+.ft-embed-msg { text-align: center; color: var(--bs-secondary-color); padding: 24px 0; }
+
+.ft-embed-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.ft-embed-table th {
+  text-align: center; padding: 4px 6px;
+  color: var(--bs-secondary-color); font-weight: 600; font-size: 0.72rem;
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+.ft-embed-table td {
+  text-align: center; padding: 5px 6px;
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+.ft-embed-table .ft-embed-team { text-align: left; }
+.ft-embed-team { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.ft-embed-team span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ft-embed-pos { color: var(--bs-secondary-color); }
+.ft-embed-pts { font-weight: 700; }
+
+.ft-embed-fixtures { list-style: none; margin: 0; padding: 0; }
+.ft-embed-fixtures li {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 2px; font-size: 0.82rem;
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+.ft-embed-when { flex-shrink: 0; width: 70px; color: var(--bs-secondary-color); font-size: 0.72rem; }
+.ft-embed-match { flex: 1; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; }
+.ft-embed-side { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.ft-embed-home { justify-content: flex-end; }
+.ft-embed-tn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ft-embed-score { font-weight: 600; white-space: nowrap; }
+
+.ft-embed-foot {
+  display: inline-block; margin-top: 10px;
+  font-size: 0.72rem; color: var(--bs-secondary-color); text-decoration: none;
+}
+.ft-embed-foot:hover { color: var(--ft-accent-strong); }
+
 @keyframes ft-rise-in {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
