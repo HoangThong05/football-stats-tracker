@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
-import { imageUploadEnabled, uploadMedia } from '../cloudinary'
+import { imageUploadEnabled, uploadImage } from '../cloudinary'
 import { useTranslation } from '../i18n'
 import { giphyEnabled } from '../giphy'
 import CoverMedia from './CoverMedia'
@@ -71,8 +71,8 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
-    // Anh/video moi -> dat ve giua (50)
-    run(async () => save(await uploadMedia(file), 50))
+    // Anh/GIF moi -> dat ve giua (50). Bia chi nhan anh + GIF, khong nhan video.
+    run(async () => save(await uploadImage(file), 50))
   }
 
   const remove = () => run(async () => {
@@ -152,8 +152,7 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
               )}
             </>
           )}
-          <input ref={fileRef} type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif"
             className="d-none" onChange={pick} />
         </div>
       )}
