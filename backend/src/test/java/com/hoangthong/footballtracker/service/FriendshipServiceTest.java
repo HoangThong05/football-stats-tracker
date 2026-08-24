@@ -46,7 +46,8 @@ class FriendshipServiceTest {
         when(userRepository.findById(2L)).thenReturn(Optional.of(binh));
         when(userRepository.findById(1L)).thenReturn(Optional.of(an));
         when(friendshipRepository.findBetween(any(), any())).thenReturn(Optional.empty());
-        service = new FriendshipService(userRepository, friendshipRepository);
+        service = new FriendshipService(userRepository, friendshipRepository,
+                org.mockito.Mockito.mock(WebPushService.class));
     }
 
     @Test

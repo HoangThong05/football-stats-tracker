@@ -32,7 +32,8 @@ class PredictionScoringServiceTest {
         matchRepository = mock(MatchFixtureRepository.class);
         predictionRepository = mock(PredictionRepository.class);
         badgeService = mock(BadgeService.class);
-        service = new PredictionScoringService(matchRepository, predictionRepository, badgeService);
+        service = new PredictionScoringService(matchRepository, predictionRepository, badgeService,
+                mock(WebPushService.class));
     }
 
     private static MatchFixture finishedMatch(long id, int homeScore, int awayScore) {

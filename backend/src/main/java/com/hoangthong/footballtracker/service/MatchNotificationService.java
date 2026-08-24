@@ -38,6 +38,7 @@ public class MatchNotificationService {
     private final FavoriteTeamRepository favoriteRepository;
     private final SentNotificationRepository sentRepository;
     private final EmailService emailService;
+    private final WebPushService webPush;
 
     // Bao truoc bao nhieu gio truoc gio bong lan (mac dinh 24h).
     private final long windowHours;
@@ -56,6 +57,7 @@ public class MatchNotificationService {
             FavoriteTeamRepository favoriteRepository,
             SentNotificationRepository sentRepository,
             EmailService emailService,
+            WebPushService webPush,
             @org.springframework.beans.factory.annotation.Value("${app.notify.window-hours:24}") long windowHours,
             @org.springframework.beans.factory.annotation.Value("${app.notify.email-enabled:false}") boolean emailEnabled) {
         this.emailEnabled = emailEnabled;
@@ -63,6 +65,7 @@ public class MatchNotificationService {
         this.favoriteRepository = favoriteRepository;
         this.sentRepository = sentRepository;
         this.emailService = emailService;
+        this.webPush = webPush;
         this.windowHours = windowHours;
     }
 
@@ -70,7 +73,8 @@ public class MatchNotificationService {
             initialDelayString = "${app.notify.initial-delay-ms:30000}",
             fixedDelayString = "${app.notify.interval-ms:3600000}")
     public void notifyUpcomingMatches() {
-        if (!emailEnabled) {
+        // Chay neu bat DU MOT kenh: email hoac thong bao day
+        if (!emailEnabled && !webPush.isEnabled()) {
             return;
         }
         Instant now = Instant.now();
@@ -108,7 +112,16 @@ public class MatchNotificationService {
                     continue; // da gui roi
                 }
 
-                if (sendMatchEmail(user, follow, match)) {
+                boolean delivered = false;
+                if (emailEnabled) {
+                    delivered |= sendMatchEmail(user, follow, match);
+                }
+                if (webPush.isEnabled()) {
+                    sendMatchPush(user, follow, match);
+                    delivered = true; // day chay nen, coi nhu da gui de khong nhac trung
+                }
+
+                if (delivered) {
                     sentRepository.save(new SentNotification(user.getId(), match.getId()));
                     sent++;
                 }
@@ -116,8 +129,17 @@ public class MatchNotificationService {
         }
 
         if (sent > 0) {
-            log.info("Da gui {} email nhac tran sap dien ra.", sent);
+            log.info("Da nhac {} luot tran sap dien ra.", sent);
         }
+    }
+
+    /** Day thong bao "doi sap da" toi cac thiet bi cua nguoi theo doi. */
+    private void sendMatchPush(User user, FavoriteTeam follow, MatchFixture match) {
+        long minutesLeft = Math.max(0, Duration.between(Instant.now(), match.getUtcDate()).toMinutes());
+        String title = "⚽ " + follow.getTeamName() + " sắp thi đấu!";
+        String body = match.getHomeTeam() + " vs " + match.getAwayTeam()
+                + " · còn khoảng " + minutesLeft + " phút";
+        webPush.sendToUser(user, title, body, "/");
     }
 
     private boolean sendMatchEmail(User user, FavoriteTeam follow, MatchFixture match) {

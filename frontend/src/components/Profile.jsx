@@ -6,6 +6,7 @@ import AvatarUpload from './AvatarUpload'
 import Badges from './Badges'
 import ChangePassword from './ChangePassword'
 import DisplayName from './DisplayName'
+import NotificationToggle from './NotificationToggle'
 import ProfileStats from './ProfileStats'
 import FriendsList from './FriendsList'
 import PredictionPointsChart from './PredictionPointsChart'
@@ -97,6 +98,7 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
 
         {showSettings && (
           <div className="ft-profile-settings ft-fade">
+            <NotificationToggle token={token} />
             <DisplayName token={token} displayName={displayName} onSaved={onDisplayNameSaved} />
             <ChangePassword token={token} hasPassword={hasPassword} viaGoogle={viaGoogle}
               onTokenRenewed={onTokenRenewed} />

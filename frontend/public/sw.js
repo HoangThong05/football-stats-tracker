@@ -52,6 +52,47 @@ function networkFirst(request, cacheName) {
     .catch(() => caches.match(request))
 }
 
+/*
+ * Nhan thong bao day va hien len.
+ *
+ * Noi dung do backend gui la JSON { title, body, url }. Bam vao thong bao se mo app o
+ * dung 'url' (vd /?post=12 de mo dung bai).
+ */
+self.addEventListener('push', (event) => {
+  let data = {}
+  try {
+    data = event.data ? event.data.json() : {}
+  } catch (e) {
+    data = {}
+  }
+  const title = data.title || 'Football Stats Tracker'
+  const options = {
+    body: data.body || '',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    data: { url: data.url || '/' },
+  }
+  event.waitUntil(self.registration.showNotification(title, options))
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const url = (event.notification.data && event.notification.data.url) || '/'
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      // Da mo mot cua so app -> dua no ve dung url roi focus; chua thi mo cua so moi
+      for (const client of list) {
+        if ('focus' in client) {
+          if ('navigate' in client) client.navigate(url).catch(() => {})
+          return client.focus()
+        }
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(url)
+      return undefined
+    })
+  )
+})
+
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return
 

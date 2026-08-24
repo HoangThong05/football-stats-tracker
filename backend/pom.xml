@@ -94,6 +94,20 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Web Push (giao thuc VAPID) de day thong bao ra trinh duyet/dien thoai. -->
+        <dependency>
+            <groupId>nl.martijndwars</groupId>
+            <artifactId>web-push</artifactId>
+            <version>5.1.1</version>
+        </dependency>
+        <!-- web-push-java can BouncyCastle nhung khong tu keo ve - phai them va dang ky
+             provider "BC" (xem WebPushService). -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.78.1</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

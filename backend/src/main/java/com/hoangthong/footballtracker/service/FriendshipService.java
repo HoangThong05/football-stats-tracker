@@ -18,10 +18,19 @@ public class FriendshipService {
 
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
+    private final WebPushService webPush;
 
-    public FriendshipService(UserRepository userRepository, FriendshipRepository friendshipRepository) {
+    public FriendshipService(UserRepository userRepository, FriendshipRepository friendshipRepository,
+                             WebPushService webPush) {
         this.userRepository = userRepository;
         this.friendshipRepository = friendshipRepository;
+        this.webPush = webPush;
+    }
+
+    /** Bao cho nguoi da gui loi moi biet loi moi vua duoc chap nhan. */
+    private void notifyAccepted(User accepter, User requester) {
+        webPush.sendToUser(requester,
+                accepter.displayNameOrFallback() + " đã chấp nhận lời mời kết bạn", "", "/");
     }
 
     /** Trang thai quan he giua nguoi dang xem va nguoi duoc xem - de nut hien dung chu. */
@@ -66,6 +75,7 @@ public class FriendshipService {
             if (f.getStatus() == Friendship.Status.PENDING && f.getAddressee().getId().equals(me.getId())) {
                 f.markAccepted();
                 friendshipRepository.save(f);
+                notifyAccepted(me, f.getRequester());
                 return;
             }
             throw new ResponseStatusException(HttpStatus.CONFLICT, "friend_request_exists");
@@ -85,6 +95,7 @@ public class FriendshipService {
         }
         f.markAccepted();
         friendshipRepository.save(f);
+        notifyAccepted(me, f.getRequester());
     }
 
     /** Dung cho ca tu choi loi moi, huy loi moi da gui, va huy ket ban. */

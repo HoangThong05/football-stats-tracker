@@ -69,12 +69,14 @@ public class ForumService {
     private final UserRepository userRepo;
     private final com.hoangthong.footballtracker.repository.ModerationNoticeRepository moderationRepo;
     private final com.hoangthong.footballtracker.repository.CommentReactionRepository commentReactionRepo;
+    private final WebPushService webPush;
 
     public ForumService(ForumPostRepository postRepo, ForumCommentRepository commentRepo,
                         PostLikeRepository likeRepo, PostReportRepository reportRepo,
                         UserRepository userRepo,
                         com.hoangthong.footballtracker.repository.ModerationNoticeRepository moderationRepo,
-                        com.hoangthong.footballtracker.repository.CommentReactionRepository commentReactionRepo) {
+                        com.hoangthong.footballtracker.repository.CommentReactionRepository commentReactionRepo,
+                        WebPushService webPush) {
         this.postRepo = postRepo;
         this.commentRepo = commentRepo;
         this.likeRepo = likeRepo;
@@ -82,6 +84,12 @@ public class ForumService {
         this.userRepo = userRepo;
         this.moderationRepo = moderationRepo;
         this.commentReactionRepo = commentReactionRepo;
+        this.webPush = webPush;
+    }
+
+    /** Duong dan mo dung bai trong app khi bam vao thong bao day. */
+    private static String postUrl(long postId) {
+        return "/?post=" + postId;
     }
 
     public List<ForumDto.Post> feed(String viewerEmail, int page) {
@@ -152,6 +160,23 @@ public class ForumService {
             }
         }
         commentRepo.save(new ForumComment(post, author, content, parent));
+
+        // Day thong bao: tra loi -> bao chu binh luan goc; binh luan bai -> bao chu bai.
+        // Khong bao cho chinh minh.
+        String actor = author.displayNameOrFallback();
+        if (parent != null) {
+            User target = parent.getAuthor();
+            if (!target.getId().equals(author.getId())) {
+                webPush.sendToUser(target, actor + " đã trả lời bình luận của bạn",
+                        excerpt(content), postUrl(postId));
+            }
+        } else {
+            User target = post.getAuthor();
+            if (!target.getId().equals(author.getId())) {
+                webPush.sendToUser(target, actor + " đã bình luận bài viết của bạn",
+                        excerpt(content), postUrl(postId));
+            }
+        }
     }
 
     /** Tha / doi / go cam xuc bai viet. Bam lai dung loai dang co = go. */
@@ -159,6 +184,7 @@ public class ForumService {
     public void reactToPost(String email, long postId, com.hoangthong.footballtracker.entity.ReactionType type) {
         User user = getUser(email);
         ForumPost post = visiblePost(postId);
+        boolean[] reacted = {false}; // true = them moi hoac doi loai (khong phai go)
         likeRepo.findByPostIdAndUserId(postId, user.getId()).ifPresentOrElse(
                 existing -> {
                     if (existing.getType() == type) {
@@ -166,9 +192,20 @@ public class ForumService {
                     } else {
                         existing.setType(type);
                         likeRepo.save(existing);
+                        reacted[0] = true;
                     }
                 },
-                () -> likeRepo.save(new PostLike(post, user, type)));
+                () -> {
+                    likeRepo.save(new PostLike(post, user, type));
+                    reacted[0] = true;
+                });
+
+        // Day toi chu bai khi CO tha (khong phai go), khong bao cho chinh minh
+        User author = post.getAuthor();
+        if (reacted[0] && !author.getId().equals(user.getId())) {
+            webPush.sendToUser(author, user.displayNameOrFallback() + " đã bày tỏ cảm xúc về bài viết của bạn " + type.emoji(),
+                    excerpt(post.getContent()), postUrl(postId));
+        }
     }
 
     /** Tha / doi / go cam xuc BINH LUAN. */
@@ -180,6 +217,7 @@ public class ForumService {
         if (comment.getPost().isHidden()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "comment_not_found");
         }
+        boolean[] reacted = {false};
         commentReactionRepo.findByCommentIdAndUserId(commentId, user.getId()).ifPresentOrElse(
                 existing -> {
                     if (existing.getType() == type) {
@@ -187,9 +225,19 @@ public class ForumService {
                     } else {
                         existing.setType(type);
                         commentReactionRepo.save(existing);
+                        reacted[0] = true;
                     }
                 },
-                () -> commentReactionRepo.save(new com.hoangthong.footballtracker.entity.CommentReaction(comment, user, type)));
+                () -> {
+                    commentReactionRepo.save(new com.hoangthong.footballtracker.entity.CommentReaction(comment, user, type));
+                    reacted[0] = true;
+                });
+
+        User author = comment.getAuthor();
+        if (reacted[0] && !author.getId().equals(user.getId())) {
+            webPush.sendToUser(author, user.displayNameOrFallback() + " đã bày tỏ cảm xúc về bình luận của bạn " + type.emoji(),
+                    excerpt(comment.getContent()), postUrl(comment.getPost().getId()));
+        }
     }
 
     /**

@@ -30,12 +30,15 @@ public class PredictionScoringService {
     private final MatchFixtureRepository matchRepository;
     private final PredictionRepository predictionRepository;
     private final BadgeService badgeService;
+    private final WebPushService webPush;
 
     public PredictionScoringService(
-            MatchFixtureRepository matchRepository, PredictionRepository predictionRepository, BadgeService badgeService) {
+            MatchFixtureRepository matchRepository, PredictionRepository predictionRepository,
+            BadgeService badgeService, WebPushService webPush) {
         this.matchRepository = matchRepository;
         this.predictionRepository = predictionRepository;
         this.badgeService = badgeService;
+        this.webPush = webPush;
     }
 
     @Scheduled(
@@ -53,17 +56,16 @@ public class PredictionScoringService {
 
             List<Prediction> unscored = predictionRepository.findByMatchAndPointsIsNull(match);
             for (Prediction prediction : unscored) {
-                int points = computePoints(
+                int base = computePoints(
                         prediction.getPredictedHomeScore(), prediction.getPredictedAwayScore(),
                         match.getHomeScore(), match.getAwayScore());
                 // Dat x2 tuan nay -> nhan doi diem (0 van la 0)
-                if (prediction.isDoubled()) {
-                    points *= 2;
-                }
+                int points = prediction.isDoubled() ? base * 2 : base;
                 prediction.setPoints(points);
                 predictionRepository.save(prediction);
                 affectedUserIds.add(prediction.getUser().getId());
                 scoredCount++;
+                pushResult(prediction, match, base, points);
             }
         }
 
@@ -73,6 +75,22 @@ public class PredictionScoringService {
 
         // Cham diem xong moi biet ai vua co the du dieu kien badge -> danh gia lai cho tung nguoi bi anh huong.
         affectedUserIds.forEach(badgeService::evaluateBadgesForUser);
+    }
+
+    /** Day thong bao ket qua du doan toi nguoi choi. base = diem GOC (truoc x2) de phan loai. */
+    private void pushResult(Prediction prediction, MatchFixture match, int base, int points) {
+        String title;
+        if (base == POINTS_EXACT_SCORE) {
+            title = "🎯 Đoán trúng tỉ số! +" + points + " điểm";
+        } else if (base == POINTS_CORRECT_OUTCOME) {
+            title = "✅ Đoán đúng kết quả! +" + points + " điểm";
+        } else {
+            title = "😢 Tiếc quá, đoán sai rồi";
+        }
+        String body = match.getHomeTeam() + " " + match.getHomeScore() + "-" + match.getAwayScore()
+                + " " + match.getAwayTeam()
+                + " · bạn đoán " + prediction.getPredictedHomeScore() + "-" + prediction.getPredictedAwayScore();
+        webPush.sendToUser(prediction.getUser(), title, body, "/");
     }
 
     /** Tach rieng thanh method thuan de test khong can DB. */

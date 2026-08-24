@@ -2679,6 +2679,13 @@ video.ft-post-image {
   background: #000;
 }
 
+/* Nut bat/tat thong bao day trong o cai dat ho so */
+.ft-push-toggle {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+
 /* Hai nut Thich / Binh luan chia deu, co duong ke tach khoi noi dung */
 .ft-post-actions {
   display: flex;

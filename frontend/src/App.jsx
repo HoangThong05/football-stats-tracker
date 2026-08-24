@@ -384,6 +384,19 @@ export default function App() {
     setShowForum(true);
   };
 
+  /*
+   * Mo tu thong bao day: URL ?post=<id> -> mo dien dan o dung bai do, roi don query
+   * khoi URL (de F5 khong mo lai). Chi chay MOT lan khi mount.
+   */
+  useEffect(() => {
+    const postId = new URLSearchParams(window.location.search).get("post");
+    if (postId && /^\d+$/.test(postId)) {
+      goToPost(Number(postId));
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // KHONG dong trang "Hom nay" o day: MatchDetail duoc uu tien hien truoc trong chuoi
   // ternary ben duoi, nen giu showToday=true de bam "Quay lai" se ve dung trang Hom nay.
   const goToMatch = (matchId) => {
