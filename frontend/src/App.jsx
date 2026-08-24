@@ -40,7 +40,6 @@ import Toaster from "./components/Toaster";
 import ConfirmDialog from "./components/ConfirmDialog";
 import ScrollTopButton from "./components/ScrollTopButton";
 import PullToRefresh from "./components/PullToRefresh";
-import EmbedModal from "./components/EmbedModal";
 import SeasonBreak from "./components/SeasonBreak";
 import DataFreshness from "./components/DataFreshness";
 
@@ -70,8 +69,6 @@ export default function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [showToday, setShowToday] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  // Hop sinh ma nhung (iframe) cho BXH / lich thi dau
-  const [embedOpen, setEmbedOpen] = useState(false);
 
   // Doc phien da luu MOT LAN khi mount; tu xoa neu JWT da het han (mac dinh 24h),
   // tranh giao dien hien "dang dang nhap" nhung moi request deu bi tra 403.
@@ -801,15 +798,6 @@ export default function App() {
                     <option value={autoSeasonYear - 2}>{formatSeasonRange(autoSeasonYear - 2)}</option>
                   </select>
                 )}
-                {(view === "standings" || view === "upcoming" || view === "results") && (
-                  <button
-                    className="btn btn-sm btn-outline-secondary ms-auto ft-embed-btn"
-                    onClick={() => setEmbedOpen(true)}
-                    title={t("embed_title")}
-                  >
-                    ⧉ {t("embed_btn")}
-                  </button>
-                )}
               </div>
 
               {/* Chi hien trong ky nghi giua hai mua - tu an khi giai da khoi tranh */}
@@ -902,14 +890,6 @@ export default function App() {
         )}
 
         <StatueDrawer />
-        {embedOpen && (
-          <EmbedModal
-            onClose={() => setEmbedOpen(false)}
-            defaultType={view === "standings" ? "standings" : "fixtures"}
-            defaultShow={view === "results" ? "results" : "upcoming"}
-            defaultLeague={league}
-          />
-        )}
         <Toaster />
         <ConfirmDialog />
         <ScrollTopButton />
