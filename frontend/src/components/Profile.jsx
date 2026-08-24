@@ -108,13 +108,11 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
 
       {!isAdmin && (
       <>
-      {/* Nhom "thanh tich": huy hieu + bieu do diem - ke chuyen minh choi tot the nao */}
+      {/* Thanh tich: huy hieu */}
       <Badges token={token} />
 
-      <PredictionPointsChart token={token} />
-
-      {/* Nhom "mang luoi": ban be, doi yeu thich, phong - xuong duoi cung */}
-      <div className="row g-3">
+      {/* Mang luoi: ban be, doi yeu thich, phong */}
+      <div className="row g-3 mb-3">
         <div className="col-12 col-lg-4">
           <FriendsList token={token} onSelectUser={onSelectUser} />
         </div>
@@ -160,6 +158,9 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
           )}
         </div>
       </div>
+
+      {/* Bieu do tong diem theo thoi gian - xuong duoi cung */}
+      <PredictionPointsChart token={token} />
       </>
       )}
     </div>
