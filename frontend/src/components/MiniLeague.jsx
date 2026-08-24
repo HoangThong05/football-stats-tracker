@@ -3,6 +3,7 @@ import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import { shortTeamName } from '../utils'
 import RoomChat from './RoomChat'
+import { confirmDialog } from './ConfirmDialog'
 
 function translateError(code, t) {
   const key = `ml_err_${code}`
@@ -102,7 +103,7 @@ export default function MiniLeague({ token, onBack, onSelectUser, myUserId }) {
   }
 
   async function leaveLeague(id) {
-    if (!confirm(t('ml_confirm_leave'))) return
+    if (!(await confirmDialog({ message: t('ml_confirm_leave'), confirmText: t('ml_leave_btn'), danger: true }))) return
     const res = await fetch(`${API_BASE}/leagues/${id}/leave`, {
       method: 'DELETE', headers: authHeaders(token)
     })
@@ -123,7 +124,7 @@ export default function MiniLeague({ token, onBack, onSelectUser, myUserId }) {
   }
 
   async function deleteLeague(id) {
-    if (!confirm(t('ml_confirm_delete'))) return
+    if (!(await confirmDialog({ message: t('ml_confirm_delete'), confirmText: t('ml_delete_btn'), danger: true }))) return
     const res = await fetch(`${API_BASE}/leagues/${id}`, {
       method: 'DELETE', headers: authHeaders(token)
     })

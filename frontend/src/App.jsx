@@ -36,6 +36,10 @@ import StatueDrawer from "./components/StatueDrawer";
 import Modal from "./components/Modal";
 import PitchBackdrop from "./components/PitchBackdrop";
 import LiveTicker from "./components/LiveTicker";
+import Toaster from "./components/Toaster";
+import ConfirmDialog from "./components/ConfirmDialog";
+import ScrollTopButton from "./components/ScrollTopButton";
+import PullToRefresh from "./components/PullToRefresh";
 import SeasonBreak from "./components/SeasonBreak";
 import DataFreshness from "./components/DataFreshness";
 
@@ -886,6 +890,10 @@ export default function App() {
         )}
 
         <StatueDrawer />
+        <Toaster />
+        <ConfirmDialog />
+        <ScrollTopButton />
+        <PullToRefresh onRefresh={loadViewData} />
       </>
     </LanguageContext.Provider>
   );

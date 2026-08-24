@@ -6,7 +6,10 @@ import { relativeTime, isVideoUrl } from '../utils'
 import Avatar from './Avatar'
 import ReactionBar from './ReactionBar'
 import ReactionsModal from './ReactionsModal'
+import Lightbox from './Lightbox'
 import Loading from './Loading'
+import { toast } from '../ui/toast'
+import { confirmDialog } from './ConfirmDialog'
 
 const MAX_POST = 2000
 const MAX_COMMENT = 1000
@@ -52,6 +55,8 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
   const [savingEdit, setSavingEdit] = useState(false)
   // Hop "ai da tha cam xuc" dang mo: { kind: 'posts'|'comments', id }, null = dong
   const [reactorsFor, setReactorsFor] = useState(null)
+  // Anh/video dang xem phong to (lightbox); null = dong
+  const [lightbox, setLightbox] = useState(null)
 
   const errMap = {
     post_empty: t('forum_err_empty'),
@@ -190,21 +195,34 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
    * Hoi lai truoc khi xoa. Xoa la khong lay lai duoc, va nut xoa nam ngay canh nut sua -
    * bam nham mot ly la mat ca bai.
    */
-  const confirmDelete = (kind, id, authorId) => {
+  const confirmDelete = async (kind, id, authorId) => {
     const path = kind === 'post' ? 'posts' : 'comments'
     // Admin go bai/cmt cua NGUOI KHAC -> hoi ly do (se bao cho nguoi dang qua chuong)
     if (isAdmin && authorId !== myUserId) {
-      const reason = prompt(t('forum_delete_reason_prompt'))
+      const reason = await confirmDialog({
+        title: t('forum_delete'),
+        message: t('forum_delete_reason_prompt'),
+        input: true,
+        placeholder: t('forum_delete_reason_prompt'),
+        confirmText: t('forum_delete'),
+        danger: true,
+      })
       if (reason === null) return // bam Huy o hop nhap ly do
       if (editing?.kind === kind && editing.id === id) setEditing(null)
-      act(`/${path}/${id}?reason=${encodeURIComponent(reason.trim())}`, 'DELETE')
+      act(`/${path}/${id}?reason=${encodeURIComponent(reason)}`, 'DELETE',
+        kind === 'post' ? t('forum_toast_post_deleted') : t('forum_toast_comment_deleted'))
       return
     }
     // Tu xoa cua chinh minh -> chi hoi xac nhan
-    const question = kind === 'post' ? t('forum_confirm_delete_post') : t('forum_confirm_delete_comment')
-    if (!confirm(question)) return
+    const ok = await confirmDialog({
+      message: kind === 'post' ? t('forum_confirm_delete_post') : t('forum_confirm_delete_comment'),
+      confirmText: t('forum_delete'),
+      danger: true,
+    })
+    if (!ok) return
     if (editing?.kind === kind && editing.id === id) setEditing(null)
-    act(`/${path}/${id}`, 'DELETE')
+    act(`/${path}/${id}`, 'DELETE',
+      kind === 'post' ? t('forum_toast_post_deleted') : t('forum_toast_comment_deleted'))
   }
 
   /** O sua dung chung cho bai va binh luan - khac nhau moi so dong va gioi han ky tu. */
@@ -231,9 +249,10 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
     </div>
   )
 
-  const act = async (path, method = 'POST') => {
+  const act = async (path, method = 'POST', successMsg) => {
     try {
       await call(path, { method })
+      if (successMsg) toast.success(successMsg)
       load()
     } catch (err) {
       setError(err.message)
@@ -437,11 +456,18 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
 
             {/* Anh/video trai het be ngang the, khong chua le hai ben - giong bang tin mang xa hoi */}
             {p.imageUrl && (
-              isVideoUrl(p.imageUrl) ? (
-                <video src={p.imageUrl} controls preload="metadata" className="ft-post-image" />
-              ) : (
-                <img src={p.imageUrl} alt="" loading="lazy" className="ft-post-image" />
-              )
+              <div className="ft-post-media">
+                {isVideoUrl(p.imageUrl) ? (
+                  <video src={p.imageUrl} controls preload="metadata" className="ft-post-image" />
+                ) : (
+                  <img src={p.imageUrl} alt="" loading="lazy" className="ft-post-image"
+                    role="button" onClick={() => setLightbox(p.imageUrl)} />
+                )}
+                <button type="button" className="ft-media-expand" aria-label={t('lightbox_zoom')}
+                  onClick={() => setLightbox(p.imageUrl)}>
+                  ⤢
+                </button>
+              </div>
             )}
 
             {/*
@@ -523,6 +549,8 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
           onSelectUser={onSelectUser}
         />
       )}
+
+      <Lightbox url={lightbox} onClose={() => setLightbox(null)} />
     </div>
   )
 }

@@ -2686,6 +2686,222 @@ video.ft-post-image {
   border-bottom: 1px solid var(--bs-border-color-translucent);
 }
 
+/* ================= Toast (thong bao noi) ================= */
+.ft-toaster {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  width: max-content;
+  max-width: 92vw;
+  pointer-events: none;
+}
+
+.ft-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  max-width: 92vw;
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 12px;
+  background: var(--ft-surface);
+  color: var(--bs-body-color);
+  box-shadow: var(--ft-card-shadow);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  animation: ft-rise-in 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.ft-toast-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.ft-toast-success .ft-toast-icon { background: #2e9e5b; }
+.ft-toast-error .ft-toast-icon { background: #e0603a; }
+.ft-toast-info .ft-toast-icon { background: #3a7de0; }
+.ft-toast-msg { line-height: 1.3; }
+
+/* ================= Hop xac nhan ================= */
+.ft-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1090;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(3, 8, 5, 0.62);
+  backdrop-filter: blur(3px);
+  animation: ft-fade-in 0.18s ease;
+}
+
+.ft-confirm {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  background: var(--ft-surface);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 16px;
+  box-shadow: var(--ft-card-shadow);
+  animation: ft-pop-in 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.ft-confirm-title { margin: 0 0 6px; font-size: 1.05rem; font-weight: 700; }
+.ft-confirm-msg { margin: 0 0 14px; color: var(--bs-secondary-color); font-size: 0.92rem; }
+.ft-confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ================= Lightbox (xem anh/video phong to) ================= */
+.ft-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.9);
+  animation: ft-fade-in 0.2s ease;
+}
+
+.ft-lightbox-media {
+  max-width: 96vw;
+  max-height: 92vh;
+  border-radius: 8px;
+  animation: ft-pop-in 0.24s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.ft-lightbox-close {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.ft-lightbox-close:hover { background: rgba(255, 255, 255, 0.28); }
+
+/* Nut phong to noi tren anh/video bai viet */
+.ft-post-media { position: relative; }
+.ft-post-image[role="button"] { cursor: zoom-in; }
+
+.ft-media-expand {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+.ft-post-media:hover .ft-media-expand { opacity: 1; }
+/* Cam ung khong co ro chuot -> hien san mo mo de biet bam duoc */
+@media (hover: none) { .ft-media-expand { opacity: 0.85; } }
+
+/* ================= Nut cuon len dau ================= */
+.ft-scrolltop {
+  position: fixed;
+  right: 20px;
+  bottom: 88px; /* cao hon nut cup o goc phai duoi */
+  z-index: 1030;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 50%;
+  background: var(--ft-surface);
+  color: var(--bs-body-color);
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: var(--ft-card-shadow);
+  animation: ft-rise-in 0.25s ease;
+}
+.ft-scrolltop:hover { background: var(--ft-accent-soft); color: var(--ft-accent-strong); }
+
+/* ================= Vi tuong tac ================= */
+/* Giu nguyen transition cua Bootstrap, chi THEM transform de nut hoi lun khi bam */
+.btn {
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.08s ease;
+}
+.btn:active:not(:disabled) { transform: scale(0.97); }
+
+/* The bai viet noi nhe khi ro chuot len */
+.ft-post { transition: box-shadow 0.2s ease, transform 0.2s ease; }
+.ft-post:hover { box-shadow: var(--ft-card-shadow); }
+
+/* ================= Keo de lam moi ================= */
+.ft-ptr {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  z-index: 1035;
+  margin-top: -46px; /* nam an tren dinh, keo xuong moi lo ra */
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ft-surface);
+  border: 1px solid var(--bs-border-color-translucent);
+  box-shadow: var(--ft-card-shadow);
+  color: var(--ft-accent-strong);
+  font-size: 1.3rem;
+}
+.ft-ptr-spin { display: inline-block; line-height: 1; }
+.ft-ptr-spin.spinning { animation: ft-spin 0.7s linear infinite; }
+@keyframes ft-spin { to { transform: rotate(360deg); } }
+
+@keyframes ft-rise-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes ft-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes ft-pop-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ft-toast, .ft-confirm, .ft-confirm-overlay, .ft-lightbox, .ft-lightbox-media, .ft-scrolltop {
+    animation: none;
+  }
+  .btn:active:not(:disabled) { transform: none; }
+  .ft-post:hover { transform: none; }
+}
+
 /* Hai nut Thich / Binh luan chia deu, co duong ke tach khoi noi dung */
 .ft-post-actions {
   display: flex;
