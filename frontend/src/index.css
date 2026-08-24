@@ -1897,14 +1897,6 @@ tr[role='button']:hover img,
   animation: ft-medal-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* O huy chuong trong bang xep hang: be rong co dinh + can giua de logo cac doi
-   (co hay khong co huy chuong) luon bat dau cung mot vi tri, khong bi thut le. */
-.ft-team-cell .ft-rank-medal {
-  width: 1.4em;
-  text-align: center;
-  flex-shrink: 0;
-}
-
 /* ---------- The tran dau ---------- */
 @keyframes ft-pop-in {
   from {

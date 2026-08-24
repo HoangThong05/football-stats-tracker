@@ -134,14 +134,16 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
                     className={rowClass(r.position, rows.length, activeZones, isFullTable)}
                   >
                     <td>
-                      <span className={posClass(r.position, rows.length, activeZones)}>{r.position}</span>
+                      {/* Top 3 hien huy chuong THAY so o cot thu hang (giong BXH du doan),
+                          de cot Doi chi con logo + ten, thang hang voi tieu de */}
+                      {teamsAtPosition[r.position] === 1 && RANK_MEDALS[r.position] ? (
+                        <span className="ft-rank-medal" aria-hidden="true">{RANK_MEDALS[r.position]}</span>
+                      ) : (
+                        <span className={posClass(r.position, rows.length, activeZones)}>{r.position}</span>
+                      )}
                     </td>
                     <td className="ft-team-cell">
                       <div className="d-flex align-items-center gap-2">
-                        {/* O huy chuong LUON co (trong khi khong co) de logo moi doi thang hang */}
-                        <span className="ft-rank-medal" aria-hidden="true">
-                          {teamsAtPosition[r.position] === 1 && RANK_MEDALS[r.position] ? RANK_MEDALS[r.position] : ''}
-                        </span>
                         {r.crest && <img src={r.crest} alt="" width="22" height="22" loading="lazy" />}
                         <span title={r.teamName}>{shortTeamName(r.teamName)}</span>
                         {liveTeamIds.has(r.teamId) && (
