@@ -4,6 +4,7 @@ import { useTranslation } from '../i18n'
 import { RANK_MEDALS } from '../constants'
 import { useLiveTeamIds } from '../useLiveMatches'
 import CountUp from './CountUp'
+import DataFreshness from './DataFreshness'
 import FormDots, { parseForm } from './FormDots'
 
 // Tra ve class huy hieu vi tri theo vung (suat cup chau Au / nguy hiem)
@@ -28,7 +29,7 @@ function rowClass(position, total, zones, isFullTable) {
   return classes.join(' ')
 }
 
-export default function StandingsTable({ rows, zones, onSelectTeam }) {
+export default function StandingsTable({ rows, zones, onSelectTeam, fetchedAt }) {
   const { t } = useTranslation()
   const [query, setQuery] = useState('')
   /*
@@ -182,17 +183,22 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
             </table>
           </div>
 
-          {activeZones && !q && (
-            <div className="ft-legend d-flex gap-4 mt-2 ps-1 text-secondary flex-wrap">
-              <span>
-                <span className="dot" style={{ background: 'var(--ft-accent)' }} />
-                {zones.top === 8 ? t('standings_legend_ucl_top') : t('standings_legend_euro_top')}
-              </span>
-              <span>
-                <span className="dot" style={{ background: '#dc2626' }} />
-                {zones.top === 8 ? t('standings_legend_eliminated') : t('standings_legend_relegation')}
-              </span>
-              {hasForm && <span>{t('standings_form_legend')}</span>}
+          {((activeZones && !q) || fetchedAt) && (
+            <div className="ft-legend d-flex align-items-center gap-4 mt-2 ps-1 text-secondary flex-wrap">
+              {activeZones && !q && (
+                <>
+                  <span>
+                    <span className="dot" style={{ background: 'var(--ft-accent)' }} />
+                    {zones.top === 8 ? t('standings_legend_ucl_top') : t('standings_legend_euro_top')}
+                  </span>
+                  <span>
+                    <span className="dot" style={{ background: '#dc2626' }} />
+                    {zones.top === 8 ? t('standings_legend_eliminated') : t('standings_legend_relegation')}
+                  </span>
+                </>
+              )}
+              {/* Cap nhat luc... day sang phai, cung hang voi chu thich mau */}
+              <span className="ms-auto"><DataFreshness fetchedAt={fetchedAt} /></span>
             </div>
           )}
         </>

@@ -2054,6 +2054,11 @@ tr[role='button']:hover img,
   opacity: 0.7;
 }
 
+/* Khi "cap nhat luc" nam CHUNG hang voi chu thich mau (BXH): bo le rieng de thang hang */
+.ft-legend .ft-freshness {
+  margin: 0;
+}
+
 /* ---------- The nghi giua hai mua giai ---------- */
 .ft-season-break {
   background: linear-gradient(135deg, var(--ft-pitch-strong) 0%, var(--ft-pitch) 100%);

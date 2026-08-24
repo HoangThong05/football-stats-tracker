@@ -823,6 +823,7 @@ export default function App() {
                       rows={data}
                       zones={currentLeague?.zones}
                       onSelectTeam={setSelectedTeamId}
+                      fetchedAt={fetchedAt}
                     />
                   )}
                   {view === "scorers" && (
@@ -857,8 +858,9 @@ export default function App() {
                     />
                   )}
 
-                  {/* Tu an o cac view backend khong gan header (vd So sanh doi, Du doan) */}
-                  <DataFreshness fetchedAt={fetchedAt} />
+                  {/* Tu an o cac view backend khong gan header (vd So sanh doi, Du doan).
+                      Rieng BXH da tu hien "cap nhat luc" ngay tren hang chu thich. */}
+                  {view !== "standings" && <DataFreshness fetchedAt={fetchedAt} />}
                 </div>
               )}
             </>
