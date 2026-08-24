@@ -10,24 +10,27 @@ import CoverAddDialog from './CoverAddDialog'
 const clamp = (v) => Math.max(0, Math.min(100, v))
 
 /**
- * Anh bia (banner tren dau trang Ho so) kem doi anh + KEO chinh vi tri (giong Facebook).
- *
- * File di THANG len Cloudinary (xem cloudinary.js), backend luu duong dan + vi tri doc
- * (coverPos 0-100%). Nhan ca GIF nen dat duoc anh bia dong. Chua co anh -> vach san co.
+ * Anh bia kem doi anh + chinh vi tri kieu Facebook: KEO 2 chieu (trai/phai + len/xuong)
+ * va THANH TRUOT phong to. File di thang len Cloudinary, backend luu URL + vi tri (x,y) +
+ * zoom. Nhan ca GIF. Chua co anh -> vach san co mac dinh.
  */
-export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
+export default function CoverUpload({ token, coverUrl, coverPos, coverX, coverZoom, onSaved }) {
   const { t } = useTranslation()
   const fileRef = useRef(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
-  const [moving, setMoving] = useState(false) // dang keo chinh vi tri
+  const [moving, setMoving] = useState(false)
   const [showGif, setShowGif] = useState(false)
-  const [showAdd, setShowAdd] = useState(false) // hop 2 o kieu Discord
-  const [pos, setPos] = useState(coverPos ?? 50)
+  const [showAdd, setShowAdd] = useState(false)
+  const [posX, setPosX] = useState(coverX ?? 50)
+  const [posY, setPosY] = useState(coverPos ?? 50)
+  const [zoom, setZoom] = useState(coverZoom ?? 100)
   const drag = useRef(null)
 
-  // Dong bo vi tri khi du lieu tu ngoai doi (tai lai / doi anh)
-  useEffect(() => setPos(coverPos ?? 50), [coverPos])
+  // Dong bo khi du lieu tu ngoai doi (tai lai / doi anh)
+  useEffect(() => setPosX(coverX ?? 50), [coverX])
+  useEffect(() => setPosY(coverPos ?? 50), [coverPos])
+  useEffect(() => setZoom(coverZoom ?? 100), [coverZoom])
 
   const errMap = {
     image_type_invalid: t('forum_err_image_type'),
@@ -39,12 +42,12 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
     rate_limited: t('auth_rate_limited'),
   }
 
-  /** Gui len backend. url rong = go anh. position = vi tri doc. */
-  const save = async (url, position) => {
+  /** Gui len backend. url rong = go anh. */
+  const save = async (url, x, y, z) => {
     const res = await fetch(`${API_BASE}/auth/cover`, {
       method: 'POST',
       headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ coverUrl: url, coverPos: position }),
+      body: JSON.stringify({ coverUrl: url, coverX: x, coverPos: y, coverZoom: z }),
     })
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))
@@ -54,6 +57,8 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
     onSaved({
       coverUrl: data.coverUrl || null,
       coverPos: typeof data.coverPos === 'number' ? data.coverPos : 50,
+      coverX: typeof data.coverX === 'number' ? data.coverX : 50,
+      coverZoom: typeof data.coverZoom === 'number' ? data.coverZoom : 100,
     })
   }
 
@@ -73,40 +78,42 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
-    // Anh/GIF moi -> dat ve giua (50). Bia chi nhan anh + GIF, khong nhan video.
-    run(async () => save(await uploadImage(file), 50))
+    // Anh/GIF moi -> ve giua, khong zoom. Bia chi nhan anh + GIF.
+    run(async () => save(await uploadImage(file), 50, 50, 100))
   }
 
   const remove = () => run(async () => {
-    await save('', null)
+    await save('', null, null, null)
     setMoving(false)
   })
 
   const savePosition = () => run(async () => {
-    await save(coverUrl, Math.round(pos))
+    await save(coverUrl, Math.round(posX), Math.round(posY), Math.round(zoom))
     setMoving(false)
   })
 
   const cancelPosition = () => {
-    setPos(coverPos ?? 50)
+    setPosX(coverX ?? 50)
+    setPosY(coverPos ?? 50)
+    setZoom(coverZoom ?? 100)
     setMoving(false)
   }
 
-  // Keo doc de chinh vi tri (chi khi dang o che do chinh)
+  // Keo 2 chieu de chinh vi tri (chi khi dang chinh, va khong bam trung nut/thanh truot)
   const onDown = (e) => {
     if (!moving) return
-    // Bam vao nut (Luu/Huy) hay dong goi y -> KHONG bat con tro, de nut bam duoc.
-    // Truoc day container bat con tro nen click nut bi nuot -> "Luu" khong an gi.
-    if (e.target.closest('.ft-cover-actions, .ft-cover-hint')) return
-    drag.current = { y: e.clientY, pos }
+    if (e.target.closest('.ft-cover-actions, .ft-cover-hint, .ft-cover-zoombar')) return
+    drag.current = { x: e.clientX, y: e.clientY, px: posX, py: posY }
     e.currentTarget.setPointerCapture?.(e.pointerId)
   }
   const onMove = (e) => {
     if (!moving || !drag.current) return
-    const h = e.currentTarget.offsetHeight || 200
-    const dy = e.clientY - drag.current.y
-    // Keo xuong (dy > 0) -> lo phan TREN cua anh -> pos giam
-    setPos(clamp(drag.current.pos - (dy / h) * 100))
+    const el = e.currentTarget
+    const w = el.offsetWidth || 400
+    const h = el.offsetHeight || 200
+    // Keo phai (dx>0) -> lo phan trai -> x giam; keo xuong -> lo phan tren -> y giam
+    setPosX(clamp(drag.current.px - ((e.clientX - drag.current.x) / w) * 100))
+    setPosY(clamp(drag.current.py - ((e.clientY - drag.current.y) / h) * 100))
   }
   const onUp = () => { drag.current = null }
 
@@ -119,7 +126,7 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
       onPointerUp={onUp}
       onPointerLeave={onUp}
     >
-      <CoverMedia url={coverUrl} pos={pos} />
+      <CoverMedia url={coverUrl} x={posX} y={posY} zoom={zoom} />
 
       {imageUploadEnabled() && (
         <div className="ft-cover-actions">
@@ -141,7 +148,7 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
               {coverUrl && (
                 <button type="button" className="ft-cover-btn" disabled={busy}
                   onClick={() => setMoving(true)}>
-                  ↕ {t('profile_cover_reposition')}
+                  ⤢ {t('profile_cover_reposition')}
                 </button>
               )}
               {coverUrl && (
@@ -156,7 +163,16 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
         </div>
       )}
 
-      {moving && <div className="ft-cover-hint">{t('profile_cover_drag_hint')}</div>}
+      {moving && (
+        <>
+          <div className="ft-cover-hint">{t('profile_cover_drag_hint')}</div>
+          <div className="ft-cover-zoombar">
+            <span aria-hidden="true">🔍</span>
+            <input type="range" min="100" max="300" value={zoom}
+              onChange={(e) => setZoom(Number(e.target.value))} />
+          </div>
+        </>
+      )}
       {error && <div className="ft-cover-error small">{error}</div>}
 
       {showAdd && (
@@ -170,7 +186,7 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
       {showGif && (
         <GifPicker
           onClose={() => setShowGif(false)}
-          onPick={(url) => { setShowGif(false); run(async () => save(url, 50)) }}
+          onPick={(url) => { setShowGif(false); run(async () => save(url, 50, 50, 100)) }}
         />
       )}
     </div>

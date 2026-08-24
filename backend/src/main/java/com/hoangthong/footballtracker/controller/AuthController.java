@@ -181,8 +181,10 @@ public class AuthController {
                                                   java.security.Principal principal) {
         limit("cover:email:" + normalize(principal.getName()), CHANGE_PER_EMAIL, QUARTER_HOUR);
         String url = body.get("coverUrl") == null ? null : String.valueOf(body.get("coverUrl"));
-        Integer pos = body.get("coverPos") instanceof Number n ? n.intValue() : null;
-        return authService.setCover(principal.getName(), url, pos);
+        Integer y = body.get("coverPos") instanceof Number n ? n.intValue() : null;
+        Integer x = body.get("coverX") instanceof Number n ? n.intValue() : null;
+        Integer zoom = body.get("coverZoom") instanceof Number n ? n.intValue() : null;
+        return authService.setCover(principal.getName(), url, x, y, zoom);
     }
 
     @PostMapping("/reset-password")

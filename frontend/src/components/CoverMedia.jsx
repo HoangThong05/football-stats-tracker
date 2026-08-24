@@ -2,32 +2,23 @@ import { isVideoUrl } from '../utils'
 
 /**
  * Lop anh/video bia lap day khung .ft-profile-cover. Dung chung o Ho so (co the chinh)
- * va Ho so cong khai (chi doc). pos = vi tri doc 0-100%.
+ * va Ho so cong khai (chi doc).
  *
- * Video: tu phat, tat tieng, lap (kieu anh bia dong). Anh/GIF: dat lam nen.
- * Khong co url -> khong ve gi (khung tu hien vach san co mac dinh).
+ * Vi tri + zoom: object-fit cover phu khung; object-position (x%, y%) chon phan hien;
+ * transform scale(zoom) phong to, transform-origin trung tiêu diem de zoom quanh do.
+ * Video: tu phat, tat tieng, lap. Khong co url -> khong ve gi (khung tu ve vach san co).
  */
-export default function CoverMedia({ url, pos = 50 }) {
+export default function CoverMedia({ url, x = 50, y = 50, zoom = 100 }) {
   if (!url) return null
 
-  if (isVideoUrl(url)) {
-    return (
-      <video
-        className="ft-cover-video"
-        src={url}
-        autoPlay
-        muted
-        loop
-        playsInline
-        style={{ objectPosition: `center ${pos}%` }}
-      />
-    )
+  const style = {
+    objectPosition: `${x}% ${y}%`,
+    transform: `scale(${zoom / 100})`,
+    transformOrigin: `${x}% ${y}%`,
   }
 
-  return (
-    <div
-      className="ft-cover-img"
-      style={{ backgroundImage: `url(${url})`, backgroundPosition: `center ${pos}%` }}
-    />
-  )
+  if (isVideoUrl(url)) {
+    return <video className="ft-cover-media-el" src={url} autoPlay muted loop playsInline style={style} />
+  }
+  return <img className="ft-cover-media-el" src={url} alt="" style={style} />
 }

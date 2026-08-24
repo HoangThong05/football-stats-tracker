@@ -214,12 +214,16 @@ public class AuthService {
      * Dat / go anh bia + vi tri doc. url rong = go. Chi nhan duong dan Cloudinary
      * (xem {@link ImageUrl}). Tra ve { coverUrl, coverPos } sau khi luu.
      */
-    public java.util.Map<String, Object> setCover(String email, String rawUrl, Integer pos) {
+    public java.util.Map<String, Object> setCover(String email, String rawUrl,
+                                                  Integer x, Integer y, Integer zoom) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials"));
         user.setCoverUrl(ImageUrl.clean(rawUrl));
-        // Go anh thi vi tri quay ve mac dinh; con lai lay pos gui len (mac dinh 50)
-        user.setCoverPos(user.getCoverUrl() == null ? null : (pos == null ? 50 : pos));
+        // Go anh thi moi thu ve mac dinh; con lai lay gia tri gui len
+        boolean has = user.getCoverUrl() != null;
+        user.setCoverPos(has ? (y == null ? 50 : y) : null);
+        user.setCoverX(has ? (x == null ? 50 : x) : null);
+        user.setCoverZoom(has ? (zoom == null ? 100 : zoom) : null);
         userRepository.save(user);
         return coverMap(user);
     }
@@ -228,6 +232,8 @@ public class AuthService {
         java.util.Map<String, Object> m = new java.util.HashMap<>();
         m.put("coverUrl", user.getCoverUrl());
         m.put("coverPos", user.getCoverPos());
+        m.put("coverX", user.getCoverX());
+        m.put("coverZoom", user.getCoverZoom());
         return m;
     }
 

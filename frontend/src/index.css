@@ -3416,24 +3416,32 @@ video.ft-post-image {
   overflow: hidden;
 }
 
-/* Lop anh/video bia lap day khung, cat theo kieu cover */
-.ft-cover-img,
-.ft-cover-video {
+/* Lop anh/video bia lap day khung, cat kieu cover. object-position + transform scale
+   dat inline (vi tri x/y + zoom). pointer-events none de con tro keo do container xu ly. */
+.ft-cover-media-el {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-}
-.ft-cover-img {
-  background-size: cover;
-  background-repeat: no-repeat;
-}
-.ft-cover-video {
   object-fit: cover;
-  /* Keo chinh vi tri qua object-position (dat inline); khi keo thi khong bat su kien
-     de con tro tren container xu ly, tranh video "nuot" thao tac keo */
   pointer-events: none;
 }
+
+/* Thanh truot phong to khi dang chinh vi tri anh bia */
+.ft-cover-zoombar {
+  position: absolute;
+  left: 50%;
+  bottom: 44px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+}
+.ft-cover-zoombar input[type="range"] { width: 150px; cursor: pointer; }
 
 /* Dang keo chinh vi tri anh bia */
 .ft-profile-cover.repositioning {

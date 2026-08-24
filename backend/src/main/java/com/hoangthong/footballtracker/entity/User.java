@@ -88,6 +88,14 @@ public class User {
     @Column
     private Integer coverPos;
 
+    /** Vi tri ngang (0-100%) cua anh bia. null = giua (50). */
+    @Column
+    private Integer coverX;
+
+    /** Do phong to anh bia (100 = vua khung, toi da 300). null = 100. */
+    @Column
+    private Integer coverZoom;
+
     /**
      * Tang len moi lan doi mat khau, de vo hieu toan bo token da phat truoc do.
      *
@@ -198,6 +206,23 @@ public class User {
     /** Cat ve khoang hop le 0-100. */
     public void setCoverPos(Integer coverPos) {
         this.coverPos = coverPos == null ? null : Math.max(0, Math.min(100, coverPos));
+    }
+
+    public int getCoverX() {
+        return coverX == null ? 50 : coverX;
+    }
+
+    public void setCoverX(Integer coverX) {
+        this.coverX = coverX == null ? null : Math.max(0, Math.min(100, coverX));
+    }
+
+    /** Do phong to, 100-300%. Mac dinh 100. */
+    public int getCoverZoom() {
+        return coverZoom == null ? 100 : coverZoom;
+    }
+
+    public void setCoverZoom(Integer coverZoom) {
+        this.coverZoom = coverZoom == null ? null : Math.max(100, Math.min(300, coverZoom));
     }
 
     /** Ten de hien ra ngoai. Chua dat thi lay phan truoc dau @ - khong bao gio lo ca dia chi. */

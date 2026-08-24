@@ -113,7 +113,8 @@ export default function PublicProfile({ userId, token, onBack }) {
 
       <div className="ft-card ft-profile-hero mb-3">
         <div className="ft-profile-cover">
-          <CoverMedia url={profile.coverUrl} pos={profile.coverPos ?? 50} />
+          <CoverMedia url={profile.coverUrl} x={profile.coverX ?? 50}
+            y={profile.coverPos ?? 50} zoom={profile.coverZoom ?? 100} />
         </div>
 
         <div className="ft-profile-id">

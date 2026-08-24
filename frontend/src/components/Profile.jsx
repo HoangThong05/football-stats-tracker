@@ -33,6 +33,8 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
   const [badges, setBadges] = useState([])
   const [coverUrl, setCoverUrl] = useState(null)
   const [coverPos, setCoverPos] = useState(50)
+  const [coverX, setCoverX] = useState(50)
+  const [coverZoom, setCoverZoom] = useState(100)
   const [showSettings, setShowSettings] = useState(false)
 
   // Tach rieng de goi lai duoc sau khi doi huy hieu ghim
@@ -77,6 +79,8 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
       .then((data) => {
         setCoverUrl(data.coverUrl || null)
         setCoverPos(typeof data.coverPos === 'number' ? data.coverPos : 50)
+        setCoverX(typeof data.coverX === 'number' ? data.coverX : 50)
+        setCoverZoom(typeof data.coverZoom === 'number' ? data.coverZoom : 100)
       })
       .catch(() => setCoverUrl(null))
   }, [token])
@@ -118,7 +122,11 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
       <div className="ft-card ft-profile-hero mb-3">
         {/* Bia: vach san co cua chinh app, khong phai anh tai ve - khong ton request nao */}
         <CoverUpload token={token} coverUrl={coverUrl} coverPos={coverPos}
-          onSaved={(c) => { setCoverUrl(c.coverUrl); setCoverPos(c.coverPos) }} />
+          coverX={coverX} coverZoom={coverZoom}
+          onSaved={(c) => {
+            setCoverUrl(c.coverUrl); setCoverPos(c.coverPos)
+            setCoverX(c.coverX); setCoverZoom(c.coverZoom)
+          }} />
 
         <div className="ft-profile-id">
           <AvatarUpload token={token} name={displayName || userEmail} avatarUrl={avatarUrl}

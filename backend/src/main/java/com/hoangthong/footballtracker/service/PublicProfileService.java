@@ -62,6 +62,8 @@ public class PublicProfileService {
                 user.getAvatarUrl(),
                 user.getCoverUrl(),
                 user.getCoverPos(),
+                user.getCoverX(),
+                user.getCoverZoom(),
                 user.getCreatedAt().toString(),
                 stats == null || stats.getTotalPoints() == null ? 0 : stats.getTotalPoints(),
                 stats == null || stats.getScored() == null ? 0 : stats.getScored(),
