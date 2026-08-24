@@ -83,6 +83,7 @@ public class MiniLeagueService {
             row.picks().add(new MiniLeagueDto.MemberPick(
                     p.getUser().getId(),
                     p.getUser().displayNameOrFallback(),
+                    p.getUser().getFeaturedBadge(),
                     p.getPredictedHomeScore(), p.getPredictedAwayScore(), p.getPoints()));
         }
 
@@ -150,6 +151,7 @@ public class MiniLeagueService {
                     i + 1,
                     ((Number) row[0]).longValue(),
                     memberName,
+                    (String) row[6],
                     ((Number) row[3]).longValue(),
                     ((Number) row[4]).longValue(),
                     ((Number) row[5]).longValue()

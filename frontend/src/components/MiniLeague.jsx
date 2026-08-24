@@ -3,6 +3,7 @@ import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import { shortTeamName } from '../utils'
 import RoomChat from './RoomChat'
+import BadgeFlair from './BadgeFlair'
 import { confirmDialog } from './ConfirmDialog'
 
 function translateError(code, t) {
@@ -283,6 +284,7 @@ if (!token) {
                         <button type="button" className="ft-name-link"
                           onClick={() => onSelectUser(e.userId)}>
                           {e.name}
+                          <BadgeFlair code={e.featuredBadge} />
                         </button>
                       </td>
                       <td className="text-center ft-num text-secondary d-none d-sm-table-cell">
@@ -326,6 +328,7 @@ if (!token) {
                       <div key={p.name} className="d-flex align-items-center gap-2 small">
                         <span className="text-truncate flex-grow-1" style={{ minWidth: 0 }} title={p.name}>
                           {p.name}
+                          <BadgeFlair code={p.featuredBadge} />
                         </span>
                         <span className="ft-num fw-semibold flex-shrink-0">
                           {p.homeScore} - {p.awayScore}

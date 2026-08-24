@@ -28,6 +28,8 @@ public class MiniLeagueDto {
             long userId,
             /** Ten hien thi, khong phai email - xem ghi chu o LeaderboardEntryDto. */
             String name,
+            /** Ma huy hieu ghim canh ten. null = khong ghim. */
+            String featuredBadge,
             long totalPoints,
             /** So luot du doan da duoc cham diem (tran da ket thuc). */
             long scoredPredictions,
@@ -36,7 +38,8 @@ public class MiniLeagueDto {
     ) {}
 
     /** Du doan cua mot thanh vien cho mot tran. */
-    public record MemberPick(long userId, String name, int homeScore, int awayScore, Integer points) {}
+    public record MemberPick(long userId, String name, String featuredBadge,
+                             int homeScore, int awayScore, Integer points) {}
 
     /**
      * Mot tran kem du doan cua ca phong.
