@@ -138,11 +138,10 @@ export default function StandingsTable({ rows, zones, onSelectTeam }) {
                     </td>
                     <td className="ft-team-cell">
                       <div className="d-flex align-items-center gap-2">
-                        {teamsAtPosition[r.position] === 1 && RANK_MEDALS[r.position] && (
-                          <span className="ft-rank-medal" aria-hidden="true">
-                            {RANK_MEDALS[r.position]}
-                          </span>
-                        )}
+                        {/* O huy chuong LUON co (trong khi khong co) de logo moi doi thang hang */}
+                        <span className="ft-rank-medal" aria-hidden="true">
+                          {teamsAtPosition[r.position] === 1 && RANK_MEDALS[r.position] ? RANK_MEDALS[r.position] : ''}
+                        </span>
                         {r.crest && <img src={r.crest} alt="" width="22" height="22" loading="lazy" />}
                         <span title={r.teamName}>{shortTeamName(r.teamName)}</span>
                         {liveTeamIds.has(r.teamId) && (
