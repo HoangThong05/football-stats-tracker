@@ -2995,6 +2995,20 @@ video.ft-post-image {
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
   align-content: start;
+  /* Giu chieu cao on dinh: khong co no thi luc tai/it ket qua hop bi co lai nhin ki */
+  min-height: 300px;
+}
+
+/* O khung xuong luc dang tai GIF */
+.ft-gif-skel {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: var(--bs-tertiary-bg);
+  animation: ft-gif-shimmer 1.1s ease-in-out infinite;
+}
+@keyframes ft-gif-shimmer {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.85; }
 }
 .ft-gif-msg {
   grid-column: 1 / -1;
@@ -3397,7 +3411,7 @@ video.ft-post-image {
  */
 .ft-profile-cover {
   position: relative;
-  height: 240px; /* cao hon de thay nhieu anh bia (kieu Facebook) */
+  height: 320px; /* bia lon, kieu Facebook - thay nhieu anh hon */
   background-image: var(--ft-header-stripe), var(--ft-header-grad);
   overflow: hidden;
 }
@@ -3645,7 +3659,7 @@ video.ft-post-image {
 
 @media (max-width: 575.98px) {
   .ft-profile-cover {
-    height: 160px;
+    height: 200px;
   }
 
   /* Man hep: nut "Cai dat" xuong hang rieng thay vi bop ten con vai ky tu */

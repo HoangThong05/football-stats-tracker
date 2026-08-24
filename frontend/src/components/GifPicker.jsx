@@ -62,7 +62,8 @@ export default function GifPicker({ onPick, onClose }) {
 
         <div className="ft-gif-grid">
           {items === null ? (
-            <p className="ft-gif-msg">…</p>
+            // Khung xuong nhap nhay trong luc tai - gon gang hon la mot dau "..."
+            Array.from({ length: 9 }).map((_, i) => <div key={i} className="ft-gif-skel" />)
           ) : items.length === 0 ? (
             <p className="ft-gif-msg">{error ? t('gif_error') : t('gif_empty')}</p>
           ) : (

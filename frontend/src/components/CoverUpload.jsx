@@ -95,6 +95,9 @@ export default function CoverUpload({ token, coverUrl, coverPos, onSaved }) {
   // Keo doc de chinh vi tri (chi khi dang o che do chinh)
   const onDown = (e) => {
     if (!moving) return
+    // Bam vao nut (Luu/Huy) hay dong goi y -> KHONG bat con tro, de nut bam duoc.
+    // Truoc day container bat con tro nen click nut bi nuot -> "Luu" khong an gi.
+    if (e.target.closest('.ft-cover-actions, .ft-cover-hint')) return
     drag.current = { y: e.clientY, pos }
     e.currentTarget.setPointerCapture?.(e.pointerId)
   }
