@@ -31,14 +31,17 @@ public class BadgeService {
     private final PredictionRepository predictionRepository;
     private final UserBadgeRepository userBadgeRepository;
     private final UserRepository userRepository;
+    private final com.hoangthong.footballtracker.repository.WeeklyChampionRepository weeklyChampionRepository;
 
     public BadgeService(
             PredictionRepository predictionRepository,
             UserBadgeRepository userBadgeRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            com.hoangthong.footballtracker.repository.WeeklyChampionRepository weeklyChampionRepository) {
         this.predictionRepository = predictionRepository;
         this.userBadgeRepository = userBadgeRepository;
         this.userRepository = userRepository;
+        this.weeklyChampionRepository = weeklyChampionRepository;
     }
 
     /** Goi tu PredictionScoringService sau khi cham diem xong cho 1 user. */
@@ -58,28 +61,45 @@ public class BadgeService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user_not_found"));
 
-        BadgeProgress progress = evaluateAndAward(user.getId());
+        BadgeProgress p = evaluateAndAward(user.getId());
 
         Set<String> earnedCodes = userBadgeRepository.findByUserId(user.getId()).stream()
                 .map(UserBadge::getBadgeCode)
                 .collect(Collectors.toSet());
 
+        // Thu tu tra ve = thu tu hien tren ho so: nhom theo chu de, de truoc kho sau
         return List.of(
-                toDto(BadgeType.PROPHET, progress.exactCount(), earnedCodes),
-                toDto(BadgeType.WIN_STREAK, progress.bestStreak(), earnedCodes)
+                toDto(BadgeType.ROOKIE, p.correctCount(), earnedCodes),
+                toDto(BadgeType.SHARP, p.correctCount(), earnedCodes),
+                toDto(BadgeType.PROPHET, p.exactCount(), earnedCodes),
+                toDto(BadgeType.ORACLE, p.exactCount(), earnedCodes),
+                toDto(BadgeType.WIN_STREAK, p.bestStreak(), earnedCodes),
+                toDto(BadgeType.ON_FIRE, p.bestStreak(), earnedCodes),
+                toDto(BadgeType.CENTURION, p.totalPoints(), earnedCodes),
+                toDto(BadgeType.WEEKLY_KING, p.weeklyWins(), earnedCodes)
         );
     }
 
     private BadgeProgress evaluateAndAward(Long userId) {
         List<Prediction> scored = predictionRepository.findScoredByUserIdOrderByMatchDateAsc(userId);
 
-        int exactCount = (int) scored.stream().filter(p -> p.getPoints() == 3).count();
+        // Diem = 3 hoac 6 la trung ti so (6 = trung ti so co dat x2). Diem > 0 la co diem.
+        int correctCount = (int) scored.stream().filter(p -> p.getPoints() != null && p.getPoints() > 0).count();
+        int exactCount = (int) scored.stream().filter(p -> p.getPoints() != null && (p.getPoints() == 3 || p.getPoints() == 6)).count();
+        int totalPoints = scored.stream().mapToInt(p -> p.getPoints() == null ? 0 : p.getPoints()).sum();
         int bestStreak = bestCorrectStreak(scored);
+        int weeklyWins = (int) weeklyChampionRepository.countByUserId(userId);
 
+        awardIfEligible(userId, BadgeType.ROOKIE, correctCount >= BadgeType.ROOKIE.getThreshold());
+        awardIfEligible(userId, BadgeType.SHARP, correctCount >= BadgeType.SHARP.getThreshold());
         awardIfEligible(userId, BadgeType.PROPHET, exactCount >= BadgeType.PROPHET.getThreshold());
+        awardIfEligible(userId, BadgeType.ORACLE, exactCount >= BadgeType.ORACLE.getThreshold());
         awardIfEligible(userId, BadgeType.WIN_STREAK, bestStreak >= BadgeType.WIN_STREAK.getThreshold());
+        awardIfEligible(userId, BadgeType.ON_FIRE, bestStreak >= BadgeType.ON_FIRE.getThreshold());
+        awardIfEligible(userId, BadgeType.CENTURION, totalPoints >= BadgeType.CENTURION.getThreshold());
+        awardIfEligible(userId, BadgeType.WEEKLY_KING, weeklyWins >= BadgeType.WEEKLY_KING.getThreshold());
 
-        return new BadgeProgress(exactCount, bestStreak);
+        return new BadgeProgress(correctCount, exactCount, totalPoints, bestStreak, weeklyWins);
     }
 
     /** Chuoi dai nhat cac du doan LIEN TIEP (theo thoi gian tran) co diem > 0 (dung ket qua hoac chinh xac ti so). */
@@ -110,6 +130,6 @@ public class BadgeService {
         return new BadgeDto(type.name(), earnedCodes.contains(type.name()), Math.min(progress, type.getThreshold()), type.getThreshold());
     }
 
-    private record BadgeProgress(int exactCount, int bestStreak) {
+    private record BadgeProgress(int correctCount, int exactCount, int totalPoints, int bestStreak, int weeklyWins) {
     }
 }
