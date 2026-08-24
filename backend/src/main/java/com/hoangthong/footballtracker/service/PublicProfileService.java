@@ -61,6 +61,7 @@ public class PublicProfileService {
                 user.getRole() == com.hoangthong.footballtracker.entity.Role.ADMIN,
                 user.getAvatarUrl(),
                 user.getCoverUrl(),
+                user.getCoverPos(),
                 user.getCreatedAt().toString(),
                 stats == null || stats.getTotalPoints() == null ? 0 : stats.getTotalPoints(),
                 stats == null || stats.getScored() == null ? 0 : stats.getScored(),

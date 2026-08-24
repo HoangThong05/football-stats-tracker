@@ -166,19 +166,23 @@ public class AuthController {
         return authService.setAvatar(principal.getName(), body.get("avatarUrl"));
     }
 
-    /** Anh bia hien tai cua toi. Tra { "coverUrl": ... } (null neu chua dat). */
+    /** Anh bia hien tai cua toi: { coverUrl, coverPos }. coverUrl null = chua dat. */
     @org.springframework.web.bind.annotation.GetMapping("/cover")
-    public java.util.Map<String, String> getCover(java.security.Principal principal) {
-        return java.util.Collections.singletonMap("coverUrl", authService.getCover(principal.getName()));
+    public java.util.Map<String, Object> getCover(java.security.Principal principal) {
+        return authService.getCover(principal.getName());
     }
 
-    /** Dat / go anh bia. Body: { "coverUrl": "https://res.cloudinary.com/..." }. Rong = go. */
+    /**
+     * Dat / go anh bia + vi tri. Body: { "coverUrl": "https://res.cloudinary.com/...",
+     * "coverPos": 40 }. coverUrl rong = go anh.
+     */
     @PostMapping("/cover")
-    public java.util.Map<String, String> setCover(@RequestBody java.util.Map<String, String> body,
+    public java.util.Map<String, Object> setCover(@RequestBody java.util.Map<String, Object> body,
                                                   java.security.Principal principal) {
         limit("cover:email:" + normalize(principal.getName()), CHANGE_PER_EMAIL, QUARTER_HOUR);
-        return java.util.Collections.singletonMap("coverUrl",
-                authService.setCover(principal.getName(), body.get("coverUrl")));
+        String url = body.get("coverUrl") == null ? null : String.valueOf(body.get("coverUrl"));
+        Integer pos = body.get("coverPos") instanceof Number n ? n.intValue() : null;
+        return authService.setCover(principal.getName(), url, pos);
     }
 
     @PostMapping("/reset-password")

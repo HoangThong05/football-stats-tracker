@@ -18,6 +18,8 @@ public record PublicProfileDto(
         String avatarUrl,
         /** Anh bia (banner). null = chua dat -> giao dien ve vach san co mac dinh. */
         String coverUrl,
+        /** Vi tri doc anh bia (0-100%). */
+        int coverPos,
         String joinedAt,
         long totalPoints,
         long totalPredictions,

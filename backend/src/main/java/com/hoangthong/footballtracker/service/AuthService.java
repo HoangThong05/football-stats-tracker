@@ -203,20 +203,32 @@ public class AuthService {
         return toAuthResponse(user);
     }
 
-    /** Anh bia hien tai cua nguoi nay (null = chua dat). */
-    public String getCover(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials"))
-                .getCoverUrl();
+    /** Anh bia hien tai: { coverUrl, coverPos }. coverUrl null = chua dat. */
+    public java.util.Map<String, Object> getCover(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials"));
+        return coverMap(user);
     }
 
-    /** Dat / go anh bia. Chi nhan duong dan Cloudinary (xem {@link ImageUrl}). Tra ve URL da luu. */
-    public String setCover(String email, String rawUrl) {
+    /**
+     * Dat / go anh bia + vi tri doc. url rong = go. Chi nhan duong dan Cloudinary
+     * (xem {@link ImageUrl}). Tra ve { coverUrl, coverPos } sau khi luu.
+     */
+    public java.util.Map<String, Object> setCover(String email, String rawUrl, Integer pos) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials"));
         user.setCoverUrl(ImageUrl.clean(rawUrl));
+        // Go anh thi vi tri quay ve mac dinh; con lai lay pos gui len (mac dinh 50)
+        user.setCoverPos(user.getCoverUrl() == null ? null : (pos == null ? 50 : pos));
         userRepository.save(user);
-        return user.getCoverUrl();
+        return coverMap(user);
+    }
+
+    private java.util.Map<String, Object> coverMap(User user) {
+        java.util.Map<String, Object> m = new java.util.HashMap<>();
+        m.put("coverUrl", user.getCoverUrl());
+        m.put("coverPos", user.getCoverPos());
+        return m;
     }
 
     private AuthResponse toAuthResponse(User user) {

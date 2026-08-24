@@ -4,6 +4,7 @@ import { useTranslation } from '../i18n'
 import { shortTeamName } from '../utils'
 import { BADGE_META } from '../constants'
 import Avatar from './Avatar'
+import CoverMedia from './CoverMedia'
 import Loading from './Loading'
 import PointsAreaChart from './PointsAreaChart'
 
@@ -111,10 +112,9 @@ export default function PublicProfile({ userId, token, onBack }) {
       <button className="btn btn-link ps-0 mb-3" onClick={onBack}>{t('back')}</button>
 
       <div className="ft-card ft-profile-hero mb-3">
-        <div className="ft-profile-cover" style={profile.coverUrl ? {
-          backgroundImage: `url(${profile.coverUrl})`, backgroundSize: 'cover',
-          backgroundPosition: 'center', backgroundRepeat: 'no-repeat',
-        } : undefined} />
+        <div className="ft-profile-cover">
+          <CoverMedia url={profile.coverUrl} pos={profile.coverPos ?? 50} />
+        </div>
 
         <div className="ft-profile-id">
           <div className="ft-avatar-upload">

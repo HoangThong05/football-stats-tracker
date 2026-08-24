@@ -82,6 +82,13 @@ public class User {
     private String coverUrl;
 
     /**
+     * Vi tri doc (0-100%) cua anh bia - de nguoi dung keo chon phan nao hien ra (giong
+     * Facebook). null = giua (50). Chi co y nghia khi coverUrl khac null.
+     */
+    @Column
+    private Integer coverPos;
+
+    /**
      * Tang len moi lan doi mat khau, de vo hieu toan bo token da phat truoc do.
      *
      * Khong co no thi doi mat khau gan nhu vo nghia ve bao mat: JWT song 24 gio va
@@ -181,6 +188,16 @@ public class User {
     /** null hoac rong deu luu thanh null - "go anh bia" va "chua bao gio dat" la mot. */
     public void setCoverUrl(String coverUrl) {
         this.coverUrl = (coverUrl == null || coverUrl.isBlank()) ? null : coverUrl;
+    }
+
+    /** Vi tri doc anh bia, 50 (giua) neu chua dat. */
+    public int getCoverPos() {
+        return coverPos == null ? 50 : coverPos;
+    }
+
+    /** Cat ve khoang hop le 0-100. */
+    public void setCoverPos(Integer coverPos) {
+        this.coverPos = coverPos == null ? null : Math.max(0, Math.min(100, coverPos));
     }
 
     /** Ten de hien ra ngoai. Chua dat thi lay phan truoc dau @ - khong bao gio lo ca dia chi. */
