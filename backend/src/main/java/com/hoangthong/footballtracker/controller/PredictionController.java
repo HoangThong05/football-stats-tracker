@@ -99,6 +99,12 @@ public class PredictionController {
         return badgeService.getBadgesForUser(email);
     }
 
+    /** Huy hieu toi vua dat gan day - cho dong "chuc mung" tren chuong. */
+    @GetMapping("/badges/recent")
+    public List<com.hoangthong.footballtracker.dto.RecentBadgeDto> getRecentBadges(@AuthenticationPrincipal String email) {
+        return badgeService.getRecentBadges(email);
+    }
+
     /** Chon huy hieu ghim canh ten. Body: { "code": "PROPHET" } hoac { "code": null } de bo. */
     @org.springframework.web.bind.annotation.PostMapping("/badges/featured")
     public void setFeaturedBadge(@AuthenticationPrincipal String email,

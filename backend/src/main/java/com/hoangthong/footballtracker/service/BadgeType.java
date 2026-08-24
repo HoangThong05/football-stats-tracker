@@ -32,4 +32,34 @@ public enum BadgeType {
     public int getThreshold() {
         return threshold;
     }
+
+    /**
+     * Bieu tuong + ten tieng Viet - de soan noi dung thong bao "dat huy hieu" o may chu
+     * (push/chuong). Phai khop BADGE_META va i18n ben frontend.
+     */
+    public String emoji() {
+        return switch (this) {
+            case ROOKIE -> "🐣";
+            case SHARP -> "🎯";
+            case PROPHET -> "🔮";
+            case ORACLE -> "🧿";
+            case WIN_STREAK -> "🔥";
+            case ON_FIRE -> "🌋";
+            case CENTURION -> "💯";
+            case WEEKLY_KING -> "👑";
+        };
+    }
+
+    public String title() {
+        return switch (this) {
+            case ROOKIE -> "Chào sân";
+            case SHARP -> "Nhắm chuẩn";
+            case PROPHET -> "Nhà tiên tri";
+            case ORACLE -> "Tiên tri đại tài";
+            case WIN_STREAK -> "Chuỗi thắng";
+            case ON_FIRE -> "Rực cháy";
+            case CENTURION -> "Trăm điểm";
+            case WEEKLY_KING -> "Vua theo tuần";
+        };
+    }
 }

@@ -28,20 +28,38 @@ public class BadgeService {
 
     private static final Logger log = LoggerFactory.getLogger(BadgeService.class);
 
+    /** Cua so "vua dat" cho chuong - huy hieu dat qua lau khong con la tin moi. */
+    private static final java.time.Duration RECENT_WINDOW = java.time.Duration.ofDays(14);
+
     private final PredictionRepository predictionRepository;
     private final UserBadgeRepository userBadgeRepository;
     private final UserRepository userRepository;
     private final com.hoangthong.footballtracker.repository.WeeklyChampionRepository weeklyChampionRepository;
+    private final WebPushService webPush;
 
     public BadgeService(
             PredictionRepository predictionRepository,
             UserBadgeRepository userBadgeRepository,
             UserRepository userRepository,
-            com.hoangthong.footballtracker.repository.WeeklyChampionRepository weeklyChampionRepository) {
+            com.hoangthong.footballtracker.repository.WeeklyChampionRepository weeklyChampionRepository,
+            WebPushService webPush) {
         this.predictionRepository = predictionRepository;
         this.userBadgeRepository = userBadgeRepository;
         this.userRepository = userRepository;
         this.weeklyChampionRepository = weeklyChampionRepository;
+        this.webPush = webPush;
+    }
+
+    /** Huy hieu vua dat trong {@link #RECENT_WINDOW} - nguon cho dong "chuc mung" tren chuong. */
+    public List<com.hoangthong.footballtracker.dto.RecentBadgeDto> getRecentBadges(String email) {
+        Long userId = userRepository.findByEmail(email).map(User::getId).orElse(null);
+        if (userId == null) {
+            return List.of();
+        }
+        var since = java.time.Instant.now().minus(RECENT_WINDOW);
+        return userBadgeRepository.findByUserIdAndEarnedAtAfterOrderByEarnedAtDesc(userId, since).stream()
+                .map(b -> new com.hoangthong.footballtracker.dto.RecentBadgeDto(b.getBadgeCode(), b.getEarnedAt()))
+                .toList();
     }
 
     /** Goi tu PredictionScoringService sau khi cham diem xong cho 1 user. */
@@ -147,6 +165,10 @@ public class BadgeService {
         User ref = userRepository.getReferenceById(userId);
         userBadgeRepository.save(new UserBadge(ref, type.name()));
         log.info("User {} vua dat badge {}", userId, type.name());
+        // Chuc mung ngay qua push (chuong da tu doc /badges/recent). Chi chay 1 lan/huy hieu
+        // vi da chan boi existsByUserIdAndBadgeCode o tren.
+        webPush.sendToUser(ref, "🎉 Huy hiệu mới!",
+                "Bạn vừa đạt: " + type.emoji() + " " + type.title(), "/");
     }
 
     private BadgeDto toDto(BadgeType type, int progress, Set<String> earnedCodes, String featuredCode) {
