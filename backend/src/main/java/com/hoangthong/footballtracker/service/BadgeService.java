@@ -66,18 +66,41 @@ public class BadgeService {
         Set<String> earnedCodes = userBadgeRepository.findByUserId(user.getId()).stream()
                 .map(UserBadge::getBadgeCode)
                 .collect(Collectors.toSet());
+        String featured = user.getFeaturedBadge();
 
         // Thu tu tra ve = thu tu hien tren ho so: nhom theo chu de, de truoc kho sau
         return List.of(
-                toDto(BadgeType.ROOKIE, p.correctCount(), earnedCodes),
-                toDto(BadgeType.SHARP, p.correctCount(), earnedCodes),
-                toDto(BadgeType.PROPHET, p.exactCount(), earnedCodes),
-                toDto(BadgeType.ORACLE, p.exactCount(), earnedCodes),
-                toDto(BadgeType.WIN_STREAK, p.bestStreak(), earnedCodes),
-                toDto(BadgeType.ON_FIRE, p.bestStreak(), earnedCodes),
-                toDto(BadgeType.CENTURION, p.totalPoints(), earnedCodes),
-                toDto(BadgeType.WEEKLY_KING, p.weeklyWins(), earnedCodes)
+                toDto(BadgeType.ROOKIE, p.correctCount(), earnedCodes, featured),
+                toDto(BadgeType.SHARP, p.correctCount(), earnedCodes, featured),
+                toDto(BadgeType.PROPHET, p.exactCount(), earnedCodes, featured),
+                toDto(BadgeType.ORACLE, p.exactCount(), earnedCodes, featured),
+                toDto(BadgeType.WIN_STREAK, p.bestStreak(), earnedCodes, featured),
+                toDto(BadgeType.ON_FIRE, p.bestStreak(), earnedCodes, featured),
+                toDto(BadgeType.CENTURION, p.totalPoints(), earnedCodes, featured),
+                toDto(BadgeType.WEEKLY_KING, p.weeklyWins(), earnedCodes, featured)
         );
+    }
+
+    /**
+     * Chon huy hieu ghim canh ten. code = null/rong -> bo ghim. Chi ghim duoc huy hieu DA dat.
+     */
+    @org.springframework.transaction.annotation.Transactional
+    public void setFeaturedBadge(String email, String code) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials"));
+        if (code == null || code.isBlank()) {
+            user.setFeaturedBadge(null);
+            userRepository.save(user);
+            return;
+        }
+        String clean = code.trim().toUpperCase();
+        // Phai la ma hop le va nguoi nay da dat - khong thi tu choi
+        boolean valid = java.util.Arrays.stream(BadgeType.values()).anyMatch(b -> b.name().equals(clean));
+        if (!valid || !userBadgeRepository.existsByUserIdAndBadgeCode(user.getId(), clean)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "badge_not_earned");
+        }
+        user.setFeaturedBadge(clean);
+        userRepository.save(user);
     }
 
     private BadgeProgress evaluateAndAward(Long userId) {
@@ -126,8 +149,10 @@ public class BadgeService {
         log.info("User {} vua dat badge {}", userId, type.name());
     }
 
-    private BadgeDto toDto(BadgeType type, int progress, Set<String> earnedCodes) {
-        return new BadgeDto(type.name(), earnedCodes.contains(type.name()), Math.min(progress, type.getThreshold()), type.getThreshold());
+    private BadgeDto toDto(BadgeType type, int progress, Set<String> earnedCodes, String featuredCode) {
+        boolean earned = earnedCodes.contains(type.name());
+        boolean featured = earned && type.name().equals(featuredCode);
+        return new BadgeDto(type.name(), earned, Math.min(progress, type.getThreshold()), type.getThreshold(), featured);
     }
 
     private record BadgeProgress(int correctCount, int exactCount, int totalPoints, int bestStreak, int weeklyWins) {

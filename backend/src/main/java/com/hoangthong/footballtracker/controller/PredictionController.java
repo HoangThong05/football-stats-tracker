@@ -99,6 +99,13 @@ public class PredictionController {
         return badgeService.getBadgesForUser(email);
     }
 
+    /** Chon huy hieu ghim canh ten. Body: { "code": "PROPHET" } hoac { "code": null } de bo. */
+    @org.springframework.web.bind.annotation.PostMapping("/badges/featured")
+    public void setFeaturedBadge(@AuthenticationPrincipal String email,
+                                 @RequestBody(required = false) java.util.Map<String, String> body) {
+        badgeService.setFeaturedBadge(email, body == null ? null : body.get("code"));
+    }
+
     /** Top nguoi du doan diem cao nhat (toan mua). Cong khai, ai cung xem duoc. */
     @GetMapping("/leaderboard")
     public List<LeaderboardEntryDto> getLeaderboard() {

@@ -124,6 +124,16 @@ export default function PublicProfile({ userId, token, onBack }) {
             <h3 className="h4 mb-0 text-truncate">
               {profile.name}
               {profile.isAdmin && <span className="ft-admin-tag ms-2">{t('role_admin')}</span>}
+              {(() => {
+                const f = profile.badges?.find((b) => b.featured)
+                const meta = f ? BADGE_META[f.code] : null
+                return meta ? (
+                  <span className="ft-name-badge ms-2" title={t(meta.descKey)}>
+                    <span className="ft-name-badge-icon">{meta.icon}</span>
+                    {t(meta.titleKey)}
+                  </span>
+                ) : null
+              })()}
             </h3>
             <div className="text-secondary small">{t('pub_joined')} {joined}</div>
             {profile.weeklyWins > 0 && (

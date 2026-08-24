@@ -2437,6 +2437,50 @@ tr[role='button']:hover img,
   font-weight: 700;
 }
 
+/* Nut ghim huy hieu canh ten */
+.ft-badge-pin {
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 3px 10px;
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--bs-secondary-color);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.ft-badge-pin:hover { background: var(--bs-tertiary-bg); }
+.ft-badge-pin.active {
+  color: var(--ft-accent-strong);
+  border-color: var(--ft-accent);
+  background: var(--ft-accent-soft);
+}
+
+/* The huy hieu dang duoc ghim - vien noi bat hon "earned" thuong (dat SAU .earned de thang) */
+.ft-badge.featured {
+  border-color: var(--ft-accent-strong);
+  box-shadow: 0 0 0 2px var(--ft-accent-soft), var(--ft-card-shadow);
+}
+
+/* Chip huy hieu ghim hien canh ten (o hero ho so) */
+.ft-name-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: middle;
+  padding: 2px 10px 2px 7px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ft-accent-strong);
+  background: var(--ft-accent-soft);
+  border: 1px solid var(--ft-accent);
+  white-space: nowrap;
+}
+.ft-name-badge-icon { font-size: 0.85rem; line-height: 1; }
+
 .ft-badge.earned {
   opacity: 1;
   filter: none;

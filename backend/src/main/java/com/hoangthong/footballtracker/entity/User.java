@@ -68,6 +68,13 @@ public class User {
     private String avatarUrl;
 
     /**
+     * Ma huy hieu nguoi dung chon "ghim" hien canh ten (tren ho so cua minh + ho so cong
+     * khai). null = khong ghim gi. Chi nhan huy hieu ho DA dat (kiem o BadgeService).
+     */
+    @Column(length = 20)
+    private String featuredBadge;
+
+    /**
      * Tang len moi lan doi mat khau, de vo hieu toan bo token da phat truoc do.
      *
      * Khong co no thi doi mat khau gan nhu vo nghia ve bao mat: JWT song 24 gio va
@@ -150,6 +157,14 @@ public class User {
     /** null hoac chuoi rong deu luu thanh null - "go anh" va "chua bao gio dat" la mot. */
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = (avatarUrl == null || avatarUrl.isBlank()) ? null : avatarUrl;
+    }
+
+    public String getFeaturedBadge() {
+        return featuredBadge;
+    }
+
+    public void setFeaturedBadge(String featuredBadge) {
+        this.featuredBadge = (featuredBadge == null || featuredBadge.isBlank()) ? null : featuredBadge;
     }
 
     /** Ten de hien ra ngoai. Chua dat thi lay phan truoc dau @ - khong bao gio lo ca dia chi. */

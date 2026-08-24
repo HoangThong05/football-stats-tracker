@@ -1,6 +1,7 @@
 import { shortTeamName } from '../utils'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
+import { BADGE_META } from '../constants'
 import { useTranslation } from '../i18n'
 import AvatarUpload from './AvatarUpload'
 import Badges from './Badges'
@@ -28,7 +29,20 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
   const { t } = useTranslation()
   const [leagues, setLeagues] = useState([])
   const [weeklyWins, setWeeklyWins] = useState(0)
+  const [badges, setBadges] = useState([])
   const [showSettings, setShowSettings] = useState(false)
+
+  // Tach rieng de goi lai duoc sau khi doi huy hieu ghim
+  const loadBadges = useCallback(() => {
+    if (!token) {
+      setBadges([])
+      return
+    }
+    fetch(`${API_BASE}/predictions/badges`, { headers: authHeaders(token) })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setBadges(Array.isArray(data) ? data : []))
+      .catch(() => setBadges([]))
+  }, [token])
 
   useEffect(() => {
     if (!token) {
@@ -46,6 +60,22 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
       .then((data) => setWeeklyWins(Array.isArray(data) ? data.length : 0))
       .catch(() => setWeeklyWins(0))
   }, [token])
+
+  useEffect(loadBadges, [loadBadges])
+
+  // Chon / bo ghim huy hieu canh ten, roi tai lai de hero + luoi cap nhat
+  const setFeatured = (code) => {
+    fetch(`${API_BASE}/predictions/badges/featured`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+      body: JSON.stringify({ code }),
+    })
+      .then(() => loadBadges())
+      .catch(() => {})
+  }
+
+  const featured = badges.find((b) => b.featured)
+  const featuredMeta = featured ? BADGE_META[featured.code] : null
 
   /** Mot the danh sach ngan trong hang 3 cot. */
   const listCard = (title, count, items, emptyText) => (
@@ -79,6 +109,12 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
             <h3 className="h4 mb-0 text-truncate">
               {displayName || (userEmail || '').split('@')[0]}
               {isAdmin && <span className="ft-admin-tag ms-2">{t('role_admin')}</span>}
+              {featuredMeta && (
+                <span className="ft-name-badge ms-2" title={t(featuredMeta.descKey)}>
+                  <span className="ft-name-badge-icon">{featuredMeta.icon}</span>
+                  {t(featuredMeta.titleKey)}
+                </span>
+              )}
             </h3>
             <div className="text-secondary small text-truncate">{userEmail}</div>
             {weeklyWins > 0 && (
@@ -108,8 +144,8 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
 
       {!isAdmin && (
       <>
-      {/* Thanh tich: huy hieu */}
-      <Badges token={token} />
+      {/* Thanh tich: huy hieu - bam de ghim/bo ghim canh ten */}
+      <Badges badges={badges} onSetFeatured={setFeatured} />
 
       {/* Mang luoi: ban be, doi yeu thich, phong */}
       <div className="row g-3 mb-3">
