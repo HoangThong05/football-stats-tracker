@@ -2481,6 +2481,13 @@ tr[role='button']:hover img,
 }
 .ft-name-badge-icon { font-size: 0.85rem; line-height: 1; }
 
+/* Icon huy hieu ghim, hien gon canh ten o dien dan (ten day o tooltip) */
+.ft-name-flair {
+  margin-left: 5px;
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
 .ft-badge.earned {
   opacity: 1;
   filter: none;

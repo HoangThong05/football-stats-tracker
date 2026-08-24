@@ -99,12 +99,13 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
             + "u.email AS email, "
             + "u.displayName AS displayName, "
             + "u.avatarUrl AS avatarUrl, "
+            + "u.featuredBadge AS featuredBadge, "
             + "COALESCE(SUM(p.points), 0) AS totalPoints, "
             + "COUNT(p) AS totalPredictions "
             + "FROM Prediction p JOIN p.user u "
             + "WHERE p.points IS NOT NULL "
             // Postgres bat MOI cot khong nam trong ham gop phai co mat o GROUP BY
-            + "GROUP BY u.id, u.email, u.displayName, u.avatarUrl "
+            + "GROUP BY u.id, u.email, u.displayName, u.avatarUrl, u.featuredBadge "
             + "ORDER BY totalPoints DESC")
     List<LeaderboardRow> findLeaderboard();
 
@@ -116,11 +117,12 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
             + "u.email AS email, "
             + "u.displayName AS displayName, "
             + "u.avatarUrl AS avatarUrl, "
+            + "u.featuredBadge AS featuredBadge, "
             + "COALESCE(SUM(p.points), 0) AS totalPoints, "
             + "COUNT(p) AS totalPredictions "
             + "FROM Prediction p JOIN p.user u JOIN p.match m "
             + "WHERE p.points IS NOT NULL AND m.utcDate >= :from AND m.utcDate < :to "
-            + "GROUP BY u.id, u.email, u.displayName, u.avatarUrl "
+            + "GROUP BY u.id, u.email, u.displayName, u.avatarUrl, u.featuredBadge "
             + "ORDER BY totalPoints DESC")
     List<LeaderboardRow> findLeaderboardBetween(@Param("from") java.time.Instant from,
                                                 @Param("to") java.time.Instant to);
@@ -135,6 +137,9 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
 
         /** Co the null (chua dat anh) - giao dien ve vong tron chu cai dau. */
         String getAvatarUrl();
+
+        /** Ma huy hieu nguoi choi ghim canh ten. Co the null. */
+        String getFeaturedBadge();
 
         Long getTotalPoints();
 

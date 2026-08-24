@@ -61,6 +61,8 @@ public class MiniLeagueDto {
     public record RoomMessageDto(long id, long authorId, String authorName,
                                  /** Anh dai dien cua nguoi nhan. null = chua dat. */
                                  String authorAvatar,
+                                 /** Ma huy hieu nguoi nhan ghim canh ten. null = khong ghim. */
+                                 String authorBadge,
                                  String content, Instant createdAt) {}
 
     /** BXH day du cua phong */

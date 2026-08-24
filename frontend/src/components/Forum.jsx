@@ -4,6 +4,7 @@ import { useTranslation } from '../i18n'
 import { imageUploadEnabled, uploadMedia } from '../cloudinary'
 import { relativeTime, isVideoUrl } from '../utils'
 import Avatar from './Avatar'
+import BadgeFlair from './BadgeFlair'
 import ReactionBar from './ReactionBar'
 import ReactionsModal from './ReactionsModal'
 import Lightbox from './Lightbox'
@@ -57,6 +58,8 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
   const [reactorsFor, setReactorsFor] = useState(null)
   // Anh/video dang xem phong to (lightbox); null = dong
   const [lightbox, setLightbox] = useState(null)
+  // Bai nao dang gui binh luan - khoa nut Gui de bam nhieu lan khong ra nhieu cmt
+  const [sendingPost, setSendingPost] = useState(null)
 
   const errMap = {
     post_empty: t('forum_err_empty'),
@@ -87,7 +90,9 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
     const url = focusPostId
       ? `${API_BASE}/forum/posts/${focusPostId}`
       : `${API_BASE}/forum/posts`
-    fetch(url, { headers: authHeaders(token) })
+    // no-store: sau khi xoa/sua, tai lai PHAI lay ban moi - khong thi trinh duyet tra
+    // ban cache cu (bao "da xoa" ma cmt van con, F5 mot luc moi mat)
+    fetch(url, { headers: authHeaders(token), cache: 'no-store' })
       .then((res) => (res.ok ? res.json() : null))
       // Bai da bi xoa -> mang rong, o duoi hien cau "bai nay khong con nua"
       .then((data) => setPosts(data == null ? [] : (focusPostId ? [data] : data)))
@@ -157,6 +162,9 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
   const submitComment = async (postId) => {
     const content = (commentText[postId] || '').trim()
     if (!content) return
+    // Dang gui bai nay roi -> bo qua, tranh bam nhieu lan ra nhieu cmt trung
+    if (sendingPost === postId) return
+    setSendingPost(postId)
     try {
       await call(`/posts/${postId}/comments`, {
         method: 'POST',
@@ -167,6 +175,8 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
       load()
     } catch (err) {
       setError(err.message)
+    } finally {
+      setSendingPost(null)
     }
   }
 
@@ -298,6 +308,7 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                 style={{ fontSize: '0.8rem' }} onClick={() => onSelectUser(c.authorId)}>
                 {c.authorName}
                 {c.authorIsAdmin && <span className="ft-admin-tag ms-1">{t('role_admin')}</span>}
+                <BadgeFlair code={c.authorBadge} />
               </button>
               <span className="small" style={{ overflowWrap: 'anywhere' }}>{c.content}</span>
             </div>
@@ -424,6 +435,7 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                   onClick={() => onSelectUser(p.authorId)}>
                   {p.authorName}
                   {p.authorIsAdmin && <span className="ft-admin-tag ms-1">{t('role_admin')}</span>}
+                  <BadgeFlair code={p.authorBadge} />
                 </button>
                 <span className="text-secondary" style={{ fontSize: '0.75rem' }}>
                   {when(p.createdAt)}
@@ -525,9 +537,10 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                       value={commentText[p.id] || ''}
                       autoFocus
                       onChange={(e) => setCommentText((m) => ({ ...m, [p.id]: e.target.value }))}
-                      onKeyDown={(e) => e.key === 'Enter' && submitComment(p.id)}
+                      onKeyDown={(e) => e.key === 'Enter' && !e.repeat && submitComment(p.id)}
                     />
                     <button className="btn btn-sm btn-success rounded-pill flex-shrink-0"
+                      disabled={sendingPost === p.id || !(commentText[p.id] || '').trim()}
                       onClick={() => submitComment(p.id)}>
                       {t('chat_send')}
                     </button>

@@ -12,6 +12,8 @@ public class ForumDto {
                           String authorAvatar,
                           /** true = nguoi viet la ADMIN -> hien huy hieu ADMIN canh ten. */
                           boolean authorIsAdmin,
+                          /** Ma huy hieu nguoi viet ghim canh ten. null = khong ghim. */
+                          String authorBadge,
                           String content, Instant createdAt,
                           /** Lan sua gan nhat. null = chua sua -> khong hien nhan "da chinh sua". */
                           Instant editedAt,
@@ -39,6 +41,8 @@ public class ForumDto {
             String authorAvatar,
             /** true = nguoi viet la ADMIN -> hien huy hieu ADMIN canh ten. */
             boolean authorIsAdmin,
+            /** Ma huy hieu nguoi viet ghim canh ten. null = khong ghim. */
+            String authorBadge,
             String content,
             String imageUrl,
             Instant createdAt,

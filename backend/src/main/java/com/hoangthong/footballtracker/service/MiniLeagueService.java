@@ -171,6 +171,7 @@ public class MiniLeagueService {
                         m.getAuthor().getId(),
                         m.getAuthor().displayNameOrFallback(),
                         m.getAuthor().getAvatarUrl(),
+                        m.getAuthor().getFeaturedBadge(),
                         m.getContent(),
                         m.getCreatedAt()))
                 .toList();

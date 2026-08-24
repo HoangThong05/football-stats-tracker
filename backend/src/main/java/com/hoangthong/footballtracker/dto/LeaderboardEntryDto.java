@@ -8,5 +8,7 @@ package com.hoangthong.footballtracker.dto;
 public record LeaderboardEntryDto(int rank, long userId, String name,
                                   /** Anh dai dien. null = chua dat. */
                                   String avatarUrl,
+                                  /** Ma huy hieu ghim canh ten. null = khong ghim. */
+                                  String featuredBadge,
                                   long totalPoints, long totalPredictions) {
 }

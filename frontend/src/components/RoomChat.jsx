@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import Avatar from './Avatar'
+import BadgeFlair from './BadgeFlair'
 
 const MAX_LENGTH = 500
 const REFRESH_MS = 15_000
@@ -111,6 +112,7 @@ export default function RoomChat({ token, leagueId, myUserId, onSelectUser }) {
                       <button type="button" className="ft-name-link fw-semibold d-block"
                         style={{ fontSize: '0.75rem' }} onClick={() => onSelectUser(m.authorId)}>
                         {m.authorName}
+                        <BadgeFlair code={m.authorBadge} />
                       </button>
                     )}
                     <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>

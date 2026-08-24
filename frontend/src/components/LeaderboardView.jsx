@@ -3,6 +3,7 @@ import { API_BASE, authHeaders } from '../api'
 import { RANK_MEDALS } from '../constants'
 import { useTranslation } from '../i18n'
 import Avatar from './Avatar'
+import BadgeFlair from './BadgeFlair'
 import Loading from './Loading'
 
 /**
@@ -147,6 +148,7 @@ export default function LeaderboardView({ token, myName, onBack, onSelectUser })
                         onClick={() => onSelectUser(r.userId)}>
                         <Avatar name={r.name} src={r.avatarUrl} size={28} />
                         <span className="ft-name-link fw-medium text-truncate">{r.name}</span>
+                        <BadgeFlair code={r.featuredBadge} />
                       </button>
                       {/* Vuong mien: #1 toan mua = dan dau mua; #1 tuan DA QUA = nha vo dich tuan */}
                       {r.rank === 1 && period === 'all' && (

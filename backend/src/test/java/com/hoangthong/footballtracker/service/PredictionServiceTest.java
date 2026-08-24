@@ -178,6 +178,10 @@ class PredictionServiceTest {
                 return null;
             }
 
+            public String getFeaturedBadge() {
+                return null;
+            }
+
             public Long getTotalPoints() {
                 return points;
             }
