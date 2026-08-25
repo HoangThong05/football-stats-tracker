@@ -3038,7 +3038,16 @@ video.ft-post-image {
   cursor: pointer;
   aspect-ratio: 1;
 }
-.ft-gif-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Anh absolute lap day: khong nam trong dong chay nen KHONG day chieu cao the -> moi thang
+   giu dung o vuong theo aspect-ratio, cac o khong con cao lech/chong len nhau */
+.ft-gif-item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .ft-gif-item:hover { outline: 2px solid var(--ft-accent-strong); }
 .ft-gif-item:disabled { opacity: 0.6; cursor: default; }
 .ft-gif-uploading {
