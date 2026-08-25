@@ -3213,6 +3213,8 @@ video.ft-post-image {
 }
 /* Ngoai tuyen: cham xam */
 .ft-online-dot-away { background: var(--bs-secondary-color, #9ca3af); }
+/* Cham xanh cua chinh minh o avatar header (nho hon) */
+.ft-user-online { width: 9px; height: 9px; min-width: 0; min-height: 0; }
 .ft-online-text {
   font-size: 0.72rem;
   color: #22c55e;

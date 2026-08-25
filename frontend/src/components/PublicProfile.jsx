@@ -131,7 +131,7 @@ export default function PublicProfile({ userId, token, onBack, onMessage }) {
           <div className="ft-avatar-upload">
             <div className="ft-avatar-upload-ring">
               <Avatar name={profile.name} src={profile.avatarUrl} size={104}
-                presence={profile.relation === 'SELF' ? undefined : presenceTag(presence, userId)} />
+                presence={presenceTag(presence, userId)} />
             </div>
           </div>
 

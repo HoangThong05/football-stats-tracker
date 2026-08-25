@@ -7,6 +7,7 @@ import GifPicker from './GifPicker'
 import MentionInput from './MentionInput'
 import { giphyEnabled } from '../giphy'
 import { renderMentions } from '../mentions'
+import { usePresence, presenceTag } from '../usePresence'
 
 const MAX_LENGTH = 500
 const REFRESH_MS = 15_000
@@ -20,6 +21,7 @@ const REFRESH_MS = 15_000
 export default function RoomChat({ token, leagueId, myUserId, onSelectUser }) {
   const { t, lang } = useTranslation()
   const [messages, setMessages] = useState([])
+  const presence = usePresence(token, messages.map((m) => m.authorId))
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const [showGif, setShowGif] = useState(false)
@@ -124,7 +126,7 @@ export default function RoomChat({ token, leagueId, myUserId, onSelectUser }) {
                       {!sameAsPrev && (
                         <button type="button" className="ft-avatar-btn"
                           onClick={() => onSelectUser(m.authorId)}>
-                          <Avatar name={m.authorName} src={m.authorAvatar} size={28} />
+                          <Avatar name={m.authorName} src={m.authorAvatar} size={28} presence={presenceTag(presence, m.authorId)} />
                         </button>
                       )}
                     </span>

@@ -44,6 +44,7 @@ import ScrollTopButton from "./components/ScrollTopButton";
 import PullToRefresh from "./components/PullToRefresh";
 import SeasonBreak from "./components/SeasonBreak";
 import DataFreshness from "./components/DataFreshness";
+import { usePresence } from "./usePresence";
 
 export default function App() {
   const [league, setLeague] = useState("PL");
@@ -422,6 +423,10 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Cham xanh cua CHINH MINH tren avatar header (an neu minh da tat trong cai dat)
+  const myPresence = usePresence(token, userId ? [userId] : []);
+  const iAmOnline = Boolean(myPresence.get(userId)?.online);
+
   // Nhip tim "dang hoat dong": bao may chu minh online moi 60s khi mo app (bo qua khi tab an)
   useEffect(() => {
     if (!token) return undefined;
@@ -598,12 +603,14 @@ export default function App() {
                       onClick={() => setShowUserMenu((v) => !v)}
                       title={userEmail}
                     >
-                      <span className="ft-user-avatar">
+                      <span className="ft-user-avatar" style={{ position: "relative" }}>
                         {avatarUrl ? (
                           <img src={avatarUrl} alt="" width="26" height="26" />
                         ) : (
                           userEmail.charAt(0).toUpperCase()
                         )}
+                        {/* Cham xanh khi minh dang online (an neu tat trong cai dat) */}
+                        {iAmOnline && <span className="ft-online-dot ft-user-online" />}
                       </span>
                       {/* Cham do khi co tin nhan chua doc - thay cho nut Tin nhan rieng */}
                       {dmUnread.count > 0 && <span className="ft-user-dot" />}

@@ -15,6 +15,7 @@ import MentionInput from './MentionInput'
 import { toast } from '../ui/toast'
 import { confirmDialog } from './ConfirmDialog'
 import { renderMentions } from '../mentions'
+import { usePresence, presenceTag } from '../usePresence'
 
 const MAX_POST = 2000
 const MAX_COMMENT = 1000
@@ -40,6 +41,9 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
   onBack, onSelectUser }) {
   const { t, lang } = useTranslation()
   const [posts, setPosts] = useState(null)
+  // Cham trang thai hoat dong cho tac gia bai + binh luan dang hien
+  const presence = usePresence(token, (posts || []).flatMap(
+    (p) => [p.authorId, ...(p.comments || []).map((c) => c.authorId)]))
   const [text, setText] = useState('')
   const [imageUrl, setImageUrl] = useState(null)
   const [uploading, setUploading] = useState(false)
@@ -319,7 +323,7 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
   const renderComment = (post, c) => (
     <div className="d-flex gap-2">
       <button type="button" className="ft-avatar-btn" onClick={() => onSelectUser(c.authorId)}>
-        <Avatar name={c.authorName} src={c.authorAvatar} size={28} />
+        <Avatar name={c.authorName} src={c.authorAvatar} size={28} presence={presenceTag(presence, c.authorId)} />
       </button>
       <div className="flex-grow-1" style={{ minWidth: 0 }}>
         {editing?.kind === 'comment' && editing.id === c.id ? (
@@ -462,7 +466,7 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
           <article key={p.id} className="ft-card ft-post mb-3">
             <header className="d-flex align-items-center gap-2 p-3 pb-2">
               <button type="button" className="ft-avatar-btn" onClick={() => onSelectUser(p.authorId)}>
-                <Avatar name={p.authorName} src={p.authorAvatar} size={40} />
+                <Avatar name={p.authorName} src={p.authorAvatar} size={40} presence={presenceTag(presence, p.authorId)} />
               </button>
               <div className="flex-grow-1" style={{ minWidth: 0 }}>
                 <button type="button" className="ft-name-link fw-semibold d-block text-truncate"
