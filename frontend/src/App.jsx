@@ -44,7 +44,6 @@ import ScrollTopButton from "./components/ScrollTopButton";
 import PullToRefresh from "./components/PullToRefresh";
 import SeasonBreak from "./components/SeasonBreak";
 import DataFreshness from "./components/DataFreshness";
-import { usePresence } from "./usePresence";
 
 export default function App() {
   const [league, setLeague] = useState("PL");
@@ -423,9 +422,19 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Cham xanh cua CHINH MINH tren avatar header (an neu minh da tat trong cai dat)
-  const myPresence = usePresence(token, userId ? [userId] : []);
-  const iAmOnline = Boolean(myPresence.get(userId)?.online);
+  // Cham xanh cua CHINH MINH tren avatar header. Dang mo app = dang online, nen chi phu
+  // thuoc tuy chon BAT/TAT (lay thang tu cai dat, va cap nhat ngay khi gat cong tac).
+  const [myStatusOn, setMyStatusOn] = useState(true);
+  useEffect(() => {
+    if (!token) return undefined;
+    fetch(`${API_BASE}/presence/settings`, { headers: authHeaders(token) })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setMyStatusOn(d ? Boolean(d.showOnlineStatus) : true))
+      .catch(() => {});
+    const onChange = (e) => setMyStatusOn(Boolean(e.detail));
+    window.addEventListener("ft-presence-changed", onChange);
+    return () => window.removeEventListener("ft-presence-changed", onChange);
+  }, [token]);
 
   // Nhip tim "dang hoat dong": bao may chu minh online moi 60s khi mo app (bo qua khi tab an)
   useEffect(() => {
@@ -610,7 +619,7 @@ export default function App() {
                           userEmail.charAt(0).toUpperCase()
                         )}
                         {/* Cham xanh khi minh dang online (an neu tat trong cai dat) */}
-                        {iAmOnline && <span className="ft-online-dot ft-user-online" />}
+                        {myStatusOn && <span className="ft-online-dot ft-user-online" />}
                       </span>
                       {/* Cham do khi co tin nhan chua doc - thay cho nut Tin nhan rieng */}
                       {dmUnread.count > 0 && <span className="ft-user-dot" />}

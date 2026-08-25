@@ -31,7 +31,10 @@ export default function OnlineStatusToggle({ token }) {
         body: JSON.stringify({ enabled: next }),
       })
       const data = await res.json().catch(() => ({}))
-      setOn(res.ok ? Boolean(data.showOnlineStatus) : on)
+      const value = res.ok ? Boolean(data.showOnlineStatus) : on
+      setOn(value)
+      // Bao ngay cho header cap nhat cham xanh cua chinh minh, khong doi vong poll
+      if (res.ok) window.dispatchEvent(new CustomEvent('ft-presence-changed', { detail: value }))
     } catch {
       /* giu nguyen trang thai cu */
     } finally {
@@ -42,12 +45,13 @@ export default function OnlineStatusToggle({ token }) {
   return (
     <div className="ft-push-toggle">
       <div className="d-flex align-items-center gap-2 flex-wrap">
-        <span aria-hidden="true">🟢</span>
+        <span aria-hidden="true">{on ? '🟢' : '⚪'}</span>
         <span className="fw-medium">{t('presence_title')}</span>
-        <button type="button" className={`btn btn-sm ms-auto ${on ? 'btn-outline-secondary' : 'btn-success'}`}
-          onClick={toggle} disabled={busy}>
-          {busy ? '...' : on ? t('presence_off_btn') : t('presence_on_btn')}
-        </button>
+        <div className="form-check form-switch ms-auto mb-0">
+          <input className="form-check-input" type="checkbox" role="switch"
+            style={{ cursor: 'pointer' }}
+            checked={on} onChange={toggle} disabled={busy} />
+        </div>
       </div>
       <p className="text-secondary small mb-0 mt-1">
         {on ? t('presence_on_hint') : t('presence_off_hint')}
