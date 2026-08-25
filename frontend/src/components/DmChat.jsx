@@ -177,9 +177,9 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
     if (el) stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80
   }
 
-  // "Da xem" hien duoi tin CUOI neu do la tin cua minh va da duoc doc
+  // Trang thai hien duoi tin CUOI neu do la tin cua minh: ✓ Da gui -> ✓✓ Da xem
   const last = messages && messages.length > 0 ? messages[messages.length - 1] : null
-  const showSeen = last && last.mine && last.readAt
+  const showStatus = last && last.mine && !last.recalled
 
   const pinned = (messages || []).filter((m) => m.pinned && !m.recalled)
   const pinPreview = (m) => (m.content ? m.content : t('dm_sent_image'))
@@ -261,7 +261,9 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
             )
           ))
         )}
-        {showSeen && <div className="ft-dm-seen">{t('dm_seen')}</div>}
+        {showStatus && (
+          <div className="ft-dm-seen">{last.readAt ? t('dm_seen') : t('dm_sent_status')}</div>
+        )}
       </div>
 
       {replyTo && (
