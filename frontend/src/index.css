@@ -3153,6 +3153,81 @@ video.ft-post-image {
   cursor: pointer;
 }
 
+/* ================= Nhan tin rieng (DM) ================= */
+.ft-dm-conv { cursor: pointer; }
+.ft-dm-conv:hover { background: var(--bs-tertiary-bg); }
+.ft-dm-unread {
+  flex-shrink: 0;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--ft-accent-strong);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.ft-dm-chat {
+  display: flex;
+  flex-direction: column;
+  height: 70vh;
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 14px;
+  background: var(--ft-surface);
+  overflow: hidden;
+}
+.ft-dm-chat-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+.ft-dm-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ft-dm-row { display: flex; }
+.ft-dm-row.mine { justify-content: flex-end; }
+.ft-dm-bubble {
+  max-width: 78%;
+  padding: 7px 12px;
+  border-radius: 16px;
+  background: var(--bs-tertiary-bg);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+.ft-dm-row.mine .ft-dm-bubble {
+  background: var(--ft-accent-strong);
+  color: #fff;
+}
+.ft-dm-image {
+  display: block;
+  max-width: 220px;
+  max-height: 220px;
+  border-radius: 10px;
+}
+.ft-dm-seen {
+  text-align: right;
+  font-size: 0.7rem;
+  color: var(--bs-secondary-color);
+  padding-right: 4px;
+}
+.ft-dm-input {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border-top: 1px solid var(--bs-border-color-translucent);
+}
+
 /* ================= Keo de lam moi ================= */
 .ft-ptr {
   position: fixed;

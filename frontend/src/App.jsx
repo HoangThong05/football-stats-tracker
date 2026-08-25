@@ -22,6 +22,8 @@ import StandingsTable from "./components/StandingsTable";
 import CompareTeams from "./components/CompareTeams";
 import MatchReminders from "./components/MatchReminders";
 import PublicProfile from "./components/PublicProfile";
+import Messages from "./components/Messages";
+import { useDmUnread } from "./useDmUnread";
 import Forum from "./components/Forum";
 import ScorersTable from "./components/ScorersTable";
 import TeamDetail from "./components/TeamDetail";
@@ -67,6 +69,9 @@ export default function App() {
   // Bam mot dong trong chuong -> mo dien dan o dung bai do thay vi ca bang tin
   const [focusPostId, setFocusPostId] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
+  // Nhan tin rieng: trang hop thu, va nguoi can mo hoi thoai thang (tu nut "Nhan tin")
+  const [showMessages, setShowMessages] = useState(false);
+  const [dmInitialUser, setDmInitialUser] = useState(null);
   const [showToday, setShowToday] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -76,6 +81,7 @@ export default function App() {
   const [token, setToken] = useState(initialSession.token);
   // PHAI dat sau `token`: dat truoc thi doc bien chua khai bao -> ca app trang man hinh
   const forumUnread = useForumUnread(token);
+  const dmUnread = useDmUnread(token);
   const [userEmail, setUserEmail] = useState(initialSession.email);
   const [userRole, setUserRole] = useState(initialSession.role);
   const [hasPassword, setHasPassword] = useState(initialSession.hasPassword);
@@ -336,6 +342,7 @@ export default function App() {
     setShowMyPredictions(false);
     setShowMiniLeague(false);
     setShowProfile(false);
+    setShowMessages(false);
     setShowToday(false);
     setShowUserMenu(false);
   };
@@ -388,14 +395,28 @@ export default function App() {
     setShowForum(true);
   };
 
+  /** Mo hop thu (user=null) hoac mo thang hoi thoai voi mot nguoi (tu nut "Nhan tin"). */
+  const openMessages = (user = null) => {
+    closeAllPages();
+    setDmInitialUser(user);
+    setShowMessages(true);
+    dmUnread.refresh();
+  };
+
   /*
    * Mo tu thong bao day: URL ?post=<id> -> mo dien dan o dung bai do, roi don query
    * khoi URL (de F5 khong mo lai). Chi chay MOT lan khi mount.
    */
   useEffect(() => {
-    const postId = new URLSearchParams(window.location.search).get("post");
+    const params = new URLSearchParams(window.location.search);
+    const postId = params.get("post");
+    const dm = params.get("dm");
     if (postId && /^\d+$/.test(postId)) {
       goToPost(Number(postId));
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (dm != null) {
+      // Tu thong bao tin nhan: mo hop thu (hoi thoai co tin moi se nam trong danh sach)
+      openMessages();
       window.history.replaceState({}, "", window.location.pathname);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -542,6 +563,13 @@ export default function App() {
               </div>
 
               <div className="ft-navbar-right">
+                {userEmail && (
+                  <button className="ft-nav-btn ft-nav-btn-icon" style={{ position: "relative" }}
+                    onClick={() => openMessages()} title={t("dm_nav")} aria-label={t("dm_nav")}>
+                    💬
+                    {dmUnread.count > 0 && <span className="ft-rem-badge">{dmUnread.count}</span>}
+                  </button>
+                )}
                 {/* Nhac tran cua doi dang theo doi - thay cho email nhac tran */}
                 <MatchReminders token={token} onSelectMatch={goToMatch} onSelectUser={goToUser}
                   onSelectPost={goToPost} />
@@ -678,6 +706,7 @@ export default function App() {
                 userId={selectedUserId}
                 token={token}
                 onBack={() => setSelectedUserId(null)}
+                onMessage={openMessages}
               />
             )
           ) : selectedTeamId != null ? (
@@ -718,6 +747,15 @@ export default function App() {
             <MyPredictionsHistory
               token={token}
               onBack={() => setShowMyPredictions(false)}
+            />
+          ) : showMessages ? (
+            <Messages
+              token={token}
+              myName={displayName}
+              myAvatar={avatarUrl}
+              initialUser={dmInitialUser}
+              onBack={() => { setShowMessages(false); dmUnread.refresh(); }}
+              onSelectUser={goToUser}
             />
           ) : showForum ? (
             <Forum

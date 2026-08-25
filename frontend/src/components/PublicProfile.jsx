@@ -14,7 +14,7 @@ import PointsAreaChart from './PointsAreaChart'
  * Khach chua dang nhap van xem duoc (bang xep hang von la trang cong khai) - chi khac
  * la khong co nut ket ban, vi khong biet ho la ai.
  */
-export default function PublicProfile({ userId, token, onBack }) {
+export default function PublicProfile({ userId, token, onBack, onMessage }) {
   const { t, lang } = useTranslation()
   const [profile, setProfile] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -70,10 +70,18 @@ export default function PublicProfile({ userId, token, onBack }) {
     if (!token || profile.relation === 'SELF') return null
     if (profile.relation === 'FRIENDS') {
       return (
-        <button className="btn btn-sm btn-outline-secondary" disabled={busy}
-          onClick={() => act('DELETE', '')}>
-          {t('friend_remove')}
-        </button>
+        <span className="d-flex gap-2">
+          {onMessage && (
+            <button className="btn btn-sm btn-success" disabled={busy}
+              onClick={() => onMessage({ userId: profile.id, name: profile.name, avatarUrl: profile.avatarUrl })}>
+              💬 {t('dm_send_btn')}
+            </button>
+          )}
+          <button className="btn btn-sm btn-outline-secondary" disabled={busy}
+            onClick={() => act('DELETE', '')}>
+            {t('friend_remove')}
+          </button>
+        </span>
       )
     }
     if (profile.relation === 'PENDING_SENT') {

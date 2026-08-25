@@ -1,0 +1,163 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { API_BASE, authHeaders } from '../api'
+import { useTranslation } from '../i18n'
+import { imageUploadEnabled, uploadImage } from '../cloudinary'
+import { giphyEnabled } from '../giphy'
+import { relativeTime } from '../utils'
+import Avatar from './Avatar'
+import GifPicker from './GifPicker'
+import Loading from './Loading'
+
+const MAX = 2000
+const REFRESH_MS = 8000
+
+/**
+ * Luong nhan tin 1-1 voi mot nguoi ban. Hoi lai moi 8 giay (khong dung WebSocket).
+ * Tin cua minh nam ben phai; co "Da xem" khi doi phuong da doc.
+ */
+export default function DmChat({ token, other, myName, myAvatar, onBack, onSelectUser }) {
+  const { t, lang } = useTranslation()
+  const [messages, setMessages] = useState(null)
+  const [text, setText] = useState('')
+  const [sending, setSending] = useState(false)
+  const [showGif, setShowGif] = useState(false)
+  const fileRef = useRef(null)
+  const scrollRef = useRef(null)
+  const stick = useRef(true)
+
+  const load = useCallback(() => {
+    if (!token || !other) return
+    fetch(`${API_BASE}/messages/${other.userId}`, { headers: authHeaders(token), cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setMessages(Array.isArray(data) ? data : []))
+      .catch(() => setMessages([]))
+  }, [token, other])
+
+  useEffect(() => {
+    load()
+    const timer = setInterval(() => { if (!document.hidden) load() }, REFRESH_MS)
+    return () => clearInterval(timer)
+  }, [load])
+
+  // Cuon xuong cuoi khi co tin moi (neu dang o gan day)
+  useEffect(() => {
+    if (stick.current && scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+  }, [messages])
+
+  const post = async (body) => {
+    const res = await fetch(`${API_BASE}/messages/${other.userId}`, {
+      method: 'POST',
+      headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    if (res.ok) {
+      stick.current = true
+      load()
+    }
+  }
+
+  const send = async (e) => {
+    e.preventDefault()
+    const content = text.trim()
+    if (!content || sending) return
+    setSending(true)
+    try {
+      await post({ content })
+      setText('')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const sendImage = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setSending(true)
+    try {
+      await post({ imageUrl: await uploadImage(file) })
+    } catch {
+      /* bo qua */
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const sendGif = async (url) => {
+    setShowGif(false)
+    await post({ imageUrl: url })
+  }
+
+  const onScroll = () => {
+    const el = scrollRef.current
+    if (el) stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80
+  }
+
+  // "Da xem" hien duoi tin CUOI neu do la tin cua minh va da duoc doc
+  const last = messages && messages.length > 0 ? messages[messages.length - 1] : null
+  const showSeen = last && last.mine && last.readAt
+
+  return (
+    <div className="ft-dm-chat">
+      <div className="ft-dm-chat-head">
+        <button type="button" className="btn btn-link p-0" onClick={onBack}>‹ {t('back')}</button>
+        <button type="button" className="ft-avatar-btn d-flex align-items-center gap-2"
+          onClick={() => onSelectUser(other.userId)}>
+          <Avatar name={other.name} src={other.avatarUrl} size={30} />
+          <span className="fw-semibold">{other.name}</span>
+        </button>
+      </div>
+
+      <div className="ft-dm-scroll" ref={scrollRef} onScroll={onScroll}>
+        {messages === null ? (
+          <Loading rows={4} />
+        ) : messages.length === 0 ? (
+          <p className="text-secondary small text-center py-4">{t('dm_empty')}</p>
+        ) : (
+          messages.map((m) => (
+            <div key={m.id} className={`ft-dm-row ${m.mine ? 'mine' : ''}`}>
+              <div className="ft-dm-bubble" title={relativeTime(m.createdAt, t, lang)}>
+                {m.content && <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{m.content}</span>}
+                {m.imageUrl && <img src={m.imageUrl} alt="" loading="lazy" className="ft-dm-image" />}
+              </div>
+            </div>
+          ))
+        )}
+        {showSeen && <div className="ft-dm-seen">{t('dm_seen')}</div>}
+      </div>
+
+      <form onSubmit={send} className="ft-dm-input">
+        {imageUploadEnabled() && (
+          <>
+            <button type="button" className="ft-gif-open-btn flex-shrink-0"
+              onClick={() => fileRef.current?.click()} disabled={sending} title={t('forum_add_image')}>
+              🖼️
+            </button>
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+              className="d-none" onChange={sendImage} />
+          </>
+        )}
+        {giphyEnabled() && (
+          <button type="button" className="ft-gif-open-btn flex-shrink-0"
+            onClick={() => setShowGif(true)} disabled={sending}>
+            {t('gif_btn')}
+          </button>
+        )}
+        <input
+          className="form-control rounded-pill"
+          placeholder={t('dm_placeholder')}
+          value={text}
+          maxLength={MAX}
+          onChange={(e) => setText(e.target.value)}
+        />
+        <button className="btn btn-success rounded-pill px-3 flex-shrink-0" disabled={sending || !text.trim()}>
+          {t('chat_send')}
+        </button>
+      </form>
+
+      {showGif && <GifPicker onPick={sendGif} onClose={() => setShowGif(false)} />}
+    </div>
+  )
+}
