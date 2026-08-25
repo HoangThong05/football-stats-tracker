@@ -19,7 +19,11 @@ public class DirectMessageDto {
     public record Message(long id, boolean mine, String content, String imageUrl,
                           Instant createdAt, Instant readAt,
                           List<String> reactions, String myReaction,
-                          Long replyToId, String replyToText, boolean replyToMine) {}
+                          Long replyToId, String replyToText, boolean replyToMine,
+                          /** true = da thu hoi voi moi nguoi -> hien "Tin nhan da thu hoi". */
+                          boolean recalled,
+                          /** true = tin da ghim. */
+                          boolean pinned) {}
 
     /**
      * Mot dong trong danh sach hoi thoai (hop thu).

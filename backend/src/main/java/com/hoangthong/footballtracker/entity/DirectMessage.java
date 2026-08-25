@@ -51,6 +51,20 @@ public class DirectMessage {
     @Column
     private Instant readAt;
 
+    /** true = da thu hoi VOI MOI NGUOI -> hai ben thay "Tin nhan da thu hoi". */
+    @Column
+    private Boolean recalled;
+
+    /** Da an rieng cho tung ben ("thu hoi voi ban") - chi ben do khong thay nua. */
+    @Column
+    private Boolean hiddenForSender;
+    @Column
+    private Boolean hiddenForRecipient;
+
+    /** true = tin da ghim (hien o dau hoi thoai). */
+    @Column
+    private Boolean pinned;
+
     protected DirectMessage() {
         // JPA can
     }
@@ -77,4 +91,15 @@ public class DirectMessage {
             readAt = Instant.now();
         }
     }
+
+    public boolean isRecalled() { return Boolean.TRUE.equals(recalled); }
+    public void recall() { this.recalled = true; }
+
+    public boolean isHiddenForSender() { return Boolean.TRUE.equals(hiddenForSender); }
+    public boolean isHiddenForRecipient() { return Boolean.TRUE.equals(hiddenForRecipient); }
+    public void hideForSender() { this.hiddenForSender = true; }
+    public void hideForRecipient() { this.hiddenForRecipient = true; }
+
+    public boolean isPinned() { return Boolean.TRUE.equals(pinned); }
+    public void setPinned(boolean pinned) { this.pinned = pinned; }
 }

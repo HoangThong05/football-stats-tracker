@@ -8,6 +8,7 @@ import { relativeTime } from '../utils'
 import Avatar from './Avatar'
 import GifPicker from './GifPicker'
 import Loading from './Loading'
+import { confirmDialog } from './ConfirmDialog'
 
 const MAX = 2000
 const REFRESH_MS = 8000
@@ -23,6 +24,7 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
   const [sending, setSending] = useState(false)
   const [showGif, setShowGif] = useState(false)
   const [reactFor, setReactFor] = useState(null) // id tin dang mo bang cam xuc
+  const [menuFor, setMenuFor] = useState(null) // id tin dang mo menu ... (thu hoi/ghim)
   const [replyTo, setReplyTo] = useState(null) // tin dang tra loi
   const fileRef = useRef(null)
   const scrollRef = useRef(null)
@@ -113,6 +115,35 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
     }
   }
 
+  const callMsg = async (path, body) => {
+    try {
+      await fetch(`${API_BASE}/messages/${path}`, {
+        method: 'POST',
+        headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      load()
+    } catch {
+      /* bo qua */
+    }
+  }
+
+  const recall = async (id, forEveryone) => {
+    setMenuFor(null)
+    const ok = await confirmDialog({
+      message: forEveryone ? t('dm_recall_all_confirm') : t('dm_recall_me_confirm'),
+      confirmText: t('dm_recall'),
+      danger: true,
+    })
+    if (!ok) return
+    callMsg(`recall/${id}`, { forEveryone })
+  }
+
+  const pin = (id, pinned) => {
+    setMenuFor(null)
+    callMsg(`pin/${id}`, { pinned })
+  }
+
   const onScroll = () => {
     const el = scrollRef.current
     if (el) stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80
@@ -121,6 +152,9 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
   // "Da xem" hien duoi tin CUOI neu do la tin cua minh va da duoc doc
   const last = messages && messages.length > 0 ? messages[messages.length - 1] : null
   const showSeen = last && last.mine && last.readAt
+
+  const pinned = (messages || []).filter((m) => m.pinned && !m.recalled)
+  const pinPreview = (m) => (m.content ? m.content : t('dm_sent_image'))
 
   return (
     <div className="ft-dm-chat">
@@ -133,6 +167,18 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
         </button>
       </div>
 
+      {pinned.length > 0 && (
+        <div className="ft-dm-pinned">
+          {pinned.map((m) => (
+            <div key={m.id} className="ft-dm-pinned-row">
+              <span className="text-truncate">📌 {pinPreview(m)}</span>
+              <button type="button" className="ft-name-link flex-shrink-0"
+                onClick={() => pin(m.id, false)} aria-label={t('dm_unpin')}>✕</button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="ft-dm-scroll" ref={scrollRef} onScroll={onScroll}>
         {messages === null ? (
           <Loading rows={4} />
@@ -140,6 +186,11 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
           <p className="text-secondary small text-center py-4">{t('dm_empty')}</p>
         ) : (
           messages.map((m) => (
+            m.recalled ? (
+              <div key={m.id} className={`ft-dm-row ${m.mine ? 'mine' : ''}`}>
+                <div className="ft-dm-bubble ft-dm-recalled">🚫 {t('dm_recalled')}</div>
+              </div>
+            ) : (
             <div key={m.id} className={`ft-dm-row ${m.mine ? 'mine' : ''}`}>
               <div className="ft-dm-msg">
                 {m.replyToId && (
@@ -154,9 +205,11 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
                   </div>
 
                   <div className="ft-dm-tools">
+                    <button type="button" title={t('dm_more')}
+                      onClick={() => setMenuFor(menuFor === m.id ? null : m.id)}>⋯</button>
+                    <button type="button" title={t('forum_reply')} onClick={() => setReplyTo(m)}>↩</button>
                     <button type="button" title={t('react_like')}
                       onClick={() => setReactFor(reactFor === m.id ? null : m.id)}>🙂</button>
-                    <button type="button" title={t('forum_reply')} onClick={() => setReplyTo(m)}>↩</button>
                   </div>
 
                   {reactFor === m.id && (
@@ -168,6 +221,22 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
                       ))}
                     </div>
                   )}
+
+                  {menuFor === m.id && (
+                    <div className="ft-dm-menu">
+                      <button type="button" onClick={() => pin(m.id, !m.pinned)}>
+                        📌 {m.pinned ? t('dm_unpin') : t('dm_pin')}
+                      </button>
+                      <button type="button" onClick={() => recall(m.id, false)}>
+                        🗑️ {t('dm_recall_me')}
+                      </button>
+                      {m.mine && (
+                        <button type="button" className="text-danger" onClick={() => recall(m.id, true)}>
+                          ↩️ {t('dm_recall_all')}
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {m.reactions.length > 0 && (
@@ -177,6 +246,7 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
                 )}
               </div>
             </div>
+            )
           ))
         )}
         {showSeen && <div className="ft-dm-seen">{t('dm_seen')}</div>}

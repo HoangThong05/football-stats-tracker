@@ -110,12 +110,25 @@ public class DirectMessageService {
             }
         }
 
+        long meId = me.getId();
         return msgs.stream()
+                // Bo tin da "thu hoi voi ban" cua chinh minh
+                .filter(m -> {
+                    boolean mine = m.getSender().getId().equals(meId);
+                    return mine ? !m.isHiddenForSender() : !m.isHiddenForRecipient();
+                })
                 .map(m -> {
+                    boolean mine = m.getSender().getId().equals(meId);
+                    // Da thu hoi voi moi nguoi -> chi hien mot dong bao, khong con noi dung/cam xuc
+                    if (m.isRecalled()) {
+                        return new DirectMessageDto.Message(m.getId(), mine, null, null,
+                                m.getCreatedAt(), m.getReadAt(), java.util.List.of(), null,
+                                null, null, false, true, false);
+                    }
                     DirectMessage rt = m.getReplyTo();
                     return new DirectMessageDto.Message(
                             m.getId(),
-                            m.getSender().getId().equals(me.getId()),
+                            mine,
                             m.getContent(),
                             m.getImageUrl(),
                             m.getCreatedAt(),
@@ -125,9 +138,49 @@ public class DirectMessageService {
                             rt == null ? null : rt.getId(),
                             rt == null ? null : (rt.getContent() == null || rt.getContent().isBlank()
                                     ? "📷 Ảnh" : excerpt(rt.getContent())),
-                            rt != null && rt.getSender().getId().equals(me.getId()));
+                            rt != null && rt.getSender().getId().equals(meId),
+                            false,
+                            m.isPinned());
                 })
                 .toList();
+    }
+
+    /** Thu hoi tin. forEveryone=true: chi NGUOI GUI, ca hai ben mat. false: chi an o phia minh. */
+    @Transactional
+    public void recall(String email, long messageId, boolean forEveryone) {
+        User me = getUser(email);
+        DirectMessage msg = participantMessage(messageId, me.getId());
+        boolean mine = msg.getSender().getId().equals(me.getId());
+        if (forEveryone) {
+            if (!mine) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not_your_message");
+            }
+            msg.recall();
+        } else if (mine) {
+            msg.hideForSender();
+        } else {
+            msg.hideForRecipient();
+        }
+        repo.save(msg);
+    }
+
+    /** Ghim / bo ghim tin. Ca hai nguoi trong hoi thoai deu lam duoc. */
+    @Transactional
+    public void pin(String email, long messageId, boolean pinned) {
+        User me = getUser(email);
+        DirectMessage msg = participantMessage(messageId, me.getId());
+        msg.setPinned(pinned);
+        repo.save(msg);
+    }
+
+    private DirectMessage participantMessage(long messageId, long meId) {
+        DirectMessage msg = repo.findById(messageId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "message_not_found"));
+        boolean participant = msg.getSender().getId() == meId || msg.getRecipient().getId() == meId;
+        if (!participant) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not_in_conversation");
+        }
+        return msg;
     }
 
     /** Tha / doi / go cam xuc mot tin. Bam lai dung loai dang co = go. Chi nguoi trong hoi thoai. */

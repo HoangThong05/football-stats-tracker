@@ -3346,6 +3346,60 @@ video.ft-post-image {
   background: var(--bs-tertiary-bg);
 }
 
+/* Menu ... (thu hoi / ghim) noi len tren tin */
+.ft-dm-menu {
+  position: absolute;
+  bottom: 100%;
+  margin-bottom: 4px;
+  left: 0;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  background: var(--ft-surface);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 10px;
+  box-shadow: var(--ft-card-shadow);
+  z-index: 6;
+}
+.ft-dm-row.mine .ft-dm-menu { left: auto; right: 0; }
+.ft-dm-menu button {
+  border: 0;
+  background: none;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--bs-body-color);
+  white-space: nowrap;
+}
+.ft-dm-menu button:hover { background: var(--bs-tertiary-bg); }
+
+/* Tin da thu hoi voi moi nguoi */
+.ft-dm-recalled {
+  background: transparent !important;
+  color: var(--bs-secondary-color) !important;
+  border: 1px dashed var(--bs-border-color-translucent);
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+/* Bang tin da ghim tren dau hoi thoai */
+.ft-dm-pinned {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+  background: var(--bs-tertiary-bg);
+  font-size: 0.8rem;
+}
+.ft-dm-pinned-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--bs-secondary-color);
+}
+
 /* ================= Keo de lam moi ================= */
 .ft-ptr {
   position: fixed;

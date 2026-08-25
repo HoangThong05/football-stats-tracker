@@ -65,4 +65,20 @@ public class DirectMessageController {
         service.react(email, messageId,
                 com.hoangthong.footballtracker.entity.ReactionType.fromString(body == null ? null : body.get("type")));
     }
+
+    /** Thu hoi tin. Body: { forEveryone: true|false }. */
+    @PostMapping("/recall/{messageId}")
+    public void recall(@AuthenticationPrincipal String email, @PathVariable long messageId,
+                       @RequestBody(required = false) Map<String, Object> body) {
+        boolean forEveryone = body != null && Boolean.TRUE.equals(body.get("forEveryone"));
+        service.recall(email, messageId, forEveryone);
+    }
+
+    /** Ghim / bo ghim tin. Body: { pinned: true|false }. */
+    @PostMapping("/pin/{messageId}")
+    public void pin(@AuthenticationPrincipal String email, @PathVariable long messageId,
+                    @RequestBody(required = false) Map<String, Object> body) {
+        boolean pinned = body == null || !Boolean.FALSE.equals(body.get("pinned"));
+        service.pin(email, messageId, pinned);
+    }
 }
