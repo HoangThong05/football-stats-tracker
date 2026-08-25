@@ -28,7 +28,7 @@ export function usePresence(token, ids) {
         .catch(() => {})
     }
     load()
-    const timer = setInterval(() => { if (!document.hidden) load() }, 40000)
+    const timer = setInterval(() => { if (!document.hidden) load() }, 15000)
     return () => { alive = false; clearInterval(timer) }
   }, [token, key])
 

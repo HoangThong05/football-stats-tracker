@@ -436,7 +436,7 @@ export default function App() {
     return () => window.removeEventListener("ft-presence-changed", onChange);
   }, [token]);
 
-  // Nhip tim "dang hoat dong": bao may chu minh online moi 60s khi mo app (bo qua khi tab an)
+  // Nhip tim "dang hoat dong": bao may chu minh online moi 30s khi mo app (bo qua khi tab an)
   useEffect(() => {
     if (!token) return undefined;
     const ping = () => {
@@ -444,8 +444,11 @@ export default function App() {
       fetch(`${API_BASE}/presence/ping`, { method: "POST", headers: authHeaders(token) }).catch(() => {});
     };
     ping();
-    const timer = setInterval(ping, 60000);
-    return () => clearInterval(timer);
+    // Ping lai ngay khi quay lai tab, de online cua minh "song" lai nhanh cho ben kia
+    const onVisible = () => { if (!document.hidden) ping(); };
+    document.addEventListener("visibilitychange", onVisible);
+    const timer = setInterval(ping, 30000);
+    return () => { clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
   }, [token]);
 
   // KHONG dong trang "Hom nay" o day: MatchDetail duoc uu tien hien truoc trong chuoi

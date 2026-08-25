@@ -24,8 +24,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class PresenceService {
 
-    /** Ping trong vong ngan nay coi la dang online. Frontend ping ~60s/lan. */
-    private static final Duration ONLINE_WINDOW = Duration.ofMinutes(2);
+    /** Ping trong vong ngan nay coi la dang online. Frontend ping ~30s/lan -> cua so 70s
+     *  du de khong nhap nhay giua hai nhip, ma roi mang van chuyen "offline" trong ~1 phut. */
+    private static final Duration ONLINE_WINDOW = Duration.ofSeconds(70);
 
     private final UserRepository userRepo;
     private final Map<Long, Instant> lastSeen = new ConcurrentHashMap<>();
