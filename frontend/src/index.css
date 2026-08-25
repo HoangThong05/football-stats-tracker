@@ -3346,23 +3346,25 @@ video.ft-post-image {
   background: var(--bs-tertiary-bg);
 }
 
-/* Menu ... (thu hoi / ghim) noi len tren tin */
+/* Menu ... (thu hoi / ghim) - noi (fixed) de len tren, khong bi khung cuon cat */
+.ft-dm-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+}
 .ft-dm-menu {
-  position: absolute;
-  bottom: 100%;
-  margin-bottom: 4px;
-  left: 0;
-  min-width: 190px;
+  position: fixed;
+  min-width: 200px;
   display: flex;
   flex-direction: column;
   padding: 4px;
   background: var(--ft-surface);
   border: 1px solid var(--bs-border-color-translucent);
-  border-radius: 10px;
-  box-shadow: var(--ft-card-shadow);
-  z-index: 6;
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+  z-index: 1051;
 }
-.ft-dm-row.mine .ft-dm-menu { left: auto; right: 0; }
+.ft-dm-menu.up { transform: translateY(-100%); }
 .ft-dm-menu button {
   border: 0;
   background: none;

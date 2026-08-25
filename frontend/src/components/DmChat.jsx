@@ -24,7 +24,7 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
   const [sending, setSending] = useState(false)
   const [showGif, setShowGif] = useState(false)
   const [reactFor, setReactFor] = useState(null) // id tin dang mo bang cam xuc
-  const [menuFor, setMenuFor] = useState(null) // id tin dang mo menu ... (thu hoi/ghim)
+  const [menu, setMenu] = useState(null) // { id, mine, pinned, top, left, up } - menu ... dang mo
   const [replyTo, setReplyTo] = useState(null) // tin dang tra loi
   const fileRef = useRef(null)
   const scrollRef = useRef(null)
@@ -128,8 +128,27 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
     }
   }
 
+  // Mo menu ... - dinh vi noi (fixed) ngay canh nut, khong bi khung cuon cat
+  const openMenu = (e, m) => {
+    if (menu && menu.id === m.id) {
+      setMenu(null)
+      return
+    }
+    const r = e.currentTarget.getBoundingClientRect()
+    const up = r.bottom + 170 > window.innerHeight
+    setReactFor(null)
+    setMenu({
+      id: m.id,
+      mine: m.mine,
+      pinned: m.pinned,
+      top: up ? r.top - 6 : r.bottom + 6,
+      left: Math.max(8, Math.min(r.left, window.innerWidth - 208)),
+      up,
+    })
+  }
+
   const recall = async (id, forEveryone) => {
-    setMenuFor(null)
+    setMenu(null)
     const ok = await confirmDialog({
       message: forEveryone ? t('dm_recall_all_confirm') : t('dm_recall_me_confirm'),
       confirmText: t('dm_recall'),
@@ -140,7 +159,7 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
   }
 
   const pin = (id, pinned) => {
-    setMenuFor(null)
+    setMenu(null)
     callMsg(`pin/${id}`, { pinned })
   }
 
@@ -205,8 +224,7 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
                   </div>
 
                   <div className="ft-dm-tools">
-                    <button type="button" title={t('dm_more')}
-                      onClick={() => setMenuFor(menuFor === m.id ? null : m.id)}>⋯</button>
+                    <button type="button" title={t('dm_more')} onClick={(e) => openMenu(e, m)}>⋯</button>
                     <button type="button" title={t('forum_reply')} onClick={() => setReplyTo(m)}>↩</button>
                     <button type="button" title={t('react_like')}
                       onClick={() => setReactFor(reactFor === m.id ? null : m.id)}>🙂</button>
@@ -219,22 +237,6 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
                           className={m.myReaction === r.type ? 'active' : ''}
                           onClick={() => react(m.id, r.type)}>{r.emoji}</button>
                       ))}
-                    </div>
-                  )}
-
-                  {menuFor === m.id && (
-                    <div className="ft-dm-menu">
-                      <button type="button" onClick={() => pin(m.id, !m.pinned)}>
-                        📌 {m.pinned ? t('dm_unpin') : t('dm_pin')}
-                      </button>
-                      <button type="button" onClick={() => recall(m.id, false)}>
-                        🗑️ {t('dm_recall_me')}
-                      </button>
-                      {m.mine && (
-                        <button type="button" className="text-danger" onClick={() => recall(m.id, true)}>
-                          ↩️ {t('dm_recall_all')}
-                        </button>
-                      )}
                     </div>
                   )}
                 </div>
@@ -291,6 +293,26 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
           {t('chat_send')}
         </button>
       </form>
+
+      {menu && (
+        <>
+          <div className="ft-dm-menu-backdrop" onClick={() => setMenu(null)} />
+          <div className={`ft-dm-menu${menu.up ? ' up' : ''}`}
+            style={{ top: menu.top, left: menu.left }}>
+            <button type="button" onClick={() => pin(menu.id, !menu.pinned)}>
+              📌 {menu.pinned ? t('dm_unpin') : t('dm_pin')}
+            </button>
+            <button type="button" onClick={() => recall(menu.id, false)}>
+              🗑️ {t('dm_recall_me')}
+            </button>
+            {menu.mine && (
+              <button type="button" className="text-danger" onClick={() => recall(menu.id, true)}>
+                ↩️ {t('dm_recall_all')}
+              </button>
+            )}
+          </div>
+        </>
+      )}
 
       {showGif && <GifPicker onPick={sendGif} onClose={() => setShowGif(false)} />}
     </div>
