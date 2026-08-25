@@ -80,6 +80,17 @@ export default function StandingsTable({ rows, zones, onSelectTeam, fetchedAt })
   // Moc de ve thanh diem: doi dan dau = thanh day. Tranh chia 0 luc dau mua.
   const maxPoints = rows.reduce((max, r) => Math.max(max, r.points), 0)
 
+  /*
+   * So thu hang HIEN THI, lien mach 1,2,3,4,5...
+   *
+   * Nguon du lieu gan CUNG "position" cho cac doi bang diem/hieu so (vd hai doi cung #4),
+   * nhin ra tuong nhu app tinh sai. Bang xep hang khong co gio da nen khong biet "doi da
+   * sau"; nhung nguon da sap cac doi hoa theo thu tu hop le (diem -> hieu so -> ban thang),
+   * nen ta chi danh so lien mach theo dung thu tu do de khong lap so. Huy chuong / to vung
+   * van dua vao "position" goc (xem teamsAtPosition) de KHONG trao khi con dang hoa.
+   */
+  const rankByTeam = new Map(rows.map((r, i) => [r.teamId, i + 1]))
+
   return (
     <div>
       <input
@@ -139,7 +150,7 @@ export default function StandingsTable({ rows, zones, onSelectTeam, fetchedAt })
                           Huy chuong nam trong cot # nen khong day logo doi - moi o cung cot
                           co chung be rong, logo van thang hang. */}
                       <span className="d-inline-flex align-items-center gap-1">
-                        <span className={posClass(r.position, rows.length, activeZones)}>{r.position}</span>
+                        <span className={posClass(r.position, rows.length, activeZones)}>{rankByTeam.get(r.teamId)}</span>
                         {teamsAtPosition[r.position] === 1 && RANK_MEDALS[r.position] && (
                           <span className="ft-rank-medal" aria-hidden="true">{RANK_MEDALS[r.position]}</span>
                         )}
