@@ -11,6 +11,7 @@ import Loading from './Loading'
 import MentionInput from './MentionInput'
 import { confirmDialog } from './ConfirmDialog'
 import { renderMentions, stripMentions } from '../mentions'
+import { usePresence, presenceTag } from '../usePresence'
 
 const MAX = 2000
 const REFRESH_MS = 8000
@@ -21,6 +22,7 @@ const REFRESH_MS = 8000
  */
 export default function DmChat({ token, other, myName, myAvatar, onBack, onSelectUser }) {
   const { t, lang } = useTranslation()
+  const presence = usePresence(token, other ? [other.userId] : [])
   const [messages, setMessages] = useState(null)
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
@@ -201,8 +203,22 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
         <button type="button" className="btn btn-link p-0" onClick={onBack}>‹ {t('back')}</button>
         <button type="button" className="ft-avatar-btn d-flex align-items-center gap-2"
           onClick={() => onSelectUser(other.userId)}>
-          <Avatar name={other.name} src={other.avatarUrl} size={30} />
-          <span className="fw-semibold">{other.name}</span>
+          <Avatar name={other.name} src={other.avatarUrl} size={30}
+            presence={presenceTag(presence, other.userId)} />
+          <span className="d-flex flex-column lh-sm text-start">
+            <span className="fw-semibold">{other.name}</span>
+            {(() => {
+              const st = presence.get(other.userId)
+              if (!st) return null
+              return st.online ? (
+                <span className="ft-online-text">{t('presence_online')}</span>
+              ) : (
+                <span className="ft-away-text">
+                  {t('presence_last_active')} {relativeTime(st.lastSeen, t, lang)}
+                </span>
+              )
+            })()}
+          </span>
         </button>
       </div>
 

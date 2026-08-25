@@ -7,6 +7,7 @@ import BadgeFlair from './BadgeFlair'
 import DmChat from './DmChat'
 import Loading from './Loading'
 import { confirmDialog } from './ConfirmDialog'
+import { usePresence, presenceTag } from '../usePresence'
 
 const REFRESH_MS = 10000
 
@@ -22,6 +23,7 @@ export default function Messages({ token, myName, myAvatar, initialUser, onBack,
   const [composing, setComposing] = useState(false)
   const [friends, setFriends] = useState(null)
   const [menu, setMenu] = useState(null) // { userId, pinned, muted, top, left, up }
+  const presence = usePresence(token, (list || []).map((c) => c.userId))
 
   // Mo che do "chon ban de nhan" -> tai danh sach ban be
   const openCompose = () => {
@@ -153,7 +155,7 @@ export default function Messages({ token, myName, myAvatar, initialUser, onBack,
                 className="list-group-item d-flex align-items-center gap-3 px-3 py-2 ft-dm-conv"
                 role="button"
                 onClick={() => setOpen({ userId: c.userId, name: c.name, avatarUrl: c.avatarUrl })}>
-                <Avatar name={c.name} src={c.avatarUrl} size={44} />
+                <Avatar name={c.name} src={c.avatarUrl} size={44} presence={presenceTag(presence, c.userId)} />
                 <div className="flex-grow-1" style={{ minWidth: 0 }}>
                   <div className="d-flex align-items-center justify-content-between gap-2">
                     <span className="fw-semibold text-truncate">

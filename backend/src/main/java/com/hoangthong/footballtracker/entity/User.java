@@ -122,6 +122,13 @@ public class User {
     @Column
     private Boolean hasPassword;
 
+    /**
+     * Cho phep nguoi khac thay trang thai "dang hoat dong" (cham xanh) hay khong.
+     * null = tai khoan cu -> mac dinh BAT (giong Facebook).
+     */
+    @Column
+    private Boolean showOnlineStatus;
+
     protected User() {
         // JPA can
     }
@@ -153,6 +160,15 @@ public class User {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    /** null = tai khoan cu -> mac dinh cho hien trang thai hoat dong. */
+    public boolean isShowOnlineStatus() {
+        return showOnlineStatus == null || showOnlineStatus;
+    }
+
+    public void setShowOnlineStatus(boolean show) {
+        this.showOnlineStatus = show;
     }
 
     /** null = tai khoan cu, co truoc khi co tinh nang khoa -> coi nhu binh thuong. */

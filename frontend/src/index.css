@@ -3191,6 +3191,38 @@ video.ft-post-image {
 }
 .ft-dm-conv-more:hover { background: var(--bs-secondary-bg); color: var(--bs-body-color); }
 
+/* Cham xanh "dang hoat dong" tren avatar */
+.ft-avatar-wrap {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 0;
+}
+.ft-online-dot {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 30%;
+  height: 30%;
+  min-width: 9px;
+  min-height: 9px;
+  background: #22c55e;
+  border-radius: 50%;
+  border: 2px solid var(--ft-surface);
+  box-sizing: border-box;
+}
+/* Ngoai tuyen: cham xam */
+.ft-online-dot-away { background: var(--bs-secondary-color, #9ca3af); }
+.ft-online-text {
+  font-size: 0.72rem;
+  color: #22c55e;
+  font-weight: 600;
+}
+.ft-away-text {
+  font-size: 0.72rem;
+  color: var(--bs-secondary-color);
+}
+
 /* O nhap co goi y nhac ten (@) */
 .ft-mention-wrap { position: relative; flex: 1 1 auto; min-width: 0; }
 .ft-mention-menu {

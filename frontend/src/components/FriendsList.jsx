@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import Avatar from './Avatar'
+import { usePresence, presenceTag } from '../usePresence'
 
 /**
  * Ban be va loi moi dang cho, hien trong trang Ho so.
@@ -17,6 +18,7 @@ export default function FriendsList({ token, onSelectUser }) {
   const [friends, setFriends] = useState([])
   const [requests, setRequests] = useState([])
   const [busy, setBusy] = useState(false)
+  const presence = usePresence(token, friends.map((f) => f.userId))
 
   const load = useCallback(() => {
     if (!token) return
@@ -46,7 +48,7 @@ export default function FriendsList({ token, onSelectUser }) {
   /** Anh + ten, ca hai deu mo duoc ho so cong khai cua nguoi do. */
   const person = (f) => (
     <button type="button" className="ft-friend-person" onClick={() => onSelectUser(f.userId)}>
-      <Avatar name={f.name} src={f.avatarUrl} size={32} />
+      <Avatar name={f.name} src={f.avatarUrl} size={32} presence={presenceTag(presence, f.userId)} />
       <span className="ft-name-link text-truncate">{f.name}</span>
     </button>
   )

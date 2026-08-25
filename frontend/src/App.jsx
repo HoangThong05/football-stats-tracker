@@ -422,6 +422,18 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Nhip tim "dang hoat dong": bao may chu minh online moi 60s khi mo app (bo qua khi tab an)
+  useEffect(() => {
+    if (!token) return undefined;
+    const ping = () => {
+      if (document.hidden) return;
+      fetch(`${API_BASE}/presence/ping`, { method: "POST", headers: authHeaders(token) }).catch(() => {});
+    };
+    ping();
+    const timer = setInterval(ping, 60000);
+    return () => clearInterval(timer);
+  }, [token]);
+
   // KHONG dong trang "Hom nay" o day: MatchDetail duoc uu tien hien truoc trong chuoi
   // ternary ben duoi, nen giu showToday=true de bam "Quay lai" se ve dung trang Hom nay.
   const goToMatch = (matchId) => {

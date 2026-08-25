@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
-import { shortTeamName } from '../utils'
+import { shortTeamName, relativeTime } from '../utils'
 import { BADGE_META } from '../constants'
 import Avatar from './Avatar'
+import { usePresence, presenceTag } from '../usePresence'
 import CoverMedia from './CoverMedia'
 import Loading from './Loading'
 import PointsAreaChart from './PointsAreaChart'
@@ -19,6 +20,7 @@ export default function PublicProfile({ userId, token, onBack, onMessage }) {
   const [profile, setProfile] = useState(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
+  const presence = usePresence(token, userId ? [userId] : [])
 
   const load = useCallback(() => {
     fetch(`${API_BASE}/users/${userId}/profile`, { headers: authHeaders(token) })
@@ -128,7 +130,8 @@ export default function PublicProfile({ userId, token, onBack, onMessage }) {
         <div className="ft-profile-id">
           <div className="ft-avatar-upload">
             <div className="ft-avatar-upload-ring">
-              <Avatar name={profile.name} src={profile.avatarUrl} size={104} />
+              <Avatar name={profile.name} src={profile.avatarUrl} size={104}
+                presence={profile.relation === 'SELF' ? undefined : presenceTag(presence, userId)} />
             </div>
           </div>
 
@@ -148,6 +151,17 @@ export default function PublicProfile({ userId, token, onBack, onMessage }) {
               })()}
             </h3>
             <div className="text-secondary small">{t('pub_joined')} {joined}</div>
+            {profile.relation !== 'SELF' && (() => {
+              const st = presence.get(userId)
+              if (!st) return null
+              return st.online ? (
+                <div className="ft-online-text">{t('presence_online')}</div>
+              ) : (
+                <div className="ft-away-text">
+                  {t('presence_last_active')} {relativeTime(st.lastSeen, t, lang)}
+                </div>
+              )
+            })()}
             {profile.weeklyWins > 0 && (
               <span className="badge text-bg-warning mt-1">
                 🏆 {t('profile_weekly_wins')} ×{profile.weeklyWins}
