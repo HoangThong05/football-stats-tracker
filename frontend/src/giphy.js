@@ -21,8 +21,9 @@ function toItem(g) {
     id: g.id,
     // Anh nho cho luoi (nhe, tai nhanh); dung ban co dinh chieu cao
     preview: images.fixed_height_small?.url || images.fixed_height?.url || images.original?.url,
-    // Ban day du de luu (downsized medium cho nhe, van ro)
-    full: images.downsized_medium?.url || images.downsized?.url || images.original?.url,
+    // Ban de LUU: chon ban NHE (downsized < 2MB, hoac fixed_width) - GIF nang lam
+    // Cloudinary tai lau + phat giat. Nhe hon nhieu ma van du ro cho chat/binh luan.
+    full: images.downsized?.url || images.fixed_width?.url || images.downsized_medium?.url || images.original?.url,
   }
 }
 

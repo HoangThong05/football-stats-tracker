@@ -122,5 +122,7 @@ export async function uploadFromUrl(remoteUrl) {
     throw new Error('image_upload_failed')
   }
   const data = await res.json()
-  return data.secure_url
+  // Chen f_auto,q_auto de Cloudinary GIAO ban toi uu (WebP dong, nhe hon + phat muot hon
+  // GIF goc rat nhieu). Van la URL res.cloudinary.com nen backend van nhan.
+  return (data.secure_url || '').replace('/image/upload/', '/image/upload/f_auto,q_auto/')
 }
