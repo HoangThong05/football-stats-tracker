@@ -81,4 +81,26 @@ public class DirectMessageController {
         boolean pinned = body == null || !Boolean.FALSE.equals(body.get("pinned"));
         service.pin(email, messageId, pinned);
     }
+
+    /** Ghim / bo ghim CA HOI THOAI voi mot nguoi. Body: { pinned: true|false }. */
+    @PostMapping("/conversation/{userId}/pin")
+    public void pinConversation(@AuthenticationPrincipal String email, @PathVariable long userId,
+                                @RequestBody(required = false) Map<String, Object> body) {
+        boolean pinned = body == null || !Boolean.FALSE.equals(body.get("pinned"));
+        service.pinConversation(email, userId, pinned);
+    }
+
+    /** Tat / bat thong bao hoi thoai voi mot nguoi. Body: { muted: true|false }. */
+    @PostMapping("/conversation/{userId}/mute")
+    public void muteConversation(@AuthenticationPrincipal String email, @PathVariable long userId,
+                                 @RequestBody(required = false) Map<String, Object> body) {
+        boolean muted = body == null || !Boolean.FALSE.equals(body.get("muted"));
+        service.muteConversation(email, userId, muted);
+    }
+
+    /** Xoa hoi thoai ve phia minh (don lich su). */
+    @DeleteMapping("/conversation/{userId}")
+    public void deleteConversation(@AuthenticationPrincipal String email, @PathVariable long userId) {
+        service.clearConversation(email, userId);
+    }
 }

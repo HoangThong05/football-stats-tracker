@@ -33,5 +33,9 @@ public class DirectMessageDto {
      */
     public record Conversation(long userId, String name, String avatarUrl, String featuredBadge,
                                String lastContent, boolean lastHasImage, boolean lastFromMe,
-                               Instant lastAt, long unread) {}
+                               Instant lastAt, long unread,
+                               /** true = da ghim hoi thoai (len dau danh sach). */
+                               boolean pinned,
+                               /** true = da tat thong bao hoi thoai nay. */
+                               boolean muted) {}
 }

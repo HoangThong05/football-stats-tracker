@@ -3179,6 +3179,17 @@ video.ft-post-image {
 /* ================= Nhan tin rieng (DM) ================= */
 .ft-dm-conv { cursor: pointer; }
 .ft-dm-conv:hover { background: var(--bs-tertiary-bg); }
+.ft-dm-conv-more {
+  border: 0;
+  background: none;
+  color: var(--bs-secondary-color);
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.ft-dm-conv-more:hover { background: var(--bs-secondary-bg); color: var(--bs-body-color); }
 .ft-dm-unread {
   flex-shrink: 0;
   min-width: 20px;

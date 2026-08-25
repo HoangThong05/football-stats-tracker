@@ -2,6 +2,7 @@ package com.hoangthong.footballtracker.service;
 
 import com.hoangthong.footballtracker.dto.DirectMessageDto;
 import com.hoangthong.footballtracker.entity.DirectMessage;
+import com.hoangthong.footballtracker.entity.DmConversationPref;
 import com.hoangthong.footballtracker.entity.User;
 import com.hoangthong.footballtracker.repository.DirectMessageRepository;
 import com.hoangthong.footballtracker.repository.UserRepository;
@@ -29,16 +30,19 @@ public class DirectMessageService {
 
     private final DirectMessageRepository repo;
     private final com.hoangthong.footballtracker.repository.DmReactionRepository reactionRepo;
+    private final com.hoangthong.footballtracker.repository.DmConversationPrefRepository prefRepo;
     private final UserRepository userRepo;
     private final FriendshipService friendshipService;
     private final WebPushService webPush;
 
     public DirectMessageService(DirectMessageRepository repo,
                                 com.hoangthong.footballtracker.repository.DmReactionRepository reactionRepo,
+                                com.hoangthong.footballtracker.repository.DmConversationPrefRepository prefRepo,
                                 UserRepository userRepo,
                                 FriendshipService friendshipService, WebPushService webPush) {
         this.repo = repo;
         this.reactionRepo = reactionRepo;
+        this.prefRepo = prefRepo;
         this.userRepo = userRepo;
         this.friendshipService = friendshipService;
         this.webPush = webPush;
@@ -76,9 +80,13 @@ public class DirectMessageService {
         }
         repo.save(msg);
 
-        // Day thong bao cho nguoi nhan, mo dung hoi thoai voi minh
-        String preview = content.isEmpty() ? "📷 Đã gửi một ảnh" : excerpt(content);
-        webPush.sendToUser(to, me.displayNameOrFallback(), preview, "/?dm=" + me.getId());
+        // Day thong bao cho nguoi nhan (tru khi ho da TAT thong bao hoi thoai nay), mo dung hoi thoai
+        boolean muted = prefRepo.findByOwnerIdAndPartnerId(to.getId(), me.getId())
+                .map(DmConversationPref::isMuted).orElse(false);
+        if (!muted) {
+            String preview = content.isEmpty() ? "📷 Đã gửi một ảnh" : excerpt(content);
+            webPush.sendToUser(to, me.displayNameOrFallback(), preview, "/?dm=" + me.getId());
+        }
     }
 
     /**
@@ -90,7 +98,11 @@ public class DirectMessageService {
         requireFriend(email, otherId);
         repo.markConversationRead(me.getId(), otherId, Instant.now());
 
-        List<DirectMessage> msgs = repo.findConversation(me.getId(), otherId);
+        Instant cleared = prefRepo.findByOwnerIdAndPartnerId(me.getId(), otherId)
+                .map(DmConversationPref::getClearedAt).orElse(null);
+        List<DirectMessage> msgs = repo.findConversation(me.getId(), otherId).stream()
+                .filter(m -> cleared == null || m.getCreatedAt().isAfter(cleared))
+                .toList();
         // Cam xuc cua tat ca tin trong hoi thoai, gom theo tin
         List<Long> ids = msgs.stream().map(DirectMessage::getId).toList();
         java.util.Map<Long, java.util.List<String>> reactionsByMsg = new java.util.HashMap<>();
@@ -173,6 +185,31 @@ public class DirectMessageService {
         repo.save(msg);
     }
 
+    /** Ghim / bo ghim CA HOI THOAI voi mot nguoi (chi ve phia minh). */
+    @Transactional
+    public void pinConversation(String email, long partnerId, boolean pinned) {
+        prefFor(email, partnerId).setPinned(pinned);
+    }
+
+    /** Tat / bat thong bao day cua hoi thoai voi mot nguoi (chi ve phia minh). */
+    @Transactional
+    public void muteConversation(String email, long partnerId, boolean muted) {
+        prefFor(email, partnerId).setMuted(muted);
+    }
+
+    /** Xoa hoi thoai VE PHIA MINH: don lich su, chi con thay tin moi hon luc xoa. */
+    @Transactional
+    public void clearConversation(String email, long partnerId) {
+        prefFor(email, partnerId).setClearedAt(Instant.now());
+    }
+
+    /** Lay (hoac tao) tuy chinh hoi thoai cua nguoi dang dang nhap voi partnerId. */
+    private DmConversationPref prefFor(String email, long partnerId) {
+        User me = getUser(email);
+        return prefRepo.findByOwnerIdAndPartnerId(me.getId(), partnerId)
+                .orElseGet(() -> prefRepo.save(new DmConversationPref(me, partnerId)));
+    }
+
     private DirectMessage participantMessage(long messageId, long meId) {
         DirectMessage msg = repo.findById(messageId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "message_not_found"));
@@ -210,6 +247,11 @@ public class DirectMessageService {
     @Transactional(readOnly = true)
     public List<DirectMessageDto.Conversation> conversations(String email) {
         User me = getUser(email);
+        java.util.Map<Long, DmConversationPref> prefs = new java.util.HashMap<>();
+        for (DmConversationPref p : prefRepo.findByOwnerId(me.getId())) {
+            prefs.put(p.getPartnerId(), p);
+        }
+
         List<DirectMessageDto.Conversation> out = new ArrayList<>();
         for (Long partnerId : repo.findPartnerIds(me.getId())) {
             var latestList = repo.findLatestBetween(me.getId(), partnerId, PageRequest.of(0, 1));
@@ -217,12 +259,18 @@ public class DirectMessageService {
                 continue;
             }
             DirectMessage last = latestList.get(0);
+            DmConversationPref pref = prefs.get(partnerId);
+            Instant cleared = pref == null ? null : pref.getClearedAt();
+            // Da xoa va chua co tin nao moi hon -> khong hien trong hop thu
+            if (cleared != null && !last.getCreatedAt().isAfter(cleared)) {
+                continue;
+            }
             User partner = userRepo.findById(partnerId).orElse(null);
             if (partner == null) {
                 continue;
             }
             boolean fromMe = last.getSender().getId().equals(me.getId());
-            long unread = repo.countByRecipientIdAndSenderIdAndReadAtIsNull(me.getId(), partnerId);
+            long unread = repo.countUnreadSince(me.getId(), partnerId, cleared);
             out.add(new DirectMessageDto.Conversation(
                     partner.getId(),
                     partner.displayNameOrFallback(),
@@ -232,9 +280,13 @@ public class DirectMessageService {
                     last.getImageUrl() != null,
                     fromMe,
                     last.getCreatedAt(),
-                    unread));
+                    unread,
+                    pref != null && pref.isPinned(),
+                    pref != null && pref.isMuted()));
         }
-        out.sort(Comparator.comparing(DirectMessageDto.Conversation::lastAt).reversed());
+        // Ghim len dau, roi moi nhat truoc
+        out.sort(Comparator.comparing(DirectMessageDto.Conversation::pinned).reversed()
+                .thenComparing(Comparator.comparing(DirectMessageDto.Conversation::lastAt).reversed()));
         return out;
     }
 

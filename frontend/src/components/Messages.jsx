@@ -6,6 +6,7 @@ import Avatar from './Avatar'
 import BadgeFlair from './BadgeFlair'
 import DmChat from './DmChat'
 import Loading from './Loading'
+import { confirmDialog } from './ConfirmDialog'
 
 const REFRESH_MS = 10000
 
@@ -20,6 +21,7 @@ export default function Messages({ token, myName, myAvatar, initialUser, onBack,
   const [open, setOpen] = useState(initialUser || null)
   const [composing, setComposing] = useState(false)
   const [friends, setFriends] = useState(null)
+  const [menu, setMenu] = useState(null) // { userId, pinned, muted, top, left, up }
 
   // Mo che do "chon ban de nhan" -> tai danh sach ban be
   const openCompose = () => {
@@ -48,6 +50,49 @@ export default function Messages({ token, myName, myAvatar, initialUser, onBack,
 
   // Mo thang mot hoi thoai khi initialUser doi (deep-link / bam Nhan tin)
   useEffect(() => { if (initialUser) setOpen(initialUser) }, [initialUser])
+
+  // Mo menu ... cua mot hoi thoai (popover noi, canh nut)
+  const openMenu = (e, c) => {
+    e.stopPropagation()
+    if (menu && menu.userId === c.userId) {
+      setMenu(null)
+      return
+    }
+    const r = e.currentTarget.getBoundingClientRect()
+    const up = r.bottom + 160 > window.innerHeight
+    setMenu({
+      userId: c.userId,
+      pinned: c.pinned,
+      muted: c.muted,
+      top: up ? r.top - 6 : r.bottom + 6,
+      left: Math.max(8, Math.min(r.left, window.innerWidth - 220)),
+      up,
+    })
+  }
+
+  const convAction = async (userId, path, method, body) => {
+    setMenu(null)
+    try {
+      await fetch(`${API_BASE}/messages/conversation/${userId}${path}`, {
+        method,
+        headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+        body: body ? JSON.stringify(body) : undefined,
+      })
+      load()
+    } catch {
+      /* bo qua */
+    }
+  }
+
+  const deleteConv = async (userId) => {
+    setMenu(null)
+    const ok = await confirmDialog({
+      message: t('dm_conv_delete_confirm'),
+      confirmText: t('forum_delete'),
+      danger: true,
+    })
+    if (ok) convAction(userId, '', 'DELETE', null)
+  }
 
   if (open) {
     return (
@@ -112,7 +157,9 @@ export default function Messages({ token, myName, myAvatar, initialUser, onBack,
                 <div className="flex-grow-1" style={{ minWidth: 0 }}>
                   <div className="d-flex align-items-center justify-content-between gap-2">
                     <span className="fw-semibold text-truncate">
+                      {c.pinned && <span title={t('dm_conv_unpin')}>📌 </span>}
                       {c.name}<BadgeFlair code={c.featuredBadge} />
+                      {c.muted && <span className="ms-1" title={t('dm_conv_unmute')}>🔕</span>}
                     </span>
                     <span className="text-secondary flex-shrink-0" style={{ fontSize: '0.72rem' }}>
                       {relativeTime(c.lastAt, t, lang)}
@@ -124,10 +171,32 @@ export default function Messages({ token, myName, myAvatar, initialUser, onBack,
                   </div>
                 </div>
                 {c.unread > 0 && <span className="ft-dm-unread">{c.unread}</span>}
+                <button type="button" className="ft-dm-conv-more flex-shrink-0"
+                  title={t('dm_more')} onClick={(e) => openMenu(e, c)}>⋯</button>
               </li>
             ))}
           </ul>
         </div>
+      )}
+
+      {menu && (
+        <>
+          <div className="ft-dm-menu-backdrop" onClick={() => setMenu(null)} />
+          <div className={`ft-dm-menu${menu.up ? ' up' : ''}`}
+            style={{ top: menu.top, left: menu.left }}>
+            <button type="button"
+              onClick={() => convAction(menu.userId, '/pin', 'POST', { pinned: !menu.pinned })}>
+              📌 {menu.pinned ? t('dm_conv_unpin') : t('dm_conv_pin')}
+            </button>
+            <button type="button"
+              onClick={() => convAction(menu.userId, '/mute', 'POST', { muted: !menu.muted })}>
+              {menu.muted ? `🔔 ${t('dm_conv_unmute')}` : `🔕 ${t('dm_conv_mute')}`}
+            </button>
+            <button type="button" className="text-danger" onClick={() => deleteConv(menu.userId)}>
+              🗑️ {t('dm_conv_delete')}
+            </button>
+          </div>
+        </>
       )}
     </div>
   )
