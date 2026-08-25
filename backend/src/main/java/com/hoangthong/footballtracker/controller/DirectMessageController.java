@@ -46,13 +46,23 @@ public class DirectMessageController {
         return service.conversation(email, userId);
     }
 
-    /** Gui tin. Body: { content, imageUrl }. */
+    /** Gui tin. Body: { content, imageUrl, replyToId }. */
     @PostMapping("/{userId}")
     public void send(@AuthenticationPrincipal String email, @PathVariable long userId,
-                     @RequestBody Map<String, String> body) {
+                     @RequestBody Map<String, Object> body) {
         limiter.check("dm-send", email, SEND_PER_MIN, Duration.ofMinutes(1));
-        service.send(email, userId,
-                body == null ? null : body.get("content"),
-                body == null ? null : body.get("imageUrl"));
+        String content = body.get("content") == null ? null : String.valueOf(body.get("content"));
+        String image = body.get("imageUrl") == null ? null : String.valueOf(body.get("imageUrl"));
+        Long replyToId = body.get("replyToId") instanceof Number n ? n.longValue() : null;
+        service.send(email, userId, content, image, replyToId);
+    }
+
+    /** Tha / doi / go cam xuc mot tin. Body: { type }. */
+    @PostMapping("/react/{messageId}")
+    public void react(@AuthenticationPrincipal String email, @PathVariable long messageId,
+                      @RequestBody(required = false) Map<String, String> body) {
+        limiter.check("dm-react", email, SEND_PER_MIN, Duration.ofMinutes(1));
+        service.react(email, messageId,
+                com.hoangthong.footballtracker.entity.ReactionType.fromString(body == null ? null : body.get("type")));
     }
 }

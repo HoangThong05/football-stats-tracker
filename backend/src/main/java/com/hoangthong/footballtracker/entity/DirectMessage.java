@@ -39,6 +39,11 @@ public class DirectMessage {
     @Column(length = 500)
     private String imageUrl;
 
+    /** Tin dang tra loi (reply). null = tin thuong. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reply_to_id")
+    private DirectMessage replyTo;
+
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -62,6 +67,8 @@ public class DirectMessage {
     public User getRecipient() { return recipient; }
     public String getContent() { return content; }
     public String getImageUrl() { return imageUrl; }
+    public DirectMessage getReplyTo() { return replyTo; }
+    public void setReplyTo(DirectMessage replyTo) { this.replyTo = replyTo; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getReadAt() { return readAt; }
 

@@ -3240,6 +3240,101 @@ video.ft-post-image {
   border-top: 1px solid var(--bs-border-color-translucent);
 }
 
+/* Mot tin: cot gom trich dan reply + bong bong + cam xuc */
+.ft-dm-msg { display: flex; flex-direction: column; max-width: 82%; }
+.ft-dm-row.mine .ft-dm-msg { align-items: flex-end; }
+
+.ft-dm-bubble-wrap { position: relative; display: flex; align-items: center; gap: 6px; }
+.ft-dm-row.mine .ft-dm-bubble-wrap { flex-direction: row-reverse; }
+
+/* Trich dan tin dang tra loi, phia tren bong bong */
+.ft-dm-quote {
+  max-width: 100%;
+  margin-bottom: 2px;
+  padding: 2px 8px;
+  border-left: 3px solid var(--ft-accent);
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Nut cong cu (cam xuc / tra loi) - hien khi ro chuot vao tin */
+.ft-dm-tools {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.ft-dm-bubble-wrap:hover .ft-dm-tools { opacity: 1; }
+.ft-dm-tools button {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 2px;
+  line-height: 1;
+  border-radius: 6px;
+}
+.ft-dm-tools button:hover { background: var(--bs-tertiary-bg); }
+/* Cam ung khong co ro chuot -> luon hien mo mo */
+@media (hover: none) { .ft-dm-tools { opacity: 0.6; } }
+
+/* Bang chon 6 cam xuc noi len */
+.ft-dm-react-picker {
+  position: absolute;
+  bottom: 100%;
+  margin-bottom: 4px;
+  left: 0;
+  display: flex;
+  gap: 2px;
+  padding: 4px 6px;
+  background: var(--ft-surface);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 999px;
+  box-shadow: var(--ft-card-shadow);
+  z-index: 5;
+}
+.ft-dm-row.mine .ft-dm-react-picker { left: auto; right: 0; }
+.ft-dm-react-picker button {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-size: 1.3rem;
+  padding: 1px 3px;
+  border-radius: 50%;
+  transition: transform 0.1s ease;
+}
+.ft-dm-react-picker button:hover { transform: scale(1.3); }
+.ft-dm-react-picker button.active { background: var(--ft-accent-soft); }
+
+/* Cac cam xuc da tha, duoi bong bong */
+.ft-dm-reacts {
+  margin-top: -6px;
+  padding: 1px 6px;
+  background: var(--ft-surface);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  align-self: flex-start;
+}
+.ft-dm-row.mine .ft-dm-reacts { align-self: flex-end; }
+
+/* Thanh "dang tra loi" phia tren o nhap */
+.ft-dm-replybar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  color: var(--bs-secondary-color);
+  border-top: 1px solid var(--bs-border-color-translucent);
+  background: var(--bs-tertiary-bg);
+}
+
 /* ================= Keo de lam moi ================= */
 .ft-ptr {
   position: fixed;

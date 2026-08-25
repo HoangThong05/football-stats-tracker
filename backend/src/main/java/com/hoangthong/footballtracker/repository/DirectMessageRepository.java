@@ -13,9 +13,12 @@ import java.util.List;
 
 public interface DirectMessageRepository extends JpaRepository<DirectMessage, Long> {
 
-    /** Toan bo tin giua hai nguoi, cu -> moi. JOIN FETCH nguoi gui de tranh N+1. */
+    /** Toan bo tin giua hai nguoi, cu -> moi. FETCH nguoi gui + tin duoc tra loi de tranh N+1. */
     @Query("""
-            SELECT m FROM DirectMessage m JOIN FETCH m.sender
+            SELECT m FROM DirectMessage m
+            JOIN FETCH m.sender
+            LEFT JOIN FETCH m.replyTo rt
+            LEFT JOIN FETCH rt.sender
             WHERE (m.sender.id = :a AND m.recipient.id = :b)
                OR (m.sender.id = :b AND m.recipient.id = :a)
             ORDER BY m.createdAt ASC

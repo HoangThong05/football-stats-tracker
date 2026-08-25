@@ -3,6 +3,7 @@ import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import { imageUploadEnabled, uploadImage } from '../cloudinary'
 import { giphyEnabled } from '../giphy'
+import { REACTIONS, REACTION_EMOJI } from '../constants'
 import { relativeTime } from '../utils'
 import Avatar from './Avatar'
 import GifPicker from './GifPicker'
@@ -21,6 +22,8 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const [showGif, setShowGif] = useState(false)
+  const [reactFor, setReactFor] = useState(null) // id tin dang mo bang cam xuc
+  const [replyTo, setReplyTo] = useState(null) // tin dang tra loi
   const fileRef = useRef(null)
   const scrollRef = useRef(null)
   const stick = useRef(true)
@@ -58,14 +61,17 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
     }
   }
 
+  const replyId = () => replyTo?.id ?? null
+
   const send = async (e) => {
     e.preventDefault()
     const content = text.trim()
     if (!content || sending) return
     setSending(true)
     try {
-      await post({ content })
+      await post({ content, replyToId: replyId() })
       setText('')
+      setReplyTo(null)
     } finally {
       setSending(false)
     }
@@ -77,7 +83,8 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
     if (!file) return
     setSending(true)
     try {
-      await post({ imageUrl: await uploadImage(file) })
+      await post({ imageUrl: await uploadImage(file), replyToId: replyId() })
+      setReplyTo(null)
     } catch {
       /* bo qua */
     } finally {
@@ -87,7 +94,23 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
 
   const sendGif = async (url) => {
     setShowGif(false)
-    await post({ imageUrl: url })
+    await post({ imageUrl: url, replyToId: replyId() })
+    setReplyTo(null)
+  }
+
+  // Tha / doi / go cam xuc mot tin
+  const react = async (messageId, type) => {
+    setReactFor(null)
+    try {
+      await fetch(`${API_BASE}/messages/react/${messageId}`, {
+        method: 'POST',
+        headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type }),
+      })
+      load()
+    } catch {
+      /* bo qua */
+    }
   }
 
   const onScroll = () => {
@@ -118,15 +141,57 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
         ) : (
           messages.map((m) => (
             <div key={m.id} className={`ft-dm-row ${m.mine ? 'mine' : ''}`}>
-              <div className="ft-dm-bubble" title={relativeTime(m.createdAt, t, lang)}>
-                {m.content && <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{m.content}</span>}
-                {m.imageUrl && <img src={m.imageUrl} alt="" loading="lazy" className="ft-dm-image" />}
+              <div className="ft-dm-msg">
+                {m.replyToId && (
+                  <div className="ft-dm-quote">
+                    ↩ {m.replyToMine ? `${t('dm_you_prefix')} ` : ''}{m.replyToText}
+                  </div>
+                )}
+                <div className="ft-dm-bubble-wrap">
+                  <div className="ft-dm-bubble" title={relativeTime(m.createdAt, t, lang)}>
+                    {m.content && <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{m.content}</span>}
+                    {m.imageUrl && <img src={m.imageUrl} alt="" loading="lazy" className="ft-dm-image" />}
+                  </div>
+
+                  <div className="ft-dm-tools">
+                    <button type="button" title={t('react_like')}
+                      onClick={() => setReactFor(reactFor === m.id ? null : m.id)}>🙂</button>
+                    <button type="button" title={t('forum_reply')} onClick={() => setReplyTo(m)}>↩</button>
+                  </div>
+
+                  {reactFor === m.id && (
+                    <div className="ft-dm-react-picker">
+                      {REACTIONS.map((r) => (
+                        <button key={r.type} type="button" title={t(r.labelKey)}
+                          className={m.myReaction === r.type ? 'active' : ''}
+                          onClick={() => react(m.id, r.type)}>{r.emoji}</button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {m.reactions.length > 0 && (
+                  <div className="ft-dm-reacts">
+                    {m.reactions.map((rt) => REACTION_EMOJI[rt]).join('')}
+                  </div>
+                )}
               </div>
             </div>
           ))
         )}
         {showSeen && <div className="ft-dm-seen">{t('dm_seen')}</div>}
       </div>
+
+      {replyTo && (
+        <div className="ft-dm-replybar">
+          <span className="text-truncate">
+            ↩ {t('forum_replying_to')} {replyTo.mine ? t('dm_you_prefix') : other.name}:{' '}
+            {replyTo.content || t('dm_sent_image')}
+          </span>
+          <button type="button" className="ft-name-link flex-shrink-0"
+            onClick={() => setReplyTo(null)} aria-label="X">✕</button>
+        </div>
+      )}
 
       <form onSubmit={send} className="ft-dm-input">
         {imageUploadEnabled() && (
