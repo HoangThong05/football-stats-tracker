@@ -48,11 +48,11 @@ public interface DirectMessageRepository extends JpaRepository<DirectMessage, Lo
     /** So tin chua doc tu MOT nguoi cu the. */
     long countByRecipientIdAndSenderIdAndReadAtIsNull(long recipientId, long senderId);
 
-    /** So tin chua doc tu MOT nguoi, chi tinh tin moi hon moc :since (null = tinh het). */
+    /** So tin chua doc tu MOT nguoi, chi tinh tin moi hon moc :since. */
     @Query("""
             SELECT COUNT(m) FROM DirectMessage m
             WHERE m.recipient.id = :me AND m.sender.id = :other AND m.readAt IS NULL
-              AND (:since IS NULL OR m.createdAt > :since)
+              AND m.createdAt > :since
             """)
     long countUnreadSince(@Param("me") long me, @Param("other") long other, @Param("since") Instant since);
 

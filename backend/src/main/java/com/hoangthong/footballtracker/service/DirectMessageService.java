@@ -270,7 +270,9 @@ public class DirectMessageService {
                 continue;
             }
             boolean fromMe = last.getSender().getId().equals(me.getId());
-            long unread = repo.countUnreadSince(me.getId(), partnerId, cleared);
+            long unread = cleared == null
+                    ? repo.countByRecipientIdAndSenderIdAndReadAtIsNull(me.getId(), partnerId)
+                    : repo.countUnreadSince(me.getId(), partnerId, cleared);
             out.add(new DirectMessageDto.Conversation(
                     partner.getId(),
                     partner.displayNameOrFallback(),
