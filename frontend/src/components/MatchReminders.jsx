@@ -12,7 +12,15 @@ import Avatar from './Avatar'
  * nhac nho. Danh sach ben trong van hien du 7 ngay.
  */
 const BADGE_WINDOW_HOURS = 48
-const REFRESH_MS = 10 * 60 * 1000
+/*
+ * Hai nhip goi lai, tach de "nhanh ma van nhe":
+ * - FAST (10s): viec huong THANG den minh, muon thay gan nhu ngay - nhac @, binh luan /
+ *   tra loi / cam xuc bai minh, loi moi ket ban, duoc chap nhan.
+ * - SLOW (60s): thu it doi - nhac tran, admin go bai, "nhat tuan", huy hieu.
+ * Deu doc DB (khong ton han muc API), va deu dung khi tab an.
+ */
+const FAST_MS = 10 * 1000
+const SLOW_MS = 60 * 1000
 const SEEN_KEY = 'ft_seen_matches'
 
 /*
@@ -98,25 +106,31 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
    * Khong co no thi sau khi ban minh vua dong y, phai doi toi 10 phut hoac tai lai trang
    * moi thay thong bao - bam mo chuong khong lam gi ca.
    */
-  const load = useCallback(() => {
+  // Nhom NHANH (10s): viec huong thang den minh. Hong thi im lang, khong lam phien.
+  const loadFast = useCallback(() => {
     if (!token) return
     const opts = { headers: authHeaders(token) }
-    fetch(`${API_BASE}/favorites/upcoming`, opts)
+    fetch(`${API_BASE}/forum/notifications`, opts)
       .then((res) => (res.ok ? res.json() : []))
-      .then(setMatches)
-      // Nhac nho chi la tro giup: hong thi im lang, khong lam phien nguoi dung
+      .then(setNotifs)
       .catch(() => {})
     fetch(`${API_BASE}/friends/requests`, opts)
       .then((res) => (res.ok ? res.json() : []))
       .then(setRequests)
       .catch(() => {})
-    fetch(`${API_BASE}/forum/notifications`, opts)
-      .then((res) => (res.ok ? res.json() : []))
-      .then(setNotifs)
-      .catch(() => {})
     fetch(`${API_BASE}/friends/accepted`, opts)
       .then((res) => (res.ok ? res.json() : []))
       .then(setAccepted)
+      .catch(() => {})
+  }, [token])
+
+  // Nhom CHAM (60s): thu it doi.
+  const loadSlow = useCallback(() => {
+    if (!token) return
+    const opts = { headers: authHeaders(token) }
+    fetch(`${API_BASE}/favorites/upcoming`, opts)
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setMatches)
       .catch(() => {})
     fetch(`${API_BASE}/forum/moderation-notices`, opts)
       .then((res) => (res.ok ? res.json() : []))
@@ -137,10 +151,12 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
       setMatches([])
       return undefined
     }
-    load()
-    const timer = setInterval(load, REFRESH_MS)
-    return () => clearInterval(timer)
-  }, [token, load])
+    loadFast()
+    loadSlow()
+    const fast = setInterval(() => { if (!document.hidden) loadFast() }, FAST_MS)
+    const slow = setInterval(() => { if (!document.hidden) loadSlow() }, SLOW_MS)
+    return () => { clearInterval(fast); clearInterval(slow) }
+  }, [token, loadFast, loadSlow])
 
   if (!token) {
     return null
@@ -448,7 +464,8 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
           const next = !open
           setOpen(next)
           if (next) {
-            load() // tai lai ngay de thay hoat dong vua xay ra, khong doi chu ky 10 phut
+            loadFast() // tai lai ngay de thay hoat dong vua xay ra, khong doi het chu ky
+            loadSlow()
             setNewAtOpen(new Set(matches.filter((m) => !seen.has(m.matchId)).map((m) => m.matchId)))
             markAllSeen()
             setNotifSeenAtOpen(notifSeen)
