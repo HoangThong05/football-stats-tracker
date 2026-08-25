@@ -3215,6 +3215,18 @@ video.ft-post-image {
 .ft-online-dot-away { background: var(--bs-secondary-color, #9ca3af); }
 /* Cham xanh cua chinh minh o avatar header (nho hon) */
 .ft-user-online { width: 9px; height: 9px; min-width: 0; min-height: 0; }
+/* Cham xanh tren avatar trang ho so cua chinh minh (goc tren-phai, tranh nut may anh o duoi) */
+.ft-profile-avatar-wrap { position: relative; display: inline-block; }
+.ft-profile-online {
+  top: 8px;
+  right: 8px;
+  bottom: auto;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  border-width: 3px;
+}
 .ft-online-text {
   font-size: 0.72rem;
   color: #22c55e;
