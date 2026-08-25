@@ -26,6 +26,7 @@ const NOTIF_SEEN_KEY = 'ft_forum_notif_seen'
 const NOTIF_TEXT = {
   COMMENT: 'notif_comment', REPLY: 'notif_reply',
   REACT_POST: 'notif_react_post', REACT_COMMENT: 'notif_react_comment',
+  MENTION: 'notif_mention',
   LIKE: 'notif_react_post', // du lieu cu (neu con) coi nhu tha cam xuc bai viet
 }
 

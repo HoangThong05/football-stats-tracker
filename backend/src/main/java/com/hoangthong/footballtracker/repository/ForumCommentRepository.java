@@ -53,6 +53,23 @@ public interface ForumCommentRepository extends JpaRepository<ForumComment, Long
     List<ForumComment> findForViewer(@Param("viewerId") Long viewerId,
                                      org.springframework.data.domain.Pageable pageable);
 
+    /**
+     * Binh luan NHAC den nguoi xem (@) - do nguoi khac viet, bai chua bi an.
+     * pattern la '%(uid:&lt;id&gt;)%' - phan dac trung cua token @[Ten](uid:ID).
+     */
+    @Query("""
+            SELECT c FROM ForumComment c
+            JOIN FETCH c.author
+            JOIN FETCH c.post p
+            JOIN FETCH p.author
+            WHERE c.author.id <> :viewerId
+              AND p.hidden = false
+              AND c.content LIKE :pattern
+            ORDER BY c.createdAt DESC
+            """)
+    List<ForumComment> findMentioning(@Param("viewerId") long viewerId, @Param("pattern") String pattern,
+                                      org.springframework.data.domain.Pageable pageable);
+
     void deleteByPostId(Long postId);
 
     /** Cac tra loi cua mot binh luan goc - xoa binh luan goc phai keo theo chung. */

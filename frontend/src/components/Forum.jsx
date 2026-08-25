@@ -248,13 +248,15 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
   /** O sua dung chung cho bai va binh luan - khac nhau moi so dong va gioi han ky tu. */
   const editBox = (rows, maxLength) => (
     <div className="ft-edit-box">
-      <textarea
+      <MentionInput
+        as="textarea"
+        token={token}
         className="form-control"
         rows={rows}
         maxLength={maxLength}
         value={editing.text}
         autoFocus
-        onChange={(e) => setEditing((v) => ({ ...v, text: e.target.value }))}
+        onChange={(val) => setEditing((v) => ({ ...v, text: val }))}
       />
       <div className="d-flex gap-2 mt-2">
         <button type="button" className="btn btn-sm btn-success"

@@ -531,6 +531,31 @@ public class ForumService {
                     r.getCreatedAt()));
         }
 
+        // Bai / binh luan NHAC den minh (@)
+        String mentionPattern = "%(uid:" + viewer.getId() + ")%";
+        for (ForumPost p : postRepo.findMentioning(viewer.getId(), mentionPattern, page)) {
+            all.add(new ForumDto.Notification(
+                    "MENTION",
+                    p.getId(),
+                    p.getAuthor().getId(),
+                    p.getAuthor().displayNameOrFallback(),
+                    p.getAuthor().getAvatarUrl(),
+                    excerpt(p.getContent()),
+                    null,
+                    p.getCreatedAt()));
+        }
+        for (ForumComment c : commentRepo.findMentioning(viewer.getId(), mentionPattern, page)) {
+            all.add(new ForumDto.Notification(
+                    "MENTION",
+                    c.getPost().getId(),
+                    c.getAuthor().getId(),
+                    c.getAuthor().displayNameOrFallback(),
+                    c.getAuthor().getAvatarUrl(),
+                    excerpt(c.getContent()),
+                    null,
+                    c.getCreatedAt()));
+        }
+
         all.sort(java.util.Comparator.comparing(ForumDto.Notification::createdAt).reversed());
         return all.size() > NOTIFICATION_LIMIT ? List.copyOf(all.subList(0, NOTIFICATION_LIMIT)) : all;
     }

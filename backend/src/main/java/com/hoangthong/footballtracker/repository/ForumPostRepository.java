@@ -18,6 +18,22 @@ public interface ForumPostRepository extends JpaRepository<ForumPost, Long> {
             """)
     List<ForumPost> findVisible(Pageable pageable);
 
+    /**
+     * Bai viet NHAC den nguoi xem (@) - do nguoi khac viet, chua bi an.
+     * pattern la '%(uid:&lt;id&gt;)%' - phan dac trung cua token @[Ten](uid:ID).
+     */
+    @Query("""
+            SELECT p FROM ForumPost p
+            JOIN FETCH p.author
+            WHERE p.hidden = false
+              AND p.author.id <> :viewerId
+              AND p.content LIKE :pattern
+            ORDER BY p.createdAt DESC
+            """)
+    List<ForumPost> findMentioning(@org.springframework.data.repository.query.Param("viewerId") long viewerId,
+                                   @org.springframework.data.repository.query.Param("pattern") String pattern,
+                                   Pageable pageable);
+
     /** So bai moi ke tu moc thoi gian, khong tinh bai cua chinh nguoi xem. */
     @org.springframework.data.jpa.repository.Query("""
             SELECT COUNT(p) FROM ForumPost p
