@@ -10,6 +10,8 @@ export default function AdminUsers({ token, onBack, currentEmail }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [changingId, setChangingId] = useState(null)
+  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState('ALL') // ALL | USER | ADMIN | LOCKED
 
   useEffect(() => {
     setLoading(true)
@@ -60,6 +62,14 @@ export default function AdminUsers({ token, onBack, currentEmail }) {
 
   const toggleEnabled = (user) => patchUser(user, 'enabled', { enabled: !user.enabled })
 
+  const filtered = users.filter((u) => {
+    if (query && !u.email.toLowerCase().includes(query.trim().toLowerCase())) return false
+    if (filter === 'ADMIN' && u.role !== 'ADMIN') return false
+    if (filter === 'USER' && u.role !== 'USER') return false
+    if (filter === 'LOCKED' && u.enabled) return false
+    return true
+  })
+
   return (
     <div className="ft-fade">
       <button className="btn btn-link ps-0 mb-3" onClick={onBack}>
@@ -78,6 +88,27 @@ export default function AdminUsers({ token, onBack, currentEmail }) {
       )}
 
       {!loading && !error && (
+        <>
+        <div className="d-flex flex-wrap gap-2 align-items-center mb-3">
+          <input
+            type="search"
+            className="form-control"
+            style={{ maxWidth: 280 }}
+            placeholder={t('admin_search_placeholder')}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <select className="form-select" style={{ maxWidth: 200 }}
+            value={filter} onChange={(e) => setFilter(e.target.value)}>
+            <option value="ALL">{t('admin_filter_all')}</option>
+            <option value="USER">{t('admin_filter_user')}</option>
+            <option value="ADMIN">{t('admin_filter_admin')}</option>
+            <option value="LOCKED">{t('admin_filter_locked')}</option>
+          </select>
+          <span className="text-secondary small ms-auto">
+            {filtered.length}/{users.length}
+          </span>
+        </div>
         <div className="ft-card table-responsive">
           <table className="table table-hover align-middle">
             <thead>
@@ -90,7 +121,7 @@ export default function AdminUsers({ token, onBack, currentEmail }) {
               </tr>
             </thead>
             <tbody className="ft-stagger">
-              {users.map((u) => {
+              {filtered.map((u) => {
                 const isSelf = u.email === currentEmail
                 return (
                   <tr key={u.id} className={u.enabled ? undefined : 'ft-admin-row-disabled'}>
@@ -137,6 +168,7 @@ export default function AdminUsers({ token, onBack, currentEmail }) {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   )

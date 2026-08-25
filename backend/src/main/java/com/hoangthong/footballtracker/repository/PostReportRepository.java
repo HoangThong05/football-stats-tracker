@@ -19,5 +19,15 @@ public interface PostReportRepository extends JpaRepository<PostReport, Long> {
             """)
     List<Object[]> countPendingByPost();
 
+    /** Cac bao cao cua bai CHUA bi an, moi nhat truoc - FETCH de gom thanh hang doi cho admin. */
+    @Query("""
+            SELECT r FROM PostReport r
+            JOIN FETCH r.post p
+            JOIN FETCH p.author
+            WHERE p.hidden = false
+            ORDER BY r.createdAt DESC
+            """)
+    List<PostReport> findPending();
+
     void deleteByPostId(Long postId);
 }

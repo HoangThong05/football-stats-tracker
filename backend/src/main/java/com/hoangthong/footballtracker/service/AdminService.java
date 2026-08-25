@@ -38,6 +38,9 @@ public class AdminService {
     private final CacheManager cacheManager;
     private final ApiQuotaTracker quotaTracker;
     private final MatchSyncService matchSyncService;
+    private final com.hoangthong.footballtracker.repository.PostReportRepository reportRepository;
+    private final com.hoangthong.footballtracker.repository.AnnouncementRepository announcementRepository;
+    private final WebPushService webPush;
 
     public AdminService(
             UserRepository userRepository,
@@ -46,7 +49,10 @@ public class AdminService {
             MatchFixtureRepository matchFixtureRepository,
             CacheManager cacheManager,
             ApiQuotaTracker quotaTracker,
-            MatchSyncService matchSyncService) {
+            MatchSyncService matchSyncService,
+            com.hoangthong.footballtracker.repository.PostReportRepository reportRepository,
+            com.hoangthong.footballtracker.repository.AnnouncementRepository announcementRepository,
+            WebPushService webPush) {
         this.userRepository = userRepository;
         this.predictionRepository = predictionRepository;
         this.miniLeagueRepository = miniLeagueRepository;
@@ -54,10 +60,90 @@ public class AdminService {
         this.cacheManager = cacheManager;
         this.quotaTracker = quotaTracker;
         this.matchSyncService = matchSyncService;
+        this.reportRepository = reportRepository;
+        this.announcementRepository = announcementRepository;
+        this.webPush = webPush;
+    }
+
+    /**
+     * ADMIN gui mot thong bao toan he thong: luu lai (hien tren chuong moi nguoi) + day push.
+     *
+     * @return so nguoi da duoc day push (co dang ky thiet bi)
+     */
+    @org.springframework.transaction.annotation.Transactional
+    public int broadcast(String rawTitle, String rawBody) {
+        String title = rawTitle == null ? "" : rawTitle.trim();
+        String body = rawBody == null ? "" : rawBody.trim();
+        if (title.isEmpty() || body.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "announcement_empty");
+        }
+        if (title.length() > com.hoangthong.footballtracker.entity.Announcement.MAX_TITLE
+                || body.length() > com.hoangthong.footballtracker.entity.Announcement.MAX_BODY) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "announcement_too_long");
+        }
+        announcementRepository.save(new com.hoangthong.footballtracker.entity.Announcement(title, body));
+        int sent = 0;
+        for (User u : userRepository.findAll()) {
+            webPush.sendToUser(u, "📢 " + title, body, "/");
+            sent++;
+        }
+        return sent;
     }
 
     public List<UserSummaryDto> listUsers() {
-        return userRepository.findAll().stream().map(AdminService::toDto).toList();
+        // Nguoi dang ky MOI nhat len dau (null createdAt xuong cuoi cho chac)
+        return userRepository.findAll().stream()
+                .sorted(java.util.Comparator.comparing(User::getCreatedAt,
+                        java.util.Comparator.nullsFirst(java.util.Comparator.naturalOrder())).reversed())
+                .map(AdminService::toDto).toList();
+    }
+
+    /** Hang doi kiem duyet: cac bai bi bao cao (chua bi an), nhieu bao cao len dau. */
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<com.hoangthong.footballtracker.dto.ReportedPostDto> reportedPosts() {
+        // Gom theo bai: dem so bao cao, gom ly do, giu lan bao cao moi nhat
+        java.util.Map<Long, java.util.List<com.hoangthong.footballtracker.entity.PostReport>> byPost =
+                new java.util.LinkedHashMap<>();
+        for (var r : reportRepository.findPending()) {
+            byPost.computeIfAbsent(r.getPost().getId(), k -> new java.util.ArrayList<>()).add(r);
+        }
+        List<com.hoangthong.footballtracker.dto.ReportedPostDto> out = new java.util.ArrayList<>();
+        for (var entry : byPost.entrySet()) {
+            var reports = entry.getValue();
+            var post = reports.get(0).getPost();
+            var reasons = reports.stream()
+                    .map(com.hoangthong.footballtracker.entity.PostReport::getReason)
+                    .filter(s -> s != null && !s.isBlank())
+                    .toList();
+            var last = reports.stream()
+                    .map(com.hoangthong.footballtracker.entity.PostReport::getCreatedAt)
+                    .max(java.util.Comparator.naturalOrder()).orElse(post.getCreatedAt());
+            out.add(new com.hoangthong.footballtracker.dto.ReportedPostDto(
+                    post.getId(),
+                    post.getAuthor().displayNameOrFallback(),
+                    post.getAuthor().getAvatarUrl(),
+                    reportExcerpt(post.getContent()),
+                    reports.size(),
+                    reasons,
+                    last.toString()));
+        }
+        out.sort(java.util.Comparator.comparingInt(
+                com.hoangthong.footballtracker.dto.ReportedPostDto::reportCount).reversed());
+        return out;
+    }
+
+    /** Bo qua bao cao cua mot bai (khong go bai) - xoa cac dong bao cao de no roi khoi hang doi. */
+    @org.springframework.transaction.annotation.Transactional
+    public void dismissReports(long postId) {
+        reportRepository.deleteByPostId(postId);
+    }
+
+    private static String reportExcerpt(String content) {
+        if (content == null || content.isBlank()) {
+            return "";
+        }
+        String flat = Mentions.toDisplay(content).strip().replaceAll("\\s+", " ");
+        return flat.length() <= 120 ? flat : flat.substring(0, 120) + "…";
     }
 
     /** So lieu tong quan + tinh trang han muc API, cho trang quan tri. */

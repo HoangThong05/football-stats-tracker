@@ -88,6 +88,8 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
   const [champions, setChampions] = useState([])
   // Huy hieu vua dat -> dong "chuc mung" tren chuong
   const [badgesEarned, setBadgesEarned] = useState([])
+  // Thong bao toan he thong do admin gui
+  const [announcements, setAnnouncements] = useState([])
   /*
    * Moc doc lay MOT LAN luc mo trang, khong doc lai localStorage o moi lan ve.
    * Doc lai thi ngay sau khi bam mo chuong moc se nhay len "bay gio" va cham xanh
@@ -144,6 +146,10 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
       .then((res) => (res.ok ? res.json() : []))
       .then(setBadgesEarned)
       .catch(() => {})
+    fetch(`${API_BASE}/announcements`, opts)
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setAnnouncements)
+      .catch(() => {})
   }, [token])
 
   useEffect(() => {
@@ -186,10 +192,11 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
   const unreadMod = modNotices.filter((m) => !notifSeen || m.createdAt > notifSeen)
   const unreadChamp = champions.filter((c) => !notifSeen || c.awardedAt > notifSeen)
   const unreadBadges = badgesEarned.filter((b) => !notifSeen || b.earnedAt > notifSeen)
+  const unreadAnn = announcements.filter((a) => !notifSeen || a.createdAt > notifSeen)
 
   // Loi moi DEN luon duoc dem, khong tru theo "da xem"
   const badgeCount = soonCount + requests.length + unreadNotifs.length + unreadAccepted.length
-    + unreadMod.length + unreadChamp.length + unreadBadges.length
+    + unreadMod.length + unreadChamp.length + unreadBadges.length + unreadAnn.length
 
   const answer = async (userId, method, path) => {
     setBusy(true)
@@ -350,6 +357,23 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
     )
   }
 
+  /* Mot dong: thong bao toan he thong do admin gui. Khong bam. */
+  const renderAnnouncement = (a) => (
+    <div key={`ann-${a.id}`} className="ft-user-menu-item ft-notif-item" style={{ cursor: 'default' }}>
+      <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>📢</span>
+      <span style={{ minWidth: 0 }}>
+        <span className="d-block small fw-semibold">
+          {(!notifSeenAtOpen || a.createdAt > notifSeenAtOpen) && <span className="ft-rem-dot" />}
+          {a.title}
+        </span>
+        <span className="d-block small" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{a.body}</span>
+        <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
+          {relativeTime(a.createdAt, t, lang)}
+        </span>
+      </span>
+    </div>
+  )
+
   /* Mot dong: admin da go bai/cmt cua minh, kem ly do. Khong bam duoc (noi dung da mat). */
   const renderModNotice = (m, key) => (
     <div key={key} className="ft-user-menu-item ft-notif-item" style={{ cursor: 'default' }}>
@@ -447,6 +471,7 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
     ...modNotices.map((m, i) => ({ id: `mod-${m.createdAt}-${i}`, time: m.createdAt, node: renderModNotice(m, `mod-${m.createdAt}-${i}`) })),
     ...champions.map((c, i) => ({ id: `champ-${c.weekStart}-${i}`, time: c.awardedAt, node: renderChampion(c, `champ-${c.weekStart}-${i}`) })),
     ...badgesEarned.map((b) => ({ id: `badge-${b.code}`, time: b.earnedAt, node: renderBadgeEarned(b, `badge-${b.code}`) })),
+    ...announcements.map((a) => ({ id: `ann-${a.id}`, time: a.createdAt, node: renderAnnouncement(a) })),
     ...finished.map((m) => ({ id: `f-${m.matchId}`, time: m.utcDate, node: renderMatchRow(m) })),
   ].sort((a, b) => new Date(b.time) - new Date(a.time))
 

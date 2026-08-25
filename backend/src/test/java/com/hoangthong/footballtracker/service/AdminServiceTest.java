@@ -45,7 +45,10 @@ class AdminServiceTest {
                 mock(MatchFixtureRepository.class),
                 mock(CacheManager.class),
                 new ApiQuotaTracker(),
-                mock(MatchSyncService.class));
+                mock(MatchSyncService.class),
+                mock(com.hoangthong.footballtracker.repository.PostReportRepository.class),
+                mock(com.hoangthong.footballtracker.repository.AnnouncementRepository.class),
+                mock(WebPushService.class));
     }
 
     private User user(long id, String email, Role role) {

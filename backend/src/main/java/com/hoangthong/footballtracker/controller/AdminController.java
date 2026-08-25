@@ -5,6 +5,7 @@ import com.hoangthong.footballtracker.dto.UserSummaryDto;
 import com.hoangthong.footballtracker.service.AdminService;
 import org.springframework.http.HttpStatus;
 import java.security.Principal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,6 +42,25 @@ public class AdminController {
     @GetMapping("/stats")
     public AdminStatsDto stats() {
         return adminService.stats();
+    }
+
+    /** Hang doi kiem duyet: cac bai bi bao cao (chua bi an). */
+    @GetMapping("/reports")
+    public List<com.hoangthong.footballtracker.dto.ReportedPostDto> reports() {
+        return adminService.reportedPosts();
+    }
+
+    /** Bo qua bao cao cua mot bai (khong go bai). */
+    @DeleteMapping("/reports/{postId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void dismissReports(@PathVariable long postId) {
+        adminService.dismissReports(postId);
+    }
+
+    /** Gui thong bao toan he thong. Body: { "title": "...", "body": "..." }. */
+    @PostMapping("/broadcast")
+    public Map<String, Integer> broadcast(@RequestBody Map<String, String> body) {
+        return Map.of("sent", adminService.broadcast(body.get("title"), body.get("body")));
     }
 
     /** Xoa cache doc tu football-data.org, khong cho het 30 phut TTL. */
