@@ -16,6 +16,20 @@ export function stripMentions(text) {
 }
 
 /**
+ * Tach noi dung THO thanh { text: '@Ten sach', picks: [{name,id}] }.
+ * Dung cho o nhap: hien @Ten cho nguoi doc, con id thi giu de dung lai token khi gui.
+ */
+export function parseTokens(raw) {
+  const picks = []
+  if (raw) {
+    const re = new RegExp(MENTION_RE)
+    let m
+    while ((m = re.exec(raw)) !== null) picks.push({ name: m[1], id: Number(m[2]) })
+  }
+  return { text: stripMentions(raw) || '', picks }
+}
+
+/**
  * Tach noi dung thanh cac doan van + cac the @Ten (bam vao mo ho so).
  * @param {string} text noi dung tho (con token)
  * @param {(userId:number)=>void} [onUser] bam vao mot luot nhac

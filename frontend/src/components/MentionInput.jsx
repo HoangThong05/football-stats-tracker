@@ -1,17 +1,37 @@
 import { useEffect, useRef, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
+import { parseTokens } from '../mentions'
 import Avatar from './Avatar'
 
 /*
  * O nhap co goi y nhac ten (@) - dung chung cho bai viet, binh luan, chat phong va tin nhan.
  *
- * Go '@' roi go ten -> hien danh sach BAN BE khop. Chon mot nguoi thi chen token
- * @[Ten](uid:ID) vao noi dung (xem mentions.jsx). Vi ten co the trung / co dau cach nen
- * phai chon tu goi y chu khong doan tu chu.
+ * Go '@' roi go ten -> hien danh sach BAN BE khop. Chon mot nguoi thi CHEN @Ten (sach) vao
+ * o nhap cho de doc, con ben trong dung lai token @[Ten](uid:ID) (xem mentions.jsx) khi gui
+ * - nho gan san id nen hien duoc link chuan du ten trung / co dau cach.
+ *
+ * value cha truyen vao la chuoi THO (co token). Component tu giu ban HIEN THI (@Ten) rieng,
+ * va bao onChange bang chuoi THO de cha luu / gui dung.
  */
 
 // Nho danh sach ban be theo token de khong goi lai moi lan mo o nhap
 let cache = { key: null, list: null }
+
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/** Dung lai chuoi THO tu ban hien thi: doi moi @Ten da chon thanh @[Ten](uid:ID). */
+function buildRaw(display, map) {
+  let raw = display
+  // Ten dai xu ly truoc de ten ngan khong an trong ten dai
+  const names = [...map.keys()].sort((a, b) => b.length - a.length)
+  for (const name of names) {
+    const id = map.get(name)
+    // @Ten phai o dau/sau khoang trang va khong phai tien to cua tu dai hon
+    const re = new RegExp(`(^|\\s)@${escapeRe(name)}(?=$|\\s|[^\\p{L}\\p{N}_])`, 'gu')
+    raw = raw.replace(re, `$1@[${name}](uid:${id})`)
+  }
+  return raw
+}
 
 export default function MentionInput({
   as = 'input', token, value, onChange, onKeyDown,
@@ -19,6 +39,8 @@ export default function MentionInput({
 }) {
   const innerRef = useRef(null)
   const ref = inputRef || innerRef
+  const mentionsRef = useRef(new Map()) // ten -> id cua nhung nguoi da chon
+  const [display, setDisplay] = useState('')
   const [friends, setFriends] = useState(cache.list || [])
   const [q, setQ] = useState(null) // { at, text } - doan '@...' dang go, null = khong mo goi y
   const [hi, setHi] = useState(0)
@@ -32,41 +54,56 @@ export default function MentionInput({
       .catch(() => { /* bo qua */ })
   }, [token])
 
+  // Dong bo khi value tu ngoai doi (reset '' sau khi gui, hoac nap noi dung de sua)
+  useEffect(() => {
+    if (value === buildRaw(display, mentionsRef.current)) return
+    const { text, picks } = parseTokens(value || '')
+    picks.forEach((p) => mentionsRef.current.set(p.name, p.id))
+    setDisplay(text)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
+
   const matches = q == null ? [] : friends
     .filter((f) => (f.name || '').toLowerCase().includes(q.text.toLowerCase()))
     .slice(0, 6)
   const open = q != null && matches.length > 0
 
-  // Tim doan '@...' ngay truoc con tro (dau '@' phai o dau hoac sau khoang trang)
+  // Tim doan '@...' ngay truoc con tro (dau '@' o dau/sau khoang trang, chua qua khoang trang)
   const detect = (val, caret) => {
     const upto = val.slice(0, caret)
     const at = upto.lastIndexOf('@')
     if (at < 0) return null
     if (at > 0 && !/\s/.test(upto[at - 1])) return null
     const text = upto.slice(at + 1)
-    if (/[\n@[\]]/.test(text) || text.length > 30) return null
+    if (/[\s@[\]]/.test(text) || text.length > 30) return null
     return { at, text }
   }
 
+  const emit = (nextDisplay) => onChange(buildRaw(nextDisplay, mentionsRef.current))
+
   const handleChange = (e) => {
-    const val = e.target.value
-    onChange(val)
-    const caret = e.target.selectionStart ?? val.length
-    setQ(detect(val, caret))
+    const next = e.target.value
+    setDisplay(next)
+    emit(next)
+    const caret = e.target.selectionStart ?? next.length
+    setQ(detect(next, caret))
     setHi(0)
   }
 
   const pick = (f) => {
     const el = ref.current
-    const caret = el && el.selectionStart != null ? el.selectionStart : value.length
-    const info = detect(value, caret) || q
+    const caret = el && el.selectionStart != null ? el.selectionStart : display.length
+    const info = detect(display, caret) || q
     if (!info) return
-    const before = value.slice(0, info.at)
-    const after = value.slice(caret)
-    const tokenStr = `@[${f.name}](uid:${f.userId}) `
-    onChange(before + tokenStr + after)
+    mentionsRef.current.set(f.name, f.userId)
+    const before = display.slice(0, info.at)
+    const after = display.slice(caret)
+    const insert = `@${f.name} `
+    const next = before + insert + after
+    setDisplay(next)
+    emit(next)
     setQ(null)
-    const pos = (before + tokenStr).length
+    const pos = (before + insert).length
     requestAnimationFrame(() => {
       if (el) { el.focus(); try { el.setSelectionRange(pos, pos) } catch { /* bo qua */ } }
     })
@@ -89,7 +126,7 @@ export default function MentionInput({
         ref={ref}
         className={className}
         placeholder={placeholder}
-        value={value}
+        value={display}
         maxLength={maxLength}
         rows={as === 'textarea' ? rows : undefined}
         autoFocus={autoFocus}
