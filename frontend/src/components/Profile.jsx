@@ -130,11 +130,8 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
           }} />
 
         <div className="ft-profile-id">
-          <span className="ft-profile-avatar-wrap">
-            <AvatarUpload token={token} name={displayName || userEmail} avatarUrl={avatarUrl}
-              onSaved={onAvatarSaved} />
-            {online && <span className="ft-online-dot ft-profile-online" title={t('presence_online')} />}
-          </span>
+          <AvatarUpload token={token} name={displayName || userEmail} avatarUrl={avatarUrl}
+            online={online} onSaved={onAvatarSaved} />
 
           <div className="ft-profile-id-text">
             <h3 className="h4 mb-0 text-truncate">
