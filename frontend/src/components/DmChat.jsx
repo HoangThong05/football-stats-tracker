@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
-import { imageUploadEnabled, uploadImage } from '../cloudinary'
+import { imageUploadEnabled, uploadMedia } from '../cloudinary'
 import { giphyEnabled } from '../giphy'
 import { REACTIONS, REACTION_EMOJI } from '../constants'
-import { relativeTime } from '../utils'
+import { relativeTime, isVideoUrl } from '../utils'
 import Avatar from './Avatar'
 import GifPicker from './GifPicker'
 import Loading from './Loading'
@@ -103,7 +103,7 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
     if (!file) return
     setSending(true)
     try {
-      await post({ imageUrl: await uploadImage(file), replyToId: replyId() })
+      await post({ imageUrl: await uploadMedia(file), replyToId: replyId() })
       setReplyTo(null)
     } catch {
       /* bo qua */
@@ -238,8 +238,13 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
                 <div className="ft-dm-bubble-wrap">
                   <div className="ft-dm-bubble" title={relativeTime(m.createdAt, t, lang)}>
                     {m.content && <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{m.content}</span>}
-                    {m.imageUrl && <img src={m.imageUrl} alt="" loading="lazy" className="ft-dm-image"
-                      onLoad={() => { if (stick.current) scrollToBottom() }} />}
+                    {m.imageUrl && (isVideoUrl(m.imageUrl) ? (
+                      <video src={m.imageUrl} controls preload="metadata" className="ft-dm-image"
+                        onLoadedMetadata={() => { if (stick.current) scrollToBottom() }} />
+                    ) : (
+                      <img src={m.imageUrl} alt="" loading="lazy" className="ft-dm-image"
+                        onLoad={() => { if (stick.current) scrollToBottom() }} />
+                    ))}
                   </div>
 
                   <div className="ft-dm-tools">
@@ -293,7 +298,8 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
               onClick={() => fileRef.current?.click()} disabled={sending} title={t('forum_add_image')}>
               🖼️
             </button>
-            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+            <input ref={fileRef} type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
               className="d-none" onChange={sendImage} />
           </>
         )}
