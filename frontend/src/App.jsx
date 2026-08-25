@@ -566,7 +566,7 @@ export default function App() {
                 {userEmail && (
                   <button className="ft-nav-btn ft-nav-btn-icon" style={{ position: "relative" }}
                     onClick={() => openMessages()} title={t("dm_nav")} aria-label={t("dm_nav")}>
-                    💬
+                    ✉️
                     {dmUnread.count > 0 && <span className="ft-rem-badge">{dmUnread.count}</span>}
                   </button>
                 )}

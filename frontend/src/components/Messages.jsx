@@ -18,6 +18,18 @@ export default function Messages({ token, myName, myAvatar, initialUser, onBack,
   const { t, lang } = useTranslation()
   const [list, setList] = useState(null)
   const [open, setOpen] = useState(initialUser || null)
+  const [composing, setComposing] = useState(false)
+  const [friends, setFriends] = useState(null)
+
+  // Mo che do "chon ban de nhan" -> tai danh sach ban be
+  const openCompose = () => {
+    setComposing(true)
+    setFriends(null)
+    fetch(`${API_BASE}/friends`, { headers: authHeaders(token) })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setFriends(Array.isArray(data) ? data : []))
+      .catch(() => setFriends([]))
+  }
 
   const load = useCallback(() => {
     if (!token) return
@@ -46,10 +58,43 @@ export default function Messages({ token, myName, myAvatar, initialUser, onBack,
     )
   }
 
+  // Chon mot nguoi ban de bat dau nhan tin
+  if (composing) {
+    return (
+      <div className="ft-fade">
+        <button className="btn btn-link ps-0 mb-3" onClick={() => setComposing(false)}>{t('back')}</button>
+        <h3 className="h5 mb-3">✉️ {t('dm_new')}</h3>
+        {friends === null ? (
+          <Loading rows={4} />
+        ) : friends.length === 0 ? (
+          <p className="text-secondary">{t('dm_no_friends')}</p>
+        ) : (
+          <div className="ft-card">
+            <ul className="list-group list-group-flush">
+              {friends.map((f) => (
+                <li key={f.userId} className="list-group-item d-flex align-items-center gap-3 px-3 py-2 ft-dm-conv"
+                  role="button"
+                  onClick={() => { setComposing(false); setOpen({ userId: f.userId, name: f.name, avatarUrl: f.avatarUrl }) }}>
+                  <Avatar name={f.name} src={f.avatarUrl} size={40} />
+                  <span className="fw-medium text-truncate">{f.name}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="ft-fade">
       <button className="btn btn-link ps-0 mb-3" onClick={onBack}>{t('back')}</button>
-      <h3 className="h5 mb-3">💬 {t('dm_title')}</h3>
+      <div className="d-flex align-items-center justify-content-between mb-3">
+        <h3 className="h5 mb-0">✉️ {t('dm_title')}</h3>
+        <button type="button" className="btn btn-sm btn-success" onClick={openCompose}>
+          ✏️ {t('dm_new')}
+        </button>
+      </div>
 
       {list === null ? (
         <Loading rows={4} />
