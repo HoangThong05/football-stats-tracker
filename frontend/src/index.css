@@ -3032,14 +3032,16 @@ video.ft-post-image {
   position: relative;
   border: 0;
   padding: 0;
+  /* Meo padding: cao = 100% be ngang -> o VUONG, chac chan chay o moi trinh duyet ke ca
+     tren the <button> (noi aspect-ratio hay bi bo qua). height:0 de anh khong day cao them. */
+  height: 0;
+  padding-bottom: 100%;
   background: var(--bs-tertiary-bg);
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
-  aspect-ratio: 1;
 }
-/* Anh absolute lap day: khong nam trong dong chay nen KHONG day chieu cao the -> moi thang
-   giu dung o vuong theo aspect-ratio, cac o khong con cao lech/chong len nhau */
+/* Anh phu tuyet doi trong o vuong, cat kieu cover */
 .ft-gif-item img {
   position: absolute;
   inset: 0;
