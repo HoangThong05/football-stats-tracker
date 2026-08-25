@@ -69,7 +69,8 @@ class RoomPicksTest {
                 .thenReturn(List.of(new LeagueMember(league, huy), new LeagueMember(league, thong)));
 
         service = new MiniLeagueService(leagueRepo, memberRepo, userRepo, predictionRepo,
-                mock(com.hoangthong.footballtracker.repository.RoomMessageRepository.class));
+                mock(com.hoangthong.footballtracker.repository.RoomMessageRepository.class),
+                mock(MentionService.class));
     }
 
     private Prediction pick(User u, MatchFixture m, int home, int away, Integer points) {

@@ -61,7 +61,7 @@ class ForumServiceTest {
         when(userRepo.findByEmail("admin@example.com")).thenReturn(Optional.of(admin));
 
         service = new ForumService(postRepo, commentRepo, likeRepo, reportRepo, userRepo, moderationRepo, commentReactionRepo,
-                mock(WebPushService.class));
+                mock(WebPushService.class), mock(MentionService.class));
     }
 
     private ForumPost baiCuaAn() {

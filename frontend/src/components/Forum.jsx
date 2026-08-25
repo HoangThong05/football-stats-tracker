@@ -11,8 +11,10 @@ import ReactionsModal from './ReactionsModal'
 import GifPicker from './GifPicker'
 import Lightbox from './Lightbox'
 import Loading from './Loading'
+import MentionInput from './MentionInput'
 import { toast } from '../ui/toast'
 import { confirmDialog } from './ConfirmDialog'
+import { renderMentions } from '../mentions'
 
 const MAX_POST = 2000
 const MAX_COMMENT = 1000
@@ -329,7 +331,7 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                 {c.authorIsAdmin && <span className="ft-admin-tag ms-1">{t('role_admin')}</span>}
                 <BadgeFlair code={c.authorBadge} />
               </button>
-              {c.content && <span className="small" style={{ overflowWrap: 'anywhere' }}>{c.content}</span>}
+              {c.content && <span className="small" style={{ overflowWrap: 'anywhere' }}>{renderMentions(c.content, onSelectUser)}</span>}
               {c.imageUrl && (
                 <img src={c.imageUrl} alt="" loading="lazy" className="ft-comment-image"
                   role="button" onClick={() => setLightbox(c.imageUrl)} />
@@ -398,13 +400,15 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
         <form onSubmit={submitPost} className="ft-card p-3 mb-4">
           <div className="d-flex gap-2">
             <Avatar name={myName} src={myAvatar} size={40} />
-            <textarea
+            <MentionInput
+              as="textarea"
+              token={token}
               className="form-control ft-composer"
               rows={2}
               maxLength={MAX_POST}
               placeholder={t('forum_placeholder').replace('{name}', myName || '')}
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={setText}
             />
           </div>
 
@@ -489,7 +493,7 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
             ) : (
               p.content && (
                 <p className="px-3 mb-2 ft-post-text" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
-                  {p.content}
+                  {renderMentions(p.content, onSelectUser)}
                 </p>
               )
             )}
@@ -566,13 +570,16 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                   )}
                   <div className="d-flex gap-2 align-items-center">
                     <Avatar name={myName} src={myAvatar} size={28} />
-                    <input
+                    <MentionInput
+                      as="input"
+                      token={token}
                       className="form-control form-control-sm rounded-pill"
                       maxLength={MAX_COMMENT}
                       placeholder={t('forum_comment_placeholder')}
                       value={commentText[p.id] || ''}
                       autoFocus
-                      onChange={(e) => setCommentText((m) => ({ ...m, [p.id]: e.target.value }))}
+                      dropUp
+                      onChange={(val) => setCommentText((m) => ({ ...m, [p.id]: val }))}
                       onKeyDown={(e) => e.key === 'Enter' && !e.repeat && submitComment(p.id)}
                     />
                     {giphyEnabled() && (

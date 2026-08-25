@@ -304,7 +304,7 @@ public class DirectMessageService {
     }
 
     private static String excerpt(String text) {
-        String flat = text.strip().replaceAll("\\s+", " ");
+        String flat = Mentions.toDisplay(text).strip().replaceAll("\\s+", " ");
         return flat.length() <= PREVIEW_LEN ? flat : flat.substring(0, PREVIEW_LEN) + "…";
     }
 

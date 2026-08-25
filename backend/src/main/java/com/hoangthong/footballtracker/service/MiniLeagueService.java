@@ -26,6 +26,7 @@ public class MiniLeagueService {
     private final UserRepository userRepo;
     private final com.hoangthong.footballtracker.repository.PredictionRepository predictionRepo;
     private final com.hoangthong.footballtracker.repository.RoomMessageRepository messageRepo;
+    private final MentionService mentionService;
 
     /** So tin gan nhat tra ve moi lan - du cho mot khung chat, khong keo ca lich su. */
     private static final int MESSAGE_LIMIT = 50;
@@ -37,12 +38,14 @@ public class MiniLeagueService {
                               LeagueMemberRepository memberRepo,
                               UserRepository userRepo,
                               com.hoangthong.footballtracker.repository.PredictionRepository predictionRepo,
-                              com.hoangthong.footballtracker.repository.RoomMessageRepository messageRepo) {
+                              com.hoangthong.footballtracker.repository.RoomMessageRepository messageRepo,
+                              MentionService mentionService) {
         this.messageRepo = messageRepo;
         this.leagueRepo = leagueRepo;
         this.memberRepo = memberRepo;
         this.userRepo = userRepo;
         this.predictionRepo = predictionRepo;
+        this.mentionService = mentionService;
     }
 
     /**
@@ -192,9 +195,13 @@ public class MiniLeagueService {
         if (content.length() > com.hoangthong.footballtracker.entity.RoomMessage.MAX_LENGTH) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "message_too_long");
         }
-        var msg = new com.hoangthong.footballtracker.entity.RoomMessage(league, getUser(email), content);
+        User author = getUser(email);
+        var msg = new com.hoangthong.footballtracker.entity.RoomMessage(league, author, content);
         msg.setImageUrl(image);
         messageRepo.save(msg);
+
+        // Bao cho ban be duoc nhac (@) trong tin - mo app (phong chua co deep-link rieng)
+        mentionService.notifyFriends(author, email, content, "phòng " + league.getName(), "/");
     }
 
     /**

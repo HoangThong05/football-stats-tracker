@@ -4,7 +4,9 @@ import { useTranslation } from '../i18n'
 import Avatar from './Avatar'
 import BadgeFlair from './BadgeFlair'
 import GifPicker from './GifPicker'
+import MentionInput from './MentionInput'
 import { giphyEnabled } from '../giphy'
+import { renderMentions } from '../mentions'
 
 const MAX_LENGTH = 500
 const REFRESH_MS = 15_000
@@ -138,7 +140,7 @@ export default function RoomChat({ token, leagueId, myUserId, onSelectUser }) {
                     )}
                     {m.content && (
                       <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
-                        {m.content}
+                        {renderMentions(m.content, onSelectUser)}
                       </span>
                     )}
                     {m.imageUrl && (
@@ -152,12 +154,15 @@ export default function RoomChat({ token, leagueId, myUserId, onSelectUser }) {
         </div>
 
         <form onSubmit={send} className="d-flex gap-2">
-          <input
+          <MentionInput
+            as="input"
+            token={token}
             className="form-control rounded-pill"
             placeholder={t('chat_placeholder')}
             value={text}
             maxLength={MAX_LENGTH}
-            onChange={(e) => setText(e.target.value)}
+            dropUp
+            onChange={setText}
           />
           {giphyEnabled() && (
             <button type="button" className="ft-gif-open-btn flex-shrink-0" onClick={() => setShowGif(true)}>

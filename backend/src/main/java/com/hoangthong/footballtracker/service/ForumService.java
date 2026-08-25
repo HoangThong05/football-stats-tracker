@@ -70,13 +70,14 @@ public class ForumService {
     private final com.hoangthong.footballtracker.repository.ModerationNoticeRepository moderationRepo;
     private final com.hoangthong.footballtracker.repository.CommentReactionRepository commentReactionRepo;
     private final WebPushService webPush;
+    private final MentionService mentionService;
 
     public ForumService(ForumPostRepository postRepo, ForumCommentRepository commentRepo,
                         PostLikeRepository likeRepo, PostReportRepository reportRepo,
                         UserRepository userRepo,
                         com.hoangthong.footballtracker.repository.ModerationNoticeRepository moderationRepo,
                         com.hoangthong.footballtracker.repository.CommentReactionRepository commentReactionRepo,
-                        WebPushService webPush) {
+                        WebPushService webPush, MentionService mentionService) {
         this.postRepo = postRepo;
         this.commentRepo = commentRepo;
         this.likeRepo = likeRepo;
@@ -85,6 +86,7 @@ public class ForumService {
         this.moderationRepo = moderationRepo;
         this.commentReactionRepo = commentReactionRepo;
         this.webPush = webPush;
+        this.mentionService = mentionService;
     }
 
     /** Duong dan mo dung bai trong app khi bam vao thong bao day. */
@@ -123,7 +125,10 @@ public class ForumService {
         if (content.length() > ForumPost.MAX_CONTENT) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "post_too_long");
         }
-        postRepo.save(new ForumPost(author, content, cleanImageUrl(imageUrl)));
+        ForumPost saved = postRepo.save(new ForumPost(author, content, cleanImageUrl(imageUrl)));
+        if (saved != null && saved.getId() != null) {
+            mentionService.notifyFriends(author, email, content, "bài viết", postUrl(saved.getId()));
+        }
     }
 
     /** Chi nhan duong dan Cloudinary - luat chung voi anh dai dien, xem {@link ImageUrl}. */
@@ -181,6 +186,7 @@ public class ForumService {
                         excerpt(content), postUrl(postId));
             }
         }
+        mentionService.notifyFriends(author, email, content, "bình luận", postUrl(postId));
     }
 
     /** Tha / doi / go cam xuc bai viet. Bam lai dung loai dang co = go. */
@@ -537,7 +543,8 @@ public class ForumService {
         // Phai la HAI gach cheo. Tu Java 15, "\s" trong chuoi Java la ky tu KHOANG
         // TRANG chu khong phai regex, nen mot gach cheo se thanh regex " +" - gop duoc
         // khoang trang nhung xuong dong trong bai van lot qua nguyen ven.
-        String flat = text.strip().replaceAll("\\s+", " ");
+        // Doi token nhac @[Ten](uid:ID) thanh @Ten cho van ban xem truoc / thong bao
+        String flat = Mentions.toDisplay(text).strip().replaceAll("\\s+", " ");
         return flat.length() <= EXCERPT_LENGTH ? flat : flat.substring(0, EXCERPT_LENGTH) + "…";
     }
 

@@ -8,7 +8,9 @@ import { relativeTime, isVideoUrl } from '../utils'
 import Avatar from './Avatar'
 import GifPicker from './GifPicker'
 import Loading from './Loading'
+import MentionInput from './MentionInput'
 import { confirmDialog } from './ConfirmDialog'
+import { renderMentions, stripMentions } from '../mentions'
 
 const MAX = 2000
 const REFRESH_MS = 8000
@@ -237,7 +239,7 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
                 )}
                 <div className="ft-dm-bubble-wrap">
                   <div className="ft-dm-bubble" title={relativeTime(m.createdAt, t, lang)}>
-                    {m.content && <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{m.content}</span>}
+                    {m.content && <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{renderMentions(m.content, onSelectUser)}</span>}
                     {m.imageUrl && (isVideoUrl(m.imageUrl) ? (
                       <video src={m.imageUrl} controls preload="metadata" className="ft-dm-image"
                         onLoadedMetadata={() => { if (stick.current) scrollToBottom() }} />
@@ -284,7 +286,7 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
         <div className="ft-dm-replybar">
           <span className="text-truncate">
             ↩ {t('forum_replying_to')} {replyTo.mine ? t('dm_you_prefix') : other.name}:{' '}
-            {replyTo.content || t('dm_sent_image')}
+            {stripMentions(replyTo.content) || t('dm_sent_image')}
           </span>
           <button type="button" className="ft-name-link flex-shrink-0"
             onClick={() => setReplyTo(null)} aria-label="X">✕</button>
@@ -309,12 +311,15 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
             {t('gif_btn')}
           </button>
         )}
-        <input
+        <MentionInput
+          as="input"
+          token={token}
           className="form-control rounded-pill"
           placeholder={t('dm_placeholder')}
           value={text}
           maxLength={MAX}
-          onChange={(e) => setText(e.target.value)}
+          dropUp
+          onChange={setText}
         />
         <button className="btn btn-success rounded-pill px-3 flex-shrink-0" disabled={sending || !text.trim()}>
           {t('chat_send')}
