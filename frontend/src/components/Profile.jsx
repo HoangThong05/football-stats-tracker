@@ -26,7 +26,7 @@ import PredictionPointsChart from './PredictionPointsChart'
  * thoang moi dung den mot lan, khong dang chiem cho ngay dau trang.
  */
 export default function Profile({ token, userEmail, hasPassword, viaGoogle, displayName,
-  avatarUrl, isAdmin, online, onAvatarSaved, onDisplayNameSaved, onSelectUser, favorites, onBack,
+  avatarUrl, isAdmin, onAvatarSaved, onDisplayNameSaved, onSelectUser, favorites, onBack,
   onSelectTeam, onGoToMiniLeague, onTokenRenewed }) {
   const { t } = useTranslation()
   const [leagues, setLeagues] = useState([])
@@ -131,7 +131,7 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
 
         <div className="ft-profile-id">
           <AvatarUpload token={token} name={displayName || userEmail} avatarUrl={avatarUrl}
-            online={online} onSaved={onAvatarSaved} />
+            onSaved={onAvatarSaved} />
 
           <div className="ft-profile-id-text">
             <h3 className="h4 mb-0 text-truncate">

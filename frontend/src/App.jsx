@@ -481,7 +481,6 @@ export default function App() {
       displayName={displayName}
       avatarUrl={avatarUrl}
       isAdmin={userRole === "ADMIN"}
-      online={myStatusOn}
       onAvatarSaved={handleAvatarSaved}
       onDisplayNameSaved={handleDisplayNameSaved}
       onSelectUser={goToUser}
