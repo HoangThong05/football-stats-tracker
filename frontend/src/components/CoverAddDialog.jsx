@@ -4,13 +4,13 @@ import { useTranslation } from '../i18n'
  * Hop chon anh bia kieu Discord: 2 o - "Tai len anh" va "Chon GIF".
  * Chi mo khi Giphy da bat (co key); chua co GIF thi CoverUpload mo thang hop chon file.
  */
-export default function CoverAddDialog({ onUpload, onGif, onClose }) {
+export default function CoverAddDialog({ title, onUpload, onGif, onClose }) {
   const { t } = useTranslation()
   return (
     <div className="ft-gif-overlay" onClick={onClose}>
       <div className="ft-cover-dialog" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
         <div className="ft-cover-dialog-head">
-          <span className="fw-bold">{t('cover_pick_title')}</span>
+          <span className="fw-bold">{title || t('cover_pick_title')}</span>
           <button type="button" className="ft-gif-close" aria-label="X" onClick={onClose}>✕</button>
         </div>
 

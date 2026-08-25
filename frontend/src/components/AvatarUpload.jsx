@@ -1,8 +1,11 @@
 import { useRef, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { imageUploadEnabled, uploadImage } from '../cloudinary'
+import { giphyEnabled } from '../giphy'
 import { useTranslation } from '../i18n'
 import Avatar from './Avatar'
+import GifPicker from './GifPicker'
+import CoverAddDialog from './CoverAddDialog'
 
 /**
  * Anh dai dien kem nut may anh de doi - dat o dau trang Ho so.
@@ -16,6 +19,8 @@ export default function AvatarUpload({ token, name, avatarUrl, onSaved, size = 1
   const fileRef = useRef(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
+  const [showGif, setShowGif] = useState(false)
+  const [showAdd, setShowAdd] = useState(false)
 
   // Ma loi tu cloudinary.js -> cau tieng nguoi dung doc duoc
   const errMap = {
@@ -59,10 +64,24 @@ export default function AvatarUpload({ token, name, avatarUrl, onSaved, size = 1
   }
 
   const remove = async () => {
-    setBusy(true) 
+    setBusy(true)
     setError(null)
     try {
       await save('')
+    } catch (err) {
+      setError(errMap[err.message] || err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Chon GIF xong (da la URL Cloudinary) -> luu lam anh dai dien
+  const onGifPick = async (url) => {
+    setShowGif(false)
+    setBusy(true)
+    setError(null)
+    try {
+      await save(url)
     } catch (err) {
       setError(errMap[err.message] || err.message)
     } finally {
@@ -84,7 +103,7 @@ export default function AvatarUpload({ token, name, avatarUrl, onSaved, size = 1
               disabled={busy}
               title={t('profile_avatar_change')}
               aria-label={t('profile_avatar_change')}
-              onClick={() => fileRef.current?.click()}
+              onClick={() => (giphyEnabled() ? setShowAdd(true) : fileRef.current?.click())}
             >
               {busy ? '…' : '📷'}
             </button>
@@ -107,6 +126,17 @@ export default function AvatarUpload({ token, name, avatarUrl, onSaved, size = 1
       )}
 
       {error && <div className="text-danger small text-center">{error}</div>}
+
+      {showAdd && (
+        <CoverAddDialog
+          title={t('avatar_pick_title')}
+          onClose={() => setShowAdd(false)}
+          onUpload={() => { setShowAdd(false); fileRef.current?.click() }}
+          onGif={() => { setShowAdd(false); setShowGif(true) }}
+        />
+      )}
+
+      {showGif && <GifPicker onPick={onGifPick} onClose={() => setShowGif(false)} />}
     </div>
   )
 }
