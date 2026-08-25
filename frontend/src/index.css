@@ -3271,16 +3271,30 @@ video.ft-post-image {
 
 /* Trich dan tin dang tra loi, phia tren bong bong */
 .ft-dm-quote {
+  display: block;
   max-width: 100%;
   margin-bottom: 2px;
   padding: 2px 8px;
+  border: 0;
   border-left: 3px solid var(--ft-accent);
+  border-radius: 4px;
+  background: none;
+  text-align: inherit;
   font-size: 0.75rem;
   color: var(--bs-secondary-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
 }
+.ft-dm-quote:hover { background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
+
+/* Nhay sang khi nhay toi tin duoc tra loi */
+@keyframes ft-dm-flash {
+  0%, 100% { background: transparent; }
+  30% { background: color-mix(in srgb, var(--ft-accent) 32%, transparent); }
+}
+.ft-dm-flash { animation: ft-dm-flash 1.3s ease; border-radius: 12px; }
 
 /* Nut cong cu (cam xuc / tra loi) - hien khi ro chuot vao tin */
 .ft-dm-tools {

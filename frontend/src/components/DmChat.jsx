@@ -55,6 +55,15 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
     if (el) el.scrollTop = el.scrollHeight
   }, [])
 
+  // Bam vao trich dan -> nhay toi tin goc va nhay sang
+  const jumpTo = (mid) => {
+    const el = scrollRef.current?.querySelector(`[data-mid="${mid}"]`)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    el.classList.add('ft-dm-flash')
+    setTimeout(() => el.classList.remove('ft-dm-flash'), 1300)
+  }
+
   // Cuon xuong cuoi khi co tin moi (neu dang o gan day). Layout effect de tranh nhay.
   useLayoutEffect(() => {
     if (stick.current) scrollToBottom()
@@ -215,16 +224,16 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
         ) : (
           messages.map((m) => (
             m.recalled ? (
-              <div key={m.id} className={`ft-dm-row ${m.mine ? 'mine' : ''}`}>
+              <div key={m.id} data-mid={m.id} className={`ft-dm-row ${m.mine ? 'mine' : ''}`}>
                 <div className="ft-dm-bubble ft-dm-recalled">🚫 {t('dm_recalled')}</div>
               </div>
             ) : (
-            <div key={m.id} className={`ft-dm-row ${m.mine ? 'mine' : ''}`}>
+            <div key={m.id} data-mid={m.id} className={`ft-dm-row ${m.mine ? 'mine' : ''}`}>
               <div className="ft-dm-msg">
                 {m.replyToId && (
-                  <div className="ft-dm-quote">
+                  <button type="button" className="ft-dm-quote" onClick={() => jumpTo(m.replyToId)}>
                     ↩ {m.replyToMine ? `${t('dm_you_prefix')} ` : ''}{m.replyToText}
-                  </div>
+                  </button>
                 )}
                 <div className="ft-dm-bubble-wrap">
                   <div className="ft-dm-bubble" title={relativeTime(m.createdAt, t, lang)}>
