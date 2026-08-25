@@ -620,6 +620,18 @@ body,
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
+/* Cham do bao tin nhan chua doc, o goc phai tren cua avatar tren thanh nav */
+.ft-user-dot {
+  position: absolute;
+  top: 1px;
+  left: 23px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #e0342b;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+}
+
 .ft-user-btn:hover {
   background: rgba(255, 255, 255, 0.16);
   border-color: rgba(255, 255, 255, 0.45);

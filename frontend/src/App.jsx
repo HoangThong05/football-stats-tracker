@@ -563,13 +563,6 @@ export default function App() {
               </div>
 
               <div className="ft-navbar-right">
-                {userEmail && (
-                  <button className="ft-nav-btn ft-nav-btn-icon" style={{ position: "relative" }}
-                    onClick={() => openMessages()} title={t("dm_nav")} aria-label={t("dm_nav")}>
-                    ✉️
-                    {dmUnread.count > 0 && <span className="ft-rem-badge">{dmUnread.count}</span>}
-                  </button>
-                )}
                 {/* Nhac tran cua doi dang theo doi - thay cho email nhac tran */}
                 <MatchReminders token={token} onSelectMatch={goToMatch} onSelectUser={goToUser}
                   onSelectPost={goToPost} />
@@ -589,6 +582,7 @@ export default function App() {
                      */}
                     <button
                       className="ft-user-btn"
+                      style={{ position: "relative" }}
                       onClick={() => setShowUserMenu((v) => !v)}
                       title={userEmail}
                     >
@@ -599,6 +593,8 @@ export default function App() {
                           userEmail.charAt(0).toUpperCase()
                         )}
                       </span>
+                      {/* Cham do khi co tin nhan chua doc - thay cho nut Tin nhan rieng */}
+                      {dmUnread.count > 0 && <span className="ft-user-dot" />}
                       {userRole === "ADMIN" && (
                         <span className="ft-user-role">ADMIN</span>
                       )}
@@ -610,6 +606,18 @@ export default function App() {
                         <div className="ft-user-menu-header" title={userEmail}>
                           {userEmail}
                         </div>
+                        <button
+                          className="ft-user-menu-item"
+                          onClick={() => {
+                            setShowUserMenu(false);
+                            openMessages();
+                          }}
+                        >
+                          ✉️ {t("dm_nav")}
+                          {dmUnread.count > 0 && (
+                            <span className="ft-tab-badge ms-2">{dmUnread.count}</span>
+                          )}
+                        </button>
                         <button
                           className="ft-user-menu-item"
                           onClick={() => {
