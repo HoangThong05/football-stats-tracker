@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import { imageUploadEnabled, uploadImage } from '../cloudinary'
@@ -38,18 +38,27 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
       .catch(() => setMessages([]))
   }, [token, other])
 
+  // Doi cuoc tro chuyen: xoa tin cu, bam lai xuong day
+  useEffect(() => {
+    stick.current = true
+    setMessages(null)
+  }, [other?.userId])
+
   useEffect(() => {
     load()
     const timer = setInterval(() => { if (!document.hidden) load() }, REFRESH_MS)
     return () => clearInterval(timer)
   }, [load])
 
-  // Cuon xuong cuoi khi co tin moi (neu dang o gan day)
-  useEffect(() => {
-    if (stick.current && scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-  }, [messages])
+  const scrollToBottom = useCallback(() => {
+    const el = scrollRef.current
+    if (el) el.scrollTop = el.scrollHeight
+  }, [])
+
+  // Cuon xuong cuoi khi co tin moi (neu dang o gan day). Layout effect de tranh nhay.
+  useLayoutEffect(() => {
+    if (stick.current) scrollToBottom()
+  }, [messages, scrollToBottom])
 
   const post = async (body) => {
     const res = await fetch(`${API_BASE}/messages/${other.userId}`, {
@@ -220,7 +229,8 @@ export default function DmChat({ token, other, myName, myAvatar, onBack, onSelec
                 <div className="ft-dm-bubble-wrap">
                   <div className="ft-dm-bubble" title={relativeTime(m.createdAt, t, lang)}>
                     {m.content && <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{m.content}</span>}
-                    {m.imageUrl && <img src={m.imageUrl} alt="" loading="lazy" className="ft-dm-image" />}
+                    {m.imageUrl && <img src={m.imageUrl} alt="" loading="lazy" className="ft-dm-image"
+                      onLoad={() => { if (stick.current) scrollToBottom() }} />}
                   </div>
 
                   <div className="ft-dm-tools">
