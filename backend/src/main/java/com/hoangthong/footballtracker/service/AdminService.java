@@ -79,7 +79,7 @@ public class AdminService {
      */
     public int refreshApiFootball() {
         int teams = mappingService.forceRefresh();
-        squadRepository.deleteBySportsDbTeamIdIsNull();
+        squadRepository.deleteAll(); // xoa het squad cache -> lan xem sau sync lai tuoi
         clearCaches();
         return teams;
     }

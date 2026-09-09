@@ -95,19 +95,23 @@ public class TeamService {
                                                      long teamId, String name, String shortName) {
         java.util.Map<String, String> byName = new java.util.HashMap<>();
         java.util.Map<String, String> bySurname = new java.util.HashMap<>();
+        List<TeamDetailDto.PlayerDto> afSquad;
         try {
-            for (TeamDetailDto.PlayerDto af : squadService.getSquad(teamId, name, shortName)) {
-                if (af.photoUrl() == null || af.name() == null) continue;
-                byName.putIfAbsent(norm(af.name()), af.photoUrl());
-                String sn = surname(af.name());
-                if (sn != null) bySurname.putIfAbsent(sn, af.photoUrl());
-            }
+            afSquad = squadService.getSquad(teamId, name, shortName);
         } catch (RuntimeException e) {
             log.warn("Khong ghep duoc anh cau thu cho doi {}: {}", teamId, e.getMessage());
             return fdSquad;
         }
+        for (TeamDetailDto.PlayerDto af : afSquad) {
+            if (af.photoUrl() == null || af.name() == null) continue;
+            byName.putIfAbsent(norm(af.name()), af.photoUrl());
+            String sn = surname(af.name());
+            if (sn != null) bySurname.putIfAbsent(sn, af.photoUrl());
+        }
         if (byName.isEmpty()) {
-            log.info("Ghep anh doi {}: API-Football tra 0 anh (chua map duoc / het han muc) -> giu avatar chu", teamId);
+            long withPhoto = afSquad.stream().filter(a -> a.photoUrl() != null).count();
+            log.info("Ghep anh doi {}: API-Football tra {} cau thu, {} co anh -> khong ghep duoc (giu avatar chu)",
+                    teamId, afSquad.size(), withPhoto);
             return fdSquad;
         }
 
