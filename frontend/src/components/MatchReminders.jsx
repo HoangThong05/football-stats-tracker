@@ -59,8 +59,10 @@ function loadSeen() {
  * Thay cho email nhac tran (da tat qua app.notify.email-enabled). Doc tu database
  * nen khong ton han muc API - goi lai dinh ky thoai mai.
  */
-export default function MatchReminders({ token, onSelectMatch, onSelectUser, onSelectPost }) {
+export default function MatchReminders({ token, myUserId, onSelectMatch, onSelectUser, onSelectPost }) {
   const { t, lang } = useTranslation()
+  // Huy hieu dang mo banner "chuc mung" (bam vao dong huy hieu trong chuong)
+  const [celebrate, setCelebrate] = useState(null)
   const [matches, setMatches] = useState([])
   const [open, setOpen] = useState(false)
   const [seen, setSeen] = useState(loadSeen)
@@ -349,7 +351,8 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
     const meta = BADGE_META[b.code]
     if (!meta) return null
     return (
-      <div key={key} className="ft-user-menu-item ft-notif-item" style={{ cursor: 'default' }}>
+      <button key={key} type="button" className="ft-user-menu-item ft-notif-item"
+        onClick={() => { setOpen(false); setCelebrate(b) }}>
         <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>{meta.icon}</span>
         <span style={{ minWidth: 0 }}>
           <span className="d-block small fw-semibold text-warning">
@@ -360,7 +363,7 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
             {relativeTime(b.earnedAt, t, lang)}
           </span>
         </span>
-      </div>
+      </button>
     )
   }
 
@@ -525,6 +528,31 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
           </div>
         </div>
       )}
+
+      {celebrate && (() => {
+        const meta = BADGE_META[celebrate.code]
+        if (!meta) return null
+        return (
+          <div className="ft-badge-celebrate-backdrop" onClick={() => setCelebrate(null)}>
+            <div className="ft-badge-celebrate ft-fade" onClick={(e) => e.stopPropagation()}>
+              <div className="ft-badge-celebrate-icon">{meta.icon}</div>
+              <div className="ft-badge-celebrate-title">🎉 {t('badge_congrats')} {t(meta.titleKey)}</div>
+              <div className="ft-badge-celebrate-desc">{t(meta.descKey)}</div>
+              <p className="text-secondary small mb-3">{t('badge_celebrate_hint')}</p>
+              <div className="d-flex gap-2 justify-content-center">
+                <button type="button" className="btn btn-sm btn-success"
+                  onClick={() => { setCelebrate(null); if (myUserId) onSelectUser(myUserId) }}>
+                  📌 {t('badge_celebrate_pin')}
+                </button>
+                <button type="button" className="btn btn-sm btn-outline-secondary"
+                  onClick={() => setCelebrate(null)}>
+                  {t('badge_celebrate_later')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

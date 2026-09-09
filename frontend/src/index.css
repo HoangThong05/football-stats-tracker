@@ -3216,6 +3216,44 @@ video.ft-post-image {
 .ft-online-dot-away { background: var(--bs-secondary-color, #9ca3af); }
 /* Cham xanh cua chinh minh o avatar header (nho hon) */
 .ft-user-online { width: 9px; height: 9px; min-width: 0; min-height: 0; }
+
+/* Banner chuc mung khi bam vao thong bao huy hieu trong chuong */
+.ft-badge-celebrate-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1080;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.5);
+}
+.ft-badge-celebrate {
+  width: 100%;
+  max-width: 340px;
+  padding: 24px 20px;
+  text-align: center;
+  background: var(--ft-surface);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+}
+.ft-badge-celebrate-icon {
+  font-size: 3.4rem;
+  line-height: 1;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
+}
+.ft-badge-celebrate-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ft-accent);
+  margin-bottom: 6px;
+}
+.ft-badge-celebrate-desc {
+  font-size: 0.9rem;
+  color: var(--bs-body-color);
+  margin-bottom: 10px;
+}
 /* Cham xanh tren avatar trang ho so cua chinh minh (goc duoi-phai, tren vong tron anh) */
 .ft-profile-avatar-wrap { position: relative; display: inline-block; }
 .ft-profile-online {
