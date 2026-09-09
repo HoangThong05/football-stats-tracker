@@ -16,6 +16,9 @@ export default function AccentPicker() {
     applyAccent(val)
   }
 
+  const isPreset = ACCENT_PRESETS.some((p) => (p.hex || '') === current)
+  const customActive = current && !isPreset
+
   return (
     <div className="ft-push-toggle">
       <div className="d-flex align-items-center gap-2 mb-2">
@@ -44,6 +47,16 @@ export default function AccentPicker() {
             </button>
           )
         })}
+
+        {/* Tu chon mau bat ky - mo bang mau day du cua trinh duyet */}
+        <label
+          className={`ft-accent-swatch ft-accent-custom${customActive ? ' active' : ''}`}
+          style={customActive ? { background: current } : undefined}
+          title={t('theme_accent_custom')}>
+          {customActive ? '✓' : '🎨'}
+          <input type="color" value={customActive ? current : '#22c55e'}
+            onChange={(e) => pick(e.target.value)} />
+        </label>
       </div>
     </div>
   )

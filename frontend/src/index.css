@@ -3241,6 +3241,25 @@ video.ft-post-image {
 }
 .ft-accent-swatch:hover { transform: scale(1.12); }
 .ft-accent-swatch.active { border-color: var(--bs-body-color); box-shadow: 0 0 0 3px var(--ft-accent-soft); }
+
+/* O tu chon mau: nen cau vong bao "chon mau bat ky", input color an trong suot ben tren */
+.ft-accent-custom {
+  position: relative;
+  overflow: hidden;
+  background: conic-gradient(from 0deg, #ef4444, #f59e0b, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.ft-accent-custom input[type="color"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
 .ft-accent-default {
   padding: 6px 12px;
   border-radius: 16px;
