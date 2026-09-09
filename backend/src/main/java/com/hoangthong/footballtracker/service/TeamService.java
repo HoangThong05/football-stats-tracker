@@ -106,15 +106,23 @@ public class TeamService {
             log.warn("Khong ghep duoc anh cau thu cho doi {}: {}", teamId, e.getMessage());
             return fdSquad;
         }
-        if (byName.isEmpty()) return fdSquad;
+        if (byName.isEmpty()) {
+            log.info("Ghep anh doi {}: API-Football tra 0 anh (chua map duoc / het han muc) -> giu avatar chu", teamId);
+            return fdSquad;
+        }
 
-        return fdSquad.stream().map(p -> {
+        int[] matched = {0};
+        List<TeamDetailDto.PlayerDto> out = fdSquad.stream().map(p -> {
             String photo = byName.get(norm(p.name()));
             if (photo == null) photo = bySurname.get(surname(p.name()));
             if (photo == null) return p;
+            matched[0]++;
             return new TeamDetailDto.PlayerDto(
                     p.id(), p.name(), p.position(), p.nationality(), photo, p.jerseyNumber(), p.age());
         }).toList();
+        log.info("Ghep anh doi {}: {}/{} cau thu co anh (API-Football co {} ten)",
+                teamId, matched[0], out.size(), byName.size());
+        return out;
     }
 
     /** Bo dau, thuong hoa, chi giu chu-so-khoang trang - de khop ten giua hai nguon. */
