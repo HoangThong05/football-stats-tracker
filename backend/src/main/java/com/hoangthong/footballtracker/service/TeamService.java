@@ -46,6 +46,9 @@ public class TeamService {
         if (squad.isEmpty()) {
             log.info("football-data.org khong co doi hinh cho doi {} -> thu API-Football", teamId);
             squad = squadService.getSquad(teamId, response.name(), response.shortName());
+        } else {
+            // football-data khong co anh -> ghep anh tu API-Football theo ten (best-effort)
+            squad = withPhotos(squad, teamId, response.name(), response.shortName());
         }
 
         return new TeamDetailDto(
@@ -79,6 +82,54 @@ public class TeamService {
                         ageFrom(p.dateOfBirth())
                 ))
                 .toList();
+    }
+
+    /**
+     * Ghep anh cau thu tu API-Football vao doi hinh football-data, doi chieu theo TEN.
+     *
+     * API-Football (qua TeamSquad, cache 7 ngay) co anh; hai nguon dung id khac nhau nen
+     * phai khop ten (bo dau, thuong hoa). Khop nguyen ten truoc, khong duoc thi thu theo HO.
+     * Loi/thieu thi giu nguyen (avatar chu cai) - khong bao gio lam vo trang doi.
+     */
+    private List<TeamDetailDto.PlayerDto> withPhotos(List<TeamDetailDto.PlayerDto> fdSquad,
+                                                     long teamId, String name, String shortName) {
+        java.util.Map<String, String> byName = new java.util.HashMap<>();
+        java.util.Map<String, String> bySurname = new java.util.HashMap<>();
+        try {
+            for (TeamDetailDto.PlayerDto af : squadService.getSquad(teamId, name, shortName)) {
+                if (af.photoUrl() == null || af.name() == null) continue;
+                byName.putIfAbsent(norm(af.name()), af.photoUrl());
+                String sn = surname(af.name());
+                if (sn != null) bySurname.putIfAbsent(sn, af.photoUrl());
+            }
+        } catch (RuntimeException e) {
+            log.warn("Khong ghep duoc anh cau thu cho doi {}: {}", teamId, e.getMessage());
+            return fdSquad;
+        }
+        if (byName.isEmpty()) return fdSquad;
+
+        return fdSquad.stream().map(p -> {
+            String photo = byName.get(norm(p.name()));
+            if (photo == null) photo = bySurname.get(surname(p.name()));
+            if (photo == null) return p;
+            return new TeamDetailDto.PlayerDto(
+                    p.id(), p.name(), p.position(), p.nationality(), photo, p.jerseyNumber(), p.age());
+        }).toList();
+    }
+
+    /** Bo dau, thuong hoa, chi giu chu-so-khoang trang - de khop ten giua hai nguon. */
+    private static String norm(String s) {
+        if (s == null) return "";
+        String d = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "");
+        return d.toLowerCase().replaceAll("[^a-z0-9 ]", " ").replaceAll("\\s+", " ").trim();
+    }
+
+    private static String surname(String s) {
+        String n = norm(s);
+        if (n.isEmpty()) return null;
+        String[] parts = n.split(" ");
+        return parts[parts.length - 1];
     }
 
     /** Ngay sinh dang "1998-03-21" -> tuoi. Tra null neu thieu/sai dinh dang. */

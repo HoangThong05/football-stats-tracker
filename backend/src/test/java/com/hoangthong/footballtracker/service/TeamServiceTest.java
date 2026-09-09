@@ -14,8 +14,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class TeamServiceTest {
@@ -41,22 +39,33 @@ class TeamServiceTest {
     }
 
     /**
-     * football-data.org tra ve doi hinh ngay trong request dang goi san (da kiem chung
-     * thuc te: Arsenal 29 cau thu). Phai dung luon, TUYET DOI khong goi them API-Football -
-     * do la thu da lam tai khoan API-Football bi khoa.
+     * football-data.org tra ve doi hinh ngay trong request (Arsenal 29 cau thu). GIU nguyen
+     * ten + quoc tich tu football-data; chi GHEP THEM anh tu API-Football theo ten.
+     *
+     * Luu y: nguon anh (squadService) co CACHE 7 ngay trong DB, nen moi doi chi cham
+     * API-Football toi da 1 lan/tuan - khac han kieu goi moi lan xem truoc day (tung lam
+     * khoa tai khoan). Loi/thieu anh thi giu avatar chu cai, khong lam vo trang.
      */
     @Test
-    void co_doi_hinh_tu_football_data_thi_dung_luon_khong_goi_API_Football() {
+    void co_doi_hinh_tu_football_data_thi_giu_ten_va_ghep_anh() {
         when(client.getTeam(57)).thenReturn(teamWith(List.of(
                 player(1, "Bukayo Saka", "2001-09-05"),
                 player(2, "Declan Rice", "1999-01-14"))));
+        when(squadService.getSquad(anyLong(), anyString(), anyString())).thenReturn(List.of(
+                new TeamDetailDto.PlayerDto(101, "B. Saka", "Midfield", null, "saka.png", 7, 22),
+                new TeamDetailDto.PlayerDto(102, "Declan Rice", "Midfield", null, "rice.png", 41, 25)));
 
         TeamDetailDto result = service.getTeam(57);
 
         assertThat(result.squad()).hasSize(2);
+        // Giu TEN va QUOC TICH cua football-data (khong bi API-Football ghi de)
         assertThat(result.squad()).extracting(TeamDetailDto.PlayerDto::name)
                 .containsExactly("Bukayo Saka", "Declan Rice");
-        verify(squadService, never()).getSquad(anyLong(), anyString(), anyString());
+        assertThat(result.squad()).extracting(TeamDetailDto.PlayerDto::nationality)
+                .containsExactly("England", "England");
+        // Rice khop nguyen ten -> co anh; Saka khop theo HO ("saka")
+        assertThat(result.squad().get(0).photoUrl()).isEqualTo("saka.png");
+        assertThat(result.squad().get(1).photoUrl()).isEqualTo("rice.png");
     }
 
     @Test
