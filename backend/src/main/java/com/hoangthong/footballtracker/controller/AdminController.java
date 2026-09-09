@@ -90,6 +90,12 @@ public class AdminController {
         adminService.syncMatchesNow();
     }
 
+    /** Lam moi nguon anh cau thu (build lai map API-Football ngay). Tra ve so doi map duoc. */
+    @PostMapping("/refresh-squads")
+    public Map<String, Integer> refreshSquads() {
+        return Map.of("teams", adminService.refreshApiFootball());
+    }
+
     /**
      * Doi vai tro nguoi dung. Body: { "role": "ADMIN" } hoac { "role": "USER" }.
      *

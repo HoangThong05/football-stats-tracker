@@ -41,6 +41,8 @@ public class AdminService {
     private final com.hoangthong.footballtracker.repository.PostReportRepository reportRepository;
     private final com.hoangthong.footballtracker.repository.AnnouncementRepository announcementRepository;
     private final WebPushService webPush;
+    private final ApiFootballTeamMappingService mappingService;
+    private final com.hoangthong.footballtracker.repository.TeamSquadRepository squadRepository;
 
     public AdminService(
             UserRepository userRepository,
@@ -52,7 +54,9 @@ public class AdminService {
             MatchSyncService matchSyncService,
             com.hoangthong.footballtracker.repository.PostReportRepository reportRepository,
             com.hoangthong.footballtracker.repository.AnnouncementRepository announcementRepository,
-            WebPushService webPush) {
+            WebPushService webPush,
+            ApiFootballTeamMappingService mappingService,
+            com.hoangthong.footballtracker.repository.TeamSquadRepository squadRepository) {
         this.userRepository = userRepository;
         this.predictionRepository = predictionRepository;
         this.miniLeagueRepository = miniLeagueRepository;
@@ -63,6 +67,21 @@ public class AdminService {
         this.reportRepository = reportRepository;
         this.announcementRepository = announcementRepository;
         this.webPush = webPush;
+        this.mappingService = mappingService;
+        this.squadRepository = squadRepository;
+    }
+
+    /**
+     * ADMIN lam moi nguon anh cau thu: build lai bang map API-Football NGAY (bo qua cooldown),
+     * xoa cac doi map hut de sync lai, va xoa cache doi. Dung sau khi doi API_FOOTBALL_KEY.
+     *
+     * @return so doi map duoc sau khi lam moi
+     */
+    public int refreshApiFootball() {
+        int teams = mappingService.forceRefresh();
+        squadRepository.deleteBySportsDbTeamIdIsNull();
+        clearCaches();
+        return teams;
     }
 
     /**

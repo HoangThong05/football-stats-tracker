@@ -141,6 +141,8 @@ export const translations = {
     admin_quota_never: 'chưa gọi lần nào',
     admin_clear_cache: '🗑 Xoá cache',
     admin_sync_now: '🔄 Đồng bộ trận ngay',
+    admin_refresh_squads: '🖼 Làm mới ảnh cầu thủ',
+    admin_refresh_squads_done: 'Đã map {n} đội từ API-Football. Mở lại đội hình để thấy ảnh (0 = key/hạn mức chưa ổn).',
     admin_cache_cleared: 'Đã xoá cache. Lần xem tiếp theo sẽ lấy dữ liệu mới.',
     admin_synced: 'Đã đồng bộ xong lịch thi đấu.',
     admin_ops_note:
@@ -724,6 +726,8 @@ export const translations = {
     admin_quota_never: 'no call yet',
     admin_clear_cache: '🗑 Clear cache',
     admin_sync_now: '🔄 Sync matches now',
+    admin_refresh_squads: '🖼 Refresh player photos',
+    admin_refresh_squads_done: 'Mapped {n} teams from API-Football. Reopen a squad to see photos (0 = key/quota not ready).',
     admin_cache_cleared: 'Cache cleared. The next view will fetch fresh data.',
     admin_synced: 'Fixtures synced.',
     admin_ops_note:

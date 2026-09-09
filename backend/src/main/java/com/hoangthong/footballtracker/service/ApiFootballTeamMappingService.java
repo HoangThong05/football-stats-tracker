@@ -143,6 +143,16 @@ public class ApiFootballTeamMappingService {
                 .orElse(true);
     }
 
+    /**
+     * ADMIN ep build lai bang map NGAY, BO QUA cooldown 6 gio.
+     * Dung sau khi doi API_FOOTBALL_KEY moi de khong phai cho het cooldown cua key cu (bi khoa).
+     * @return so doi map duoc sau khi lam moi
+     */
+    public synchronized int forceRefresh() {
+        refreshFromApi();
+        return nameToId.size();
+    }
+
     /** Goi API-Football lay ten + id doi cua 6 giai, roi luu ca vao DB lan RAM. */
     private void refreshFromApi() {
         Map<String, Long> map = new HashMap<>();

@@ -120,6 +120,25 @@ export default function AdminPanel({ token, section = 'overview' }) {
     loadReports()
   }
 
+  const refreshSquads = async () => {
+    setBusy('squads')
+    setMessage(null)
+    try {
+      const res = await fetch(`${API_BASE}/admin/refresh-squads`, {
+        method: 'POST', headers: authHeaders(token),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(`Loi ${res.status}`)
+      setMessage({ type: (d.teams ?? 0) > 0 ? 'ok' : 'err',
+        text: t('admin_refresh_squads_done').replace('{n}', d.teams ?? 0) })
+      loadStats()
+    } catch (e) {
+      setMessage({ type: 'err', text: e.message })
+    } finally {
+      setBusy(null)
+    }
+  }
+
   const runAction = (key, path, successKey) => {
     setBusy(key)
     setMessage(null)
@@ -178,6 +197,14 @@ export default function AdminPanel({ token, section = 'overview' }) {
           disabled={busy != null}
         >
           {busy === 'sync' ? t('auth_submitting') : t('admin_sync_now')}
+        </button>
+
+        <button
+          className="btn btn-sm btn-outline-secondary"
+          onClick={refreshSquads}
+          disabled={busy != null}
+        >
+          {busy === 'squads' ? t('auth_submitting') : t('admin_refresh_squads')}
         </button>
       </div>
 
