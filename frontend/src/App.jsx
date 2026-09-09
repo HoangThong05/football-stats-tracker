@@ -215,8 +215,11 @@ export default function App() {
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, []);
 
-  const loadViewData = () => {
-    setLoading(true);
+  // silent=true: lam moi ngam (vd sau khi dat du doan) - KHONG chop spinner, giu nguyen
+  // noi dung dang hien de khong bi khung + chay lai hieu ung.
+  const loadViewData = (opts = {}) => {
+    const silent = opts === true || opts?.silent;
+    if (!silent) setLoading(true);
     setError(null);
 
     // Gan them token (neu co) cho moi request: cac endpoint cong khai bo qua header nay,
@@ -241,10 +244,21 @@ export default function App() {
       })
       .then((data) => setData(data))
       .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+      .finally(() => { if (!silent) setLoading(false); });
   };
 
-  useEffect(loadViewData, [league, view, token, season]);
+  useEffect(() => { loadViewData(); }, [league, view, token, season]);
+
+  /*
+   * Hoan hien spinner ~250ms: tai nhanh (thuong <250ms) thi KHONG kip hien spinner,
+   * nen doi tab chi thay fade muot, khong chop "noi dung -> spinner -> noi dung".
+   */
+  const [showLoading, setShowLoading] = useState(false);
+  useEffect(() => {
+    if (!loading) { setShowLoading(false); return undefined; }
+    const id = setTimeout(() => setShowLoading(true), 250);
+    return () => clearTimeout(id);
+  }, [loading]);
 
   // Doi giai -> quay ve mua hien tai (mua "gan nhat" co the khac giua cac giai)
   const changeLeague = (code) => {
@@ -884,7 +898,7 @@ export default function App() {
                 onSelectTeam={setSelectedTeamId}
               />
 
-              {loading && <Loading />}
+              {showLoading && <Loading />}
               {error && (
                 <div className="alert alert-danger">
                   {t("error_prefix")} {error}
@@ -920,7 +934,8 @@ export default function App() {
                       matches={data}
                       token={token}
                       onRefresh={() => {
-                        loadViewData();
+                        // Lam moi NGAM: cap nhat diem/du doan tai cho, khong chop spinner
+                        loadViewData({ silent: true });
                         // Dat xong mot du doan -> huy hieu phai giam ngay, khong doi doi giai
                         refreshPendingPredictions();
                       }}

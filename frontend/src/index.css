@@ -520,7 +520,7 @@ body,
   padding: 6px 12px;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, transform var(--ft-fast) var(--ft-ease);
 }
 
 .ft-nav-btn:first-child {
@@ -534,6 +534,7 @@ body,
 
 .ft-nav-btn:active {
   background: rgba(255, 255, 255, 0.24);
+  transform: scale(0.94);
 }
 
 .ft-nav-btn:focus-visible {
