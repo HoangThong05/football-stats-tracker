@@ -21,10 +21,13 @@ public class TeamService {
 
     private final FootballDataClient client;
     private final TeamSquadService squadService;
+    private final PlayerPhotoService photoService;
 
-    public TeamService(FootballDataClient client, TeamSquadService squadService) {
+    public TeamService(FootballDataClient client, TeamSquadService squadService,
+                       PlayerPhotoService photoService) {
         this.client = client;
         this.squadService = squadService;
+        this.photoService = photoService;
     }
 
     @Cacheable(value = CacheConfig.TEAMS_CACHE, key = "#teamId")
@@ -93,55 +96,28 @@ public class TeamService {
      */
     private List<TeamDetailDto.PlayerDto> withPhotos(List<TeamDetailDto.PlayerDto> fdSquad,
                                                      long teamId, String name, String shortName) {
-        java.util.Map<String, String> byName = new java.util.HashMap<>();
-        java.util.Map<String, String> bySurname = new java.util.HashMap<>();
-        List<TeamDetailDto.PlayerDto> afSquad;
+        PlayerPhotoService.Photos photos;
         try {
-            afSquad = squadService.getSquad(teamId, name, shortName);
+            photos = photoService.forTeam(teamId, name);
         } catch (RuntimeException e) {
             log.warn("Khong ghep duoc anh cau thu cho doi {}: {}", teamId, e.getMessage());
             return fdSquad;
         }
-        for (TeamDetailDto.PlayerDto af : afSquad) {
-            if (af.photoUrl() == null || af.name() == null) continue;
-            byName.putIfAbsent(norm(af.name()), af.photoUrl());
-            String sn = surname(af.name());
-            if (sn != null) bySurname.putIfAbsent(sn, af.photoUrl());
-        }
-        if (byName.isEmpty()) {
-            long withPhoto = afSquad.stream().filter(a -> a.photoUrl() != null).count();
-            log.info("Ghep anh doi {}: API-Football tra {} cau thu, {} co anh -> khong ghep duoc (giu avatar chu)",
-                    teamId, afSquad.size(), withPhoto);
+        if (photos.isEmpty()) {
+            log.info("Ghep anh doi {} ('{}'): TheSportsDB khong co anh -> giu avatar chu", teamId, name);
             return fdSquad;
         }
 
         int[] matched = {0};
         List<TeamDetailDto.PlayerDto> out = fdSquad.stream().map(p -> {
-            String photo = byName.get(norm(p.name()));
-            if (photo == null) photo = bySurname.get(surname(p.name()));
+            String photo = photos.find(p.name());
             if (photo == null) return p;
             matched[0]++;
             return new TeamDetailDto.PlayerDto(
                     p.id(), p.name(), p.position(), p.nationality(), photo, p.jerseyNumber(), p.age());
         }).toList();
-        log.info("Ghep anh doi {}: {}/{} cau thu co anh (API-Football co {} ten)",
-                teamId, matched[0], out.size(), byName.size());
+        log.info("Ghep anh doi {} ('{}'): {}/{} cau thu co anh tu TheSportsDB", teamId, name, matched[0], out.size());
         return out;
-    }
-
-    /** Bo dau, thuong hoa, chi giu chu-so-khoang trang - de khop ten giua hai nguon. */
-    private static String norm(String s) {
-        if (s == null) return "";
-        String d = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD)
-                .replaceAll("\\p{M}+", "");
-        return d.toLowerCase().replaceAll("[^a-z0-9 ]", " ").replaceAll("\\s+", " ").trim();
-    }
-
-    private static String surname(String s) {
-        String n = norm(s);
-        if (n.isEmpty()) return null;
-        String[] parts = n.split(" ");
-        return parts[parts.length - 1];
     }
 
     /** Ngay sinh dang "1998-03-21" -> tuoi. Tra null neu thieu/sai dinh dang. */

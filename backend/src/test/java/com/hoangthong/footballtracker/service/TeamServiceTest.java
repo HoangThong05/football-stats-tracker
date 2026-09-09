@@ -20,13 +20,18 @@ class TeamServiceTest {
 
     private FootballDataClient client;
     private TeamSquadService squadService;
+    private PlayerPhotoService photoService;
     private TeamService service;
 
     @BeforeEach
     void setUp() {
         client = mock(FootballDataClient.class);
         squadService = mock(TeamSquadService.class);
-        service = new TeamService(client, squadService);
+        photoService = mock(PlayerPhotoService.class);
+        // Mac dinh: khong co anh (cac test khong quan tam anh van chay binh thuong)
+        when(photoService.forTeam(anyLong(), any()))
+                .thenReturn(new PlayerPhotoService.Photos(java.util.Map.of(), java.util.Map.of()));
+        service = new TeamService(client, squadService, photoService);
     }
 
     private static TeamApiResponse teamWith(List<TeamApiResponse.Player> squad) {
@@ -51,14 +56,15 @@ class TeamServiceTest {
         when(client.getTeam(57)).thenReturn(teamWith(List.of(
                 player(1, "Bukayo Saka", "2001-09-05"),
                 player(2, "Declan Rice", "1999-01-14"))));
-        when(squadService.getSquad(anyLong(), anyString(), anyString())).thenReturn(List.of(
-                new TeamDetailDto.PlayerDto(101, "B. Saka", "Midfield", null, "saka.png", 7, 22),
-                new TeamDetailDto.PlayerDto(102, "Declan Rice", "Midfield", null, "rice.png", 41, 25)));
+        // TheSportsDB: khop nguyen ten "declan rice", va khop theo HO "saka"
+        when(photoService.forTeam(anyLong(), any())).thenReturn(new PlayerPhotoService.Photos(
+                java.util.Map.of("declan rice", "rice.png"),
+                java.util.Map.of("saka", "saka.png")));
 
         TeamDetailDto result = service.getTeam(57);
 
         assertThat(result.squad()).hasSize(2);
-        // Giu TEN va QUOC TICH cua football-data (khong bi API-Football ghi de)
+        // Giu TEN va QUOC TICH cua football-data (khong bi ghi de)
         assertThat(result.squad()).extracting(TeamDetailDto.PlayerDto::name)
                 .containsExactly("Bukayo Saka", "Declan Rice");
         assertThat(result.squad()).extracting(TeamDetailDto.PlayerDto::nationality)
