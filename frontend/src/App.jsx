@@ -265,18 +265,24 @@ export default function App() {
   // Kiem moi 15s de phat hien nhanh khi admin vua bat.
   const sawAppLive = useRef(false); // may chu da xac nhan KHONG bao tri -> nguoi dung dang dung app that
   const [maintenance, setMaintenance] = useState({ enabled: false, message: "" });
+  const applyMaintenance = (d) => {
+    if (!d) return;
+    if (!d.enabled) sawAppLive.current = true; // xac nhan KHONG bao tri (khong phai mac dinh)
+    setMaintenance({ enabled: !!d.enabled, message: d.message || "" });
+  };
   useEffect(() => {
-    const load = () => fetch(`${API_BASE}/maintenance`)
+    // cache:no-store BAT BUOC: khong thi trinh duyet tra ban cu -> bat bao tri phai F5 moi thay
+    const load = () => fetch(`${API_BASE}/maintenance`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (!d) return;
-        if (!d.enabled) sawAppLive.current = true; // xac nhan tu server, khong phai mac dinh
-        setMaintenance(d);
-      })
+      .then(applyMaintenance)
       .catch(() => {});
     load();
     const id = setInterval(() => { if (!document.hidden) load(); }, 15000);
-    return () => clearInterval(id);
+    // Admin gat cong tac -> cap nhat NGAY tren may admin, khong doi poll
+    const onChange = (e) => applyMaintenance(e.detail);
+    window.addEventListener("ft-maintenance-changed", onChange);
+    return () => { clearInterval(id); window.removeEventListener("ft-maintenance-changed", onChange); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /*
@@ -309,7 +315,7 @@ export default function App() {
   );
   useEffect(() => {
     if (!token) { setLatestAnn(null); return undefined; }
-    const load = () => fetch(`${API_BASE}/announcements`, { headers: authHeaders(token) })
+    const load = () => fetch(`${API_BASE}/announcements`, { headers: authHeaders(token), cache: "no-store" })
       .then((r) => (r.ok ? r.json() : []))
       .then((list) => setLatestAnn(Array.isArray(list) && list.length ? list[0] : null))
       .catch(() => {});
@@ -591,10 +597,12 @@ export default function App() {
         {/* Banner thong bao he thong moi nhat - noi bat, chay ngang dau trang, tat duoc */}
         {showAnnBanner && (
           <div className="ft-ann-banner">
-            <span className="ft-ann-banner-text">
-              📢 <strong>{latestAnn.title}</strong>
-              {latestAnn.body ? ` — ${latestAnn.body}` : ""}
-            </span>
+            <div className="ft-ann-marquee">
+              <span className="ft-ann-marquee-text">
+                📢 <strong>{latestAnn.title}</strong>
+                {latestAnn.body ? ` — ${latestAnn.body}` : ""}
+              </span>
+            </div>
             <button type="button" className="ft-ann-banner-x" onClick={dismissAnn} aria-label="X">
               ✕
             </button>

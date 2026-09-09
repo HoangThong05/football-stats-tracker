@@ -3256,14 +3256,29 @@ video.ft-post-image {
   font-weight: 600;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
-.ft-ann-banner-text {
+/* Chu chay ngang lien tuc (marquee) giong ticker tran dau */
+.ft-ann-marquee {
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
-.ft-ann-banner-text strong { font-weight: 800; }
+.ft-ann-marquee-text {
+  display: inline-block;
+  white-space: nowrap;
+  padding-left: 100%;
+  animation: ft-ann-scroll 22s linear infinite;
+  will-change: transform;
+}
+.ft-ann-marquee-text strong { font-weight: 800; }
+.ft-ann-marquee:hover .ft-ann-marquee-text { animation-play-state: paused; }
+@keyframes ft-ann-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ft-ann-marquee-text { animation: none; padding-left: 0; }
+  .ft-ann-marquee { text-overflow: ellipsis; }
+}
 .ft-ann-banner-x {
   flex-shrink: 0;
   border: 0;

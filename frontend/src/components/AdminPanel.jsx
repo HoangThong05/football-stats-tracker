@@ -26,6 +26,7 @@ export default function AdminPanel({ token }) {
   const [bcBusy, setBcBusy] = useState(false)
   const [maint, setMaint] = useState({ enabled: false, message: '' })
   const [maintBusy, setMaintBusy] = useState(false)
+  const [maintSaved, setMaintSaved] = useState(false)
 
   const loadStats = useCallback(() => {
     fetch(`${API_BASE}/admin/stats`, { headers: authHeaders(token) })
@@ -44,7 +45,7 @@ export default function AdminPanel({ token }) {
   useEffect(loadStats, [loadStats])
   useEffect(loadReports, [loadReports])
   useEffect(() => {
-    fetch(`${API_BASE}/maintenance`)
+    fetch(`${API_BASE}/maintenance`, { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (d) setMaint({ enabled: !!d.enabled, message: d.message || '' }) })
       .catch(() => {})
@@ -52,6 +53,7 @@ export default function AdminPanel({ token }) {
 
   const saveMaint = async (next) => {
     setMaintBusy(true)
+    setMaintSaved(false)
     try {
       const res = await fetch(`${API_BASE}/admin/maintenance`, {
         method: 'PUT',
@@ -59,7 +61,14 @@ export default function AdminPanel({ token }) {
         body: JSON.stringify(next),
       })
       const d = await res.json().catch(() => ({}))
-      if (res.ok) setMaint({ enabled: !!d.enabled, message: d.message || '' })
+      if (res.ok) {
+        const saved = { enabled: !!d.enabled, message: d.message || '' }
+        setMaint(saved)
+        setMaintSaved(true)
+        setTimeout(() => setMaintSaved(false), 2500)
+        // Bao App cap nhat NGAY (banner do / chan) khong doi poll
+        window.dispatchEvent(new CustomEvent('ft-maintenance-changed', { detail: saved }))
+      }
     } finally {
       setMaintBusy(false)
     }
@@ -268,10 +277,13 @@ export default function AdminPanel({ token }) {
         value={maint.message}
         onChange={(e) => setMaint((m) => ({ ...m, message: e.target.value }))}
       />
-      <button className="btn btn-sm btn-outline-secondary" disabled={maintBusy}
-        onClick={() => saveMaint({ enabled: maint.enabled, message: maint.message })}>
-        {t('maint_admin_save_msg')}
-      </button>
+      <div className="d-flex align-items-center gap-2">
+        <button className="btn btn-sm btn-outline-secondary" disabled={maintBusy}
+          onClick={() => saveMaint({ enabled: maint.enabled, message: maint.message })}>
+          {maintBusy ? t('auth_submitting') : t('maint_admin_save_msg')}
+        </button>
+        {maintSaved && <span className="text-success small fw-semibold">✓ {t('maint_admin_saved')}</span>}
+      </div>
       <p className="ft-legend text-secondary mb-0 mt-2">{t('maint_admin_note')}</p>
     </div>
     </>
