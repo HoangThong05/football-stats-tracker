@@ -182,7 +182,14 @@ export default function MatchReminders({ token, onSelectMatch, onSelectUser, onS
      * lich su moi biet minh duoc bao nhieu.
      */
     if (m.myPoints != null) return true
-    return m.status !== 'FINISHED' && new Date(m.utcDate).getTime() <= soonLimit
+    if (m.status === 'FINISHED') return false
+    /*
+     * Tran SAP DA nhung MINH DA DU DOAN roi -> khong keu so do nua. So do o day chi de
+     * NHAC du doan truoc gio bong lan; da du doan thi viec do xong, keu them la nhac lai
+     * chinh viec minh vua lam -> tuong nham la "co thong bao moi".
+     */
+    if (m.myHomeScore != null) return false
+    return new Date(m.utcDate).getTime() <= soonLimit
   }).length
 
   // Chua bao gio mo chuong -> coi nhu chua doc dong nao. Loi moi da chap nhan dung
