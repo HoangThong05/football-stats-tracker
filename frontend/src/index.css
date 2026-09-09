@@ -3277,6 +3277,25 @@ video.ft-post-image {
 }
 .ft-ann-banner-x:hover { background: rgba(0, 0, 0, 0.26); }
 
+/* Banner dem nguoc truoc khi bao tri phu kin (cho nguoi dang thao tac) */
+.ft-maint-grace {
+  position: sticky;
+  top: 0;
+  z-index: 1092;
+  text-align: center;
+  padding: 9px 14px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  background: #d97706;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  animation: ft-grace-pulse 1s ease-in-out infinite;
+}
+@keyframes ft-grace-pulse {
+  0%, 100% { background: #d97706; }
+  50% { background: #b45309; }
+}
+
 /* Dai canh bao mong tren dau danh cho ADMIN */
 .ft-maint-adminbar {
   position: sticky;

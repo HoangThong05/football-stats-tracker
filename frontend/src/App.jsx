@@ -261,18 +261,46 @@ export default function App() {
     return () => clearTimeout(id);
   }, [loading]);
 
-  // Che do bao tri (cong khai): admin bat thi nguoi dung thuong bi chan bang man phu kin
+  // Che do bao tri (cong khai): admin bat thi nguoi dung thuong bi chan bang man phu kin.
+  // Kiem moi 15s de phat hien nhanh khi admin vua bat.
+  const sawAppLive = useRef(false); // may chu da xac nhan KHONG bao tri -> nguoi dung dang dung app that
   const [maintenance, setMaintenance] = useState({ enabled: false, message: "" });
   useEffect(() => {
     const load = () => fetch(`${API_BASE}/maintenance`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (d) setMaintenance(d); })
+      .then((d) => {
+        if (!d) return;
+        if (!d.enabled) sawAppLive.current = true; // xac nhan tu server, khong phai mac dinh
+        setMaintenance(d);
+      })
       .catch(() => {});
     load();
-    const id = setInterval(() => { if (!document.hidden) load(); }, 60000);
+    const id = setInterval(() => { if (!document.hidden) load(); }, 15000);
     return () => clearInterval(id);
   }, []);
-  const blockedByMaintenance = maintenance.enabled && userRole !== "ADMIN";
+
+  /*
+   * Dem nguoc truoc khi chan: neu nguoi dung DANG dung app (da tung thay app hoat dong)
+   * ma admin vua bat bao tri -> hien banner "bao tri sau X giay" roi moi phu kin, de ho
+   * kip hoan tat thao tac. Con neu vao app luc DA dang bao tri thi chan ngay, khong dem.
+   */
+  const MAINT_GRACE_SEC = 20;
+  const [graceLeft, setGraceLeft] = useState(null); // null = khong dem; so = giay con lai
+  useEffect(() => {
+    if (!maintenance.enabled) { setGraceLeft(null); return; }
+    if (userRole === "ADMIN") { setGraceLeft(null); return; }
+    // Vua bat bao tri khi dang dung -> bat dau dem (khong khoi dong lai neu dang dem)
+    if (sawAppLive.current) setGraceLeft((g) => (g == null ? MAINT_GRACE_SEC : g));
+    // Chua tung thay app song (vao luc da bao tri) -> de graceLeft = null -> chan ngay
+  }, [maintenance.enabled, userRole]);
+  useEffect(() => {
+    if (graceLeft == null || graceLeft <= 0) return undefined;
+    const id = setTimeout(() => setGraceLeft((g) => (g == null ? null : g - 1)), 1000);
+    return () => clearTimeout(id);
+  }, [graceLeft]);
+
+  const inMaintGrace = maintenance.enabled && userRole !== "ADMIN" && graceLeft != null && graceLeft > 0;
+  const blockedByMaintenance = maintenance.enabled && userRole !== "ADMIN" && !inMaintGrace;
 
   // Banner thong bao he thong moi nhat, chay ngang dau trang (khong chan app, tat duoc).
   const [latestAnn, setLatestAnn] = useState(null);
@@ -549,6 +577,11 @@ export default function App() {
     <LanguageContext.Provider value={{ lang, t, setLang }}>
       <>
         <PitchBackdrop />
+
+        {/* Dem nguoc bao truoc khi phu kin - cho nguoi dang thao tac kip hoan tat */}
+        {inMaintGrace && (
+          <div className="ft-maint-grace">⚠️ {t("maint_grace").replace("{s}", graceLeft)}</div>
+        )}
 
         {/* Dai canh bao cho ADMIN khi dang bat bao tri (admin van dung app binh thuong) */}
         {maintenance.enabled && userRole === "ADMIN" && (
