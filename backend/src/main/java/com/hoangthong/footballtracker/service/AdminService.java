@@ -43,7 +43,6 @@ public class AdminService {
     private final WebPushService webPush;
     private final ApiFootballTeamMappingService mappingService;
     private final com.hoangthong.footballtracker.repository.TeamSquadRepository squadRepository;
-    private final PlayerPhotoService playerPhotoService;
 
     public AdminService(
             UserRepository userRepository,
@@ -57,8 +56,7 @@ public class AdminService {
             com.hoangthong.footballtracker.repository.AnnouncementRepository announcementRepository,
             WebPushService webPush,
             ApiFootballTeamMappingService mappingService,
-            com.hoangthong.footballtracker.repository.TeamSquadRepository squadRepository,
-            PlayerPhotoService playerPhotoService) {
+            com.hoangthong.footballtracker.repository.TeamSquadRepository squadRepository) {
         this.userRepository = userRepository;
         this.predictionRepository = predictionRepository;
         this.miniLeagueRepository = miniLeagueRepository;
@@ -71,7 +69,6 @@ public class AdminService {
         this.webPush = webPush;
         this.mappingService = mappingService;
         this.squadRepository = squadRepository;
-        this.playerPhotoService = playerPhotoService;
     }
 
     /**
@@ -82,8 +79,7 @@ public class AdminService {
      */
     public int refreshApiFootball() {
         int teams = mappingService.forceRefresh();
-        squadRepository.deleteAll(); // xoa het squad cache (API-Football, cho fallback)
-        playerPhotoService.clear();  // xoa cache anh TheSportsDB -> lan xem sau lay lai tuoi
+        squadRepository.deleteAll(); // xoa het squad cache -> lan xem sau sync lai tuoi
         clearCaches();
         return teams;
     }

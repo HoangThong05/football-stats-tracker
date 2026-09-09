@@ -50,8 +50,7 @@ class AdminServiceTest {
                 mock(com.hoangthong.footballtracker.repository.AnnouncementRepository.class),
                 mock(WebPushService.class),
                 mock(ApiFootballTeamMappingService.class),
-                mock(com.hoangthong.footballtracker.repository.TeamSquadRepository.class),
-                mock(PlayerPhotoService.class));
+                mock(com.hoangthong.footballtracker.repository.TeamSquadRepository.class));
     }
 
     private User user(long id, String email, Role role) {
