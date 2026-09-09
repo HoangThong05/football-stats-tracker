@@ -39,10 +39,11 @@ public class ApiFootballTeamMappingService {
     private static final Logger log = LoggerFactory.getLogger(ApiFootballTeamMappingService.class);
 
     /**
-     * Goi free chi cho xem mot so mua nhat dinh (khong co mua hien tai). Ten + id doi
-     * gan nhu khong doi qua cac mua nen dung mua cu van dung.
+     * Goi FREE cua API-Football chi cho xem mua 2021-2023 (KHONG co mua hien tai).
+     * Ten + id doi gan nhu khong doi qua cac mua nen dung mua cu van dung. Lay 3 mua de
+     * phu ca doi moi thang/xuong hang. (Doi hinh thi lay tu players/squads - khong can mua.)
      */
-    private static final List<Integer> SEASONS = List.of(2024);
+    private static final List<Integer> SEASONS = List.of(2023, 2022, 2021);
 
     /** Ten doi hiem khi doi -> 30 ngay moi lay lai 1 lan la du. */
     private static final long REFRESH_INTERVAL_DAYS = 30;
