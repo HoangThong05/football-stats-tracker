@@ -3218,6 +3218,24 @@ video.ft-post-image {
 /* Cham xanh cua chinh minh o avatar header (nho hon) */
 .ft-user-online { width: 9px; height: 9px; min-width: 0; min-height: 0; }
 
+/* Tab cua trang Quan tri */
+.ft-admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ft-admin-tabs .btn {
+  border: 1px solid var(--bs-border-color-translucent);
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+}
+.ft-admin-tabs .btn.active {
+  background: var(--ft-accent);
+  color: var(--ft-on-accent);
+  border-color: var(--ft-accent);
+  font-weight: 600;
+}
+
 /* ===== Che do bao tri ===== */
 .ft-maint {
   position: fixed;

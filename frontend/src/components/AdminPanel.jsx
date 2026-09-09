@@ -16,7 +16,7 @@ import Avatar from './Avatar'
 /** Con it hon nguong nay thi to do canh bao. */
 const LOW_QUOTA = 3
 
-export default function AdminPanel({ token }) {
+export default function AdminPanel({ token, section = 'overview' }) {
   const { t, lang } = useTranslation()
   const [stats, setStats] = useState(null)
   const [busy, setBusy] = useState(null) // 'cache' | 'sync' | null
@@ -135,10 +135,8 @@ export default function AdminPanel({ token }) {
       .finally(() => setBusy(null))
   }
 
-  if (!stats) return null
-
-  const quotaLow = stats.quotaRemaining != null && stats.quotaRemaining <= LOW_QUOTA
-  const quotaSeen = stats.quotaSeenAt
+  const quotaLow = stats && stats.quotaRemaining != null && stats.quotaRemaining <= LOW_QUOTA
+  const quotaSeen = stats && stats.quotaSeenAt
     ? new Date(stats.quotaSeenAt).toLocaleTimeString(lang === 'en' ? 'en-GB' : 'vi-VN', {
         hour: '2-digit',
         minute: '2-digit',
@@ -147,6 +145,7 @@ export default function AdminPanel({ token }) {
 
   return (
     <>
+    {section === 'overview' && stats && (
     <div className="ft-card p-3 mb-3">
       <div className="fw-semibold mb-2">{t('admin_ops_title')}</div>
 
@@ -190,8 +189,10 @@ export default function AdminPanel({ token }) {
 
       <p className="ft-legend text-secondary mb-0 mt-2">{t('admin_ops_note')}</p>
     </div>
+    )}
 
     {/* Hang doi bao cao bai viet */}
+    {section === 'moderation' && (
     <div className="ft-card p-3 mb-3">
       <div className="fw-semibold mb-2">
         🚩 {t('admin_reports_title')}
@@ -229,10 +230,18 @@ export default function AdminPanel({ token }) {
         </ul>
       )}
     </div>
+    )}
 
     {/* Gui thong bao toan he thong */}
+    {section === 'comms' && (
+    <>
     <div className="ft-card p-3 mb-3">
       <div className="fw-semibold mb-2">📢 {t('admin_bc_title')}</div>
+      {message && (
+        <div className={`alert py-2 mb-2 ${message.type === 'ok' ? 'alert-success' : 'alert-danger'}`}>
+          {message.text}
+        </div>
+      )}
       <input
         className="form-control mb-2"
         maxLength={120}
@@ -286,6 +295,8 @@ export default function AdminPanel({ token }) {
       </div>
       <p className="ft-legend text-secondary mb-0 mt-2">{t('maint_admin_note')}</p>
     </div>
+    </>
+    )}
     </>
   )
 }

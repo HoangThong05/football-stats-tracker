@@ -12,6 +12,7 @@ export default function AdminUsers({ token, onBack, currentEmail }) {
   const [changingId, setChangingId] = useState(null)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('ALL') // ALL | USER | ADMIN | LOCKED
+  const [tab, setTab] = useState('overview') // overview | users | moderation | comms
 
   useEffect(() => {
     setLoading(true)
@@ -70,6 +71,13 @@ export default function AdminUsers({ token, onBack, currentEmail }) {
     return true
   })
 
+  const TABS = [
+    { key: 'overview', label: t('admin_tab_overview') },
+    { key: 'users', label: t('admin_tab_users') },
+    { key: 'moderation', label: t('admin_tab_moderation') },
+    { key: 'comms', label: t('admin_tab_comms') },
+  ]
+
   return (
     <div className="ft-fade">
       <button className="btn btn-link ps-0 mb-3" onClick={onBack}>
@@ -78,16 +86,28 @@ export default function AdminUsers({ token, onBack, currentEmail }) {
 
       <h3 className="h5 mb-3">{t('admin_title')}</h3>
 
-      <AdminPanel token={token} />
+      <div className="ft-admin-tabs mb-3">
+        {TABS.map((tb) => (
+          <button key={tb.key} type="button"
+            className={`btn btn-sm ${tab === tb.key ? 'active' : ''}`}
+            onClick={() => setTab(tb.key)}>
+            {tb.label}
+          </button>
+        ))}
+      </div>
 
-      {loading && <Loading />}
-      {error && (
+      {tab === 'overview' && <AdminPanel token={token} section="overview" />}
+      {tab === 'moderation' && <AdminPanel token={token} section="moderation" />}
+      {tab === 'comms' && <AdminPanel token={token} section="comms" />}
+
+      {tab === 'users' && loading && <Loading />}
+      {tab === 'users' && error && (
         <div className="alert alert-danger">
           {t('error_generic')} {error}
         </div>
       )}
 
-      {!loading && !error && (
+      {tab === 'users' && !loading && !error && (
         <>
         <div className="d-flex flex-wrap gap-2 align-items-center mb-3">
           <input
