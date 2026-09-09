@@ -15,6 +15,7 @@ import { useForumUnread } from "./useForumUnread";
 import Loading from "./components/Loading";
 import AuthPanel from "./components/AuthPanel";
 import MaintenanceScreen from "./components/MaintenanceScreen";
+import { applyAccent, savedAccent } from "./theme";
 import AdminUsers from "./components/AdminUsers";
 import FavoritesList from "./components/FavoritesList";
 import LeaderboardView from "./components/LeaderboardView";
@@ -128,6 +129,8 @@ export default function App() {
   useEffect(() => {
     document.documentElement.setAttribute("data-bs-theme", theme);
     localStorage.setItem("ft_theme", theme);
+    // Ap lai mau accent tuy chon MOI khi doi theme (doi theme ghi de lai cac bien accent goc)
+    applyAccent(savedAccent());
   }, [theme]);
 
   useEffect(() => {

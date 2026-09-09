@@ -3218,6 +3218,44 @@ video.ft-post-image {
 /* Cham xanh cua chinh minh o avatar header (nho hon) */
 .ft-user-online { width: 9px; height: 9px; min-width: 0; min-height: 0; }
 
+/* Bang chon mau chu dao (accent) */
+.ft-accent-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.ft-accent-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--bs-border-color-translucent);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform var(--ft-fast) var(--ft-ease);
+}
+.ft-accent-swatch:hover { transform: scale(1.12); }
+.ft-accent-swatch.active { border-color: var(--bs-body-color); box-shadow: 0 0 0 3px var(--ft-accent-soft); }
+.ft-accent-default {
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--bs-border-color-translucent);
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.ft-accent-default.active {
+  border-color: var(--ft-accent);
+  background: var(--ft-accent-soft);
+  font-weight: 600;
+}
+
 /* Tab cua trang Quan tri */
 .ft-admin-tabs {
   display: flex;

@@ -10,6 +10,7 @@ import ChangePassword from './ChangePassword'
 import DisplayName from './DisplayName'
 import NotificationToggle from './NotificationToggle'
 import OnlineStatusToggle from './OnlineStatusToggle'
+import AccentPicker from './AccentPicker'
 import ProfileStats from './ProfileStats'
 import FriendsList from './FriendsList'
 import PredictionPointsChart from './PredictionPointsChart'
@@ -164,6 +165,7 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
           <div className="ft-profile-settings ft-fade">
             <NotificationToggle token={token} />
             <OnlineStatusToggle token={token} />
+            <AccentPicker />
             <DisplayName token={token} displayName={displayName} onSaved={onDisplayNameSaved} />
             <ChangePassword token={token} hasPassword={hasPassword} viaGoogle={viaGoogle}
               onTokenRenewed={onTokenRenewed} />
