@@ -27,9 +27,12 @@ import java.util.Map;
 public class AdminController {
 
     private final AdminService adminService;
+    private final com.hoangthong.footballtracker.service.MaintenanceService maintenanceService;
 
-    public AdminController(AdminService adminService) {
+    public AdminController(AdminService adminService,
+                           com.hoangthong.footballtracker.service.MaintenanceService maintenanceService) {
         this.adminService = adminService;
+        this.maintenanceService = maintenanceService;
     }
 
     /** Danh sach tat ca nguoi dung (chi ADMIN xem duoc). */
@@ -61,6 +64,17 @@ public class AdminController {
     @PostMapping("/broadcast")
     public Map<String, Integer> broadcast(@RequestBody Map<String, String> body) {
         return Map.of("sent", adminService.broadcast(body.get("title"), body.get("body")));
+    }
+
+    /** Bat / tat che do bao tri. Body: { "enabled": true|false, "message": "..." }. */
+    @org.springframework.web.bind.annotation.PutMapping("/maintenance")
+    public com.hoangthong.footballtracker.dto.MaintenanceDto setMaintenance(
+            @RequestBody Map<String, Object> body) {
+        boolean enabled = Boolean.TRUE.equals(body.get("enabled"));
+        String message = body.get("message") == null ? "" : String.valueOf(body.get("message"));
+        maintenanceService.set(enabled, message);
+        return new com.hoangthong.footballtracker.dto.MaintenanceDto(
+                maintenanceService.isEnabled(), maintenanceService.getMessage());
     }
 
     /** Xoa cache doc tu football-data.org, khong cho het 30 phut TTL. */

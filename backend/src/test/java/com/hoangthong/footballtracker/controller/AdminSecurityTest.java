@@ -52,6 +52,9 @@ class AdminSecurityTest {
     private AdminService adminService;
 
     @MockBean
+    private com.hoangthong.footballtracker.service.MaintenanceService maintenanceService;
+
+    @MockBean
     private StandingsService standingsService;
 
     /*

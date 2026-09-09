@@ -3218,6 +3218,45 @@ video.ft-post-image {
 /* Cham xanh cua chinh minh o avatar header (nho hon) */
 .ft-user-online { width: 9px; height: 9px; min-width: 0; min-height: 0; }
 
+/* ===== Che do bao tri ===== */
+.ft-maint {
+  position: fixed;
+  inset: 0;
+  z-index: 1090;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: #0b1f17;
+  background: radial-gradient(1200px 600px at 50% -10%, #123a2a 0%, #0b1f17 60%, #071410 100%);
+}
+.ft-maint-card {
+  max-width: 460px;
+  text-align: center;
+  color: #eaf4ee;
+}
+.ft-maint-icon { font-size: 4rem; line-height: 1; margin-bottom: 12px; }
+.ft-maint-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 10px; }
+.ft-maint-msg {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #b9d4c6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin-bottom: 4px;
+}
+/* Dai canh bao mong tren dau danh cho ADMIN */
+.ft-maint-adminbar {
+  position: sticky;
+  top: 0;
+  z-index: 1091;
+  text-align: center;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  background: #b91c1c;
+}
+
 /* Banner chuc mung khi bam vao thong bao huy hieu trong chuong */
 .ft-badge-celebrate-backdrop {
   position: fixed;

@@ -49,7 +49,7 @@ public class SecurityConfig {
                                 "/api/auth/avatar", "/api/auth/cover").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/standings/**", "/api/matches/**", "/api/teams/**", "/api/scorers/**",
-                                "/api/users/*/profile").permitAll()
+                                "/api/users/*/profile", "/api/maintenance").permitAll()
                         // Doc dien dan la cong khai; moi thao tac GHI roi vao anyRequest().authenticated()
                         .requestMatchers(org.springframework.http.HttpMethod.GET,
                                 "/api/forum/posts", "/api/forum/posts/*", "/api/forum/unread").permitAll()

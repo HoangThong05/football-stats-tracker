@@ -24,6 +24,8 @@ export default function AdminPanel({ token }) {
   const [reports, setReports] = useState([])
   const [bc, setBc] = useState({ title: '', body: '' })
   const [bcBusy, setBcBusy] = useState(false)
+  const [maint, setMaint] = useState({ enabled: false, message: '' })
+  const [maintBusy, setMaintBusy] = useState(false)
 
   const loadStats = useCallback(() => {
     fetch(`${API_BASE}/admin/stats`, { headers: authHeaders(token) })
@@ -41,6 +43,27 @@ export default function AdminPanel({ token }) {
 
   useEffect(loadStats, [loadStats])
   useEffect(loadReports, [loadReports])
+  useEffect(() => {
+    fetch(`${API_BASE}/maintenance`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d) setMaint({ enabled: !!d.enabled, message: d.message || '' }) })
+      .catch(() => {})
+  }, [])
+
+  const saveMaint = async (next) => {
+    setMaintBusy(true)
+    try {
+      const res = await fetch(`${API_BASE}/admin/maintenance`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+        body: JSON.stringify(next),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (res.ok) setMaint({ enabled: !!d.enabled, message: d.message || '' })
+    } finally {
+      setMaintBusy(false)
+    }
+  }
 
   const sendBroadcast = async () => {
     const title = bc.title.trim()
@@ -221,6 +244,35 @@ export default function AdminPanel({ token }) {
         {bcBusy ? t('auth_submitting') : t('admin_bc_send')}
       </button>
       <p className="ft-legend text-secondary mb-0 mt-2">{t('admin_bc_note')}</p>
+    </div>
+
+    {/* Che do bao tri */}
+    <div className="ft-card p-3 mb-3">
+      <div className="d-flex align-items-center gap-2 mb-2">
+        <span className="fw-semibold">🛠️ {t('maint_admin_title')}</span>
+        <div className="form-check form-switch ms-auto mb-0">
+          <input className="form-check-input" type="checkbox" role="switch"
+            style={{ cursor: 'pointer' }}
+            checked={maint.enabled} disabled={maintBusy}
+            onChange={() => saveMaint({ enabled: !maint.enabled, message: maint.message })} />
+        </div>
+      </div>
+      <div className={`small mb-2 ${maint.enabled ? 'text-danger fw-semibold' : 'text-secondary'}`}>
+        {maint.enabled ? t('maint_admin_on') : t('maint_admin_off')}
+      </div>
+      <textarea
+        className="form-control mb-2"
+        rows={2}
+        maxLength={500}
+        placeholder={t('maint_admin_placeholder')}
+        value={maint.message}
+        onChange={(e) => setMaint((m) => ({ ...m, message: e.target.value }))}
+      />
+      <button className="btn btn-sm btn-outline-secondary" disabled={maintBusy}
+        onClick={() => saveMaint({ enabled: maint.enabled, message: maint.message })}>
+        {t('maint_admin_save_msg')}
+      </button>
+      <p className="ft-legend text-secondary mb-0 mt-2">{t('maint_admin_note')}</p>
     </div>
     </>
   )

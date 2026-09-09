@@ -14,6 +14,7 @@ import { usePendingPredictions } from "./usePendingPredictions";
 import { useForumUnread } from "./useForumUnread";
 import Loading from "./components/Loading";
 import AuthPanel from "./components/AuthPanel";
+import MaintenanceScreen from "./components/MaintenanceScreen";
 import AdminUsers from "./components/AdminUsers";
 import FavoritesList from "./components/FavoritesList";
 import LeaderboardView from "./components/LeaderboardView";
@@ -259,6 +260,19 @@ export default function App() {
     const id = setTimeout(() => setShowLoading(true), 250);
     return () => clearTimeout(id);
   }, [loading]);
+
+  // Che do bao tri (cong khai): admin bat thi nguoi dung thuong bi chan bang man phu kin
+  const [maintenance, setMaintenance] = useState({ enabled: false, message: "" });
+  useEffect(() => {
+    const load = () => fetch(`${API_BASE}/maintenance`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d) setMaintenance(d); })
+      .catch(() => {});
+    load();
+    const id = setInterval(() => { if (!document.hidden) load(); }, 60000);
+    return () => clearInterval(id);
+  }, []);
+  const blockedByMaintenance = maintenance.enabled && userRole !== "ADMIN";
 
   // Doi giai -> quay ve mua hien tai (mua "gan nhat" co the khac giua cac giai)
   const changeLeague = (code) => {
@@ -513,6 +527,11 @@ export default function App() {
     <LanguageContext.Provider value={{ lang, t, setLang }}>
       <>
         <PitchBackdrop />
+
+        {/* Dai canh bao cho ADMIN khi dang bat bao tri (admin van dung app binh thuong) */}
+        {maintenance.enabled && userRole === "ADMIN" && (
+          <div className="ft-maint-adminbar">🛠️ {t("maint_admin_active")}</div>
+        )}
 
         {/* ===== Thanh dieu huong ===== */}
         <nav
@@ -981,6 +1000,15 @@ export default function App() {
           >
             <AuthPanel onSuccess={handleAuthSuccess} />
           </Modal>
+        )}
+
+        {/* Che do bao tri: man phu kin cho nguoi dung thuong. An khi dang mo form dang nhap
+            (de admin dang nhap duoc) va khi chinh minh la ADMIN. */}
+        {blockedByMaintenance && !showAuthForm && (
+          <MaintenanceScreen
+            message={maintenance.message}
+            onLogin={userEmail ? null : () => setShowAuthForm(true)}
+          />
         )}
 
         <StatueDrawer />
