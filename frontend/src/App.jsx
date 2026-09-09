@@ -274,6 +274,28 @@ export default function App() {
   }, []);
   const blockedByMaintenance = maintenance.enabled && userRole !== "ADMIN";
 
+  // Banner thong bao he thong moi nhat, chay ngang dau trang (khong chan app, tat duoc).
+  const [latestAnn, setLatestAnn] = useState(null);
+  const [annDismissed, setAnnDismissed] = useState(
+    () => Number(localStorage.getItem("ft_ann_dismissed")) || 0,
+  );
+  useEffect(() => {
+    if (!token) { setLatestAnn(null); return undefined; }
+    const load = () => fetch(`${API_BASE}/announcements`, { headers: authHeaders(token) })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((list) => setLatestAnn(Array.isArray(list) && list.length ? list[0] : null))
+      .catch(() => {});
+    load();
+    const id = setInterval(() => { if (!document.hidden) load(); }, 60000);
+    return () => clearInterval(id);
+  }, [token]);
+  const showAnnBanner = latestAnn && latestAnn.id !== annDismissed;
+  const dismissAnn = () => {
+    if (!latestAnn) return;
+    setAnnDismissed(latestAnn.id);
+    try { localStorage.setItem("ft_ann_dismissed", String(latestAnn.id)); } catch { /* bo qua */ }
+  };
+
   // Doi giai -> quay ve mua hien tai (mua "gan nhat" co the khac giua cac giai)
   const changeLeague = (code) => {
     setSeason(null);
@@ -531,6 +553,19 @@ export default function App() {
         {/* Dai canh bao cho ADMIN khi dang bat bao tri (admin van dung app binh thuong) */}
         {maintenance.enabled && userRole === "ADMIN" && (
           <div className="ft-maint-adminbar">🛠️ {t("maint_admin_active")}</div>
+        )}
+
+        {/* Banner thong bao he thong moi nhat - noi bat, chay ngang dau trang, tat duoc */}
+        {showAnnBanner && (
+          <div className="ft-ann-banner">
+            <span className="ft-ann-banner-text">
+              📢 <strong>{latestAnn.title}</strong>
+              {latestAnn.body ? ` — ${latestAnn.body}` : ""}
+            </span>
+            <button type="button" className="ft-ann-banner-x" onClick={dismissAnn} aria-label="X">
+              ✕
+            </button>
+          </div>
         )}
 
         {/* ===== Thanh dieu huong ===== */}

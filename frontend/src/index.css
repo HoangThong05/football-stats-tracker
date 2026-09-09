@@ -3244,6 +3244,39 @@ video.ft-post-image {
   overflow-wrap: anywhere;
   margin-bottom: 4px;
 }
+/* Banner thong bao he thong (cho moi nguoi) - noi bat, chay ngang dau trang */
+.ft-ann-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: linear-gradient(90deg, var(--ft-accent) 0%, #f0a020 100%);
+  color: #1a1200;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+.ft-ann-banner-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ft-ann-banner-text strong { font-weight: 800; }
+.ft-ann-banner-x {
+  flex-shrink: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.14);
+  color: #1a1200;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  line-height: 1;
+  cursor: pointer;
+}
+.ft-ann-banner-x:hover { background: rgba(0, 0, 0, 0.26); }
+
 /* Dai canh bao mong tren dau danh cho ADMIN */
 .ft-maint-adminbar {
   position: sticky;
