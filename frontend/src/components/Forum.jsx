@@ -157,6 +157,20 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
     }
   }
 
+  // Tai TAT CA binh luan cua mot bai (nut "xem them binh luan") -> mo rong tai cho
+  const loadAllComments = async (postId) => {
+    try {
+      const res = await fetch(`${API_BASE}/forum/posts/${postId}`, { headers: authHeaders(token) })
+      if (!res.ok) return
+      const full = await res.json()
+      setPosts((list) => (list || []).map((p) => (
+        p.id === postId ? { ...p, comments: full.comments, commentCount: full.commentCount } : p
+      )))
+    } catch {
+      /* bo qua */
+    }
+  }
+
   // Tai anh/video dinh kem cho binh luan (dung chung cho ca tra loi)
   const pickCommentMedia = async (postId, e) => {
     const file = e.target.files?.[0]
@@ -558,12 +572,18 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
               <button className="ft-post-action" disabled={!token} title={t('forum_comment')}
                 onClick={() => setOpenComment((m) => ({ ...m, [p.id]: !m[p.id] }))}>
                 <span className="ft-action-icon">💬</span>
-                {p.comments.length > 0 && <span className="ft-num">{p.comments.length}</span>}
+                {p.commentCount > 0 && <span className="ft-num">{p.commentCount}</span>}
               </button>
             </div>
 
             {(p.comments.length > 0 || openComment[p.id]) && (
               <div className="px-3 pb-3 pt-2 d-flex flex-column gap-2">
+                {p.commentCount > p.comments.length && (
+                  <button type="button" className="ft-name-link text-secondary align-self-start small"
+                    onClick={() => loadAllComments(p.id)}>
+                    {t('forum_view_more_comments').replace('{n}', p.commentCount - p.comments.length)}
+                  </button>
+                )}
                 {p.comments.filter((c) => c.parentId == null).map((root) => (
                   <div key={root.id} className="d-flex flex-column gap-2">
                     {renderComment(p, root)}

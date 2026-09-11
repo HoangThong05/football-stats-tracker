@@ -60,7 +60,9 @@ public class ForumDto {
             boolean canEdit,
             /** true = nguoi xem con trong han xoa, hoac la admin. */
             boolean canDelete,
-            List<Comment> comments
+            List<Comment> comments,
+            /** TONG so binh luan cua bai (ke ca tra loi) - de hien dung so + nut "xem them". */
+            int commentCount
     ) {}
 
     /**

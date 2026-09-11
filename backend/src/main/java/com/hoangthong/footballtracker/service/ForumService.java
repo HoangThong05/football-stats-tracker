@@ -673,7 +673,8 @@ public class ForumService {
                     postMyReaction.get(p.getId()),
                     canEdit,
                     canDelete,
-                    preview);
+                    preview,
+                    all.size());
         }).toList();
     }
 
