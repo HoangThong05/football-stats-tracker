@@ -13,6 +13,9 @@ export default function MyPredictionsHistory({ token, onBack }) {
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [leagueFilter, setLeagueFilter] = useState('ALL')
+  const [page, setPage] = useState(0)
+  const PAGE_SIZE = 15
 
   useEffect(() => {
     setLoading(true)
@@ -38,6 +41,13 @@ export default function MyPredictionsHistory({ token, onBack }) {
     const correct = rows.filter((h) => h.points > 0).length
     return { code: l.code, name: l.name, count: rows.length, value: Math.round((correct / rows.length) * 100) }
   }).filter(Boolean)
+
+  // Loc theo giai (chi liet ke giai co du doan) + phan trang cho danh sach
+  const leaguesInHistory = LEAGUES.filter((l) => history.some((h) => h.competition === l.code))
+  const filtered = leagueFilter === 'ALL' ? history : history.filter((h) => h.competition === leagueFilter)
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const pageSafe = Math.min(page, totalPages - 1)
+  const pageItems = filtered.slice(pageSafe * PAGE_SIZE, (pageSafe + 1) * PAGE_SIZE)
 
   const pointsBadgeClass = (points) => {
     if (points === 3) return 'badge text-bg-success'
@@ -91,9 +101,20 @@ export default function MyPredictionsHistory({ token, onBack }) {
       )}
 
       {!loading && !error && history.length > 0 && (
+        <>
+        <div className="d-flex flex-wrap gap-2 align-items-center mb-2">
+          <select className="form-select form-select-sm" style={{ maxWidth: 220 }}
+            value={leagueFilter} onChange={(e) => { setLeagueFilter(e.target.value); setPage(0) }}>
+            <option value="ALL">{t('myp_filter_all')}</option>
+            {leaguesInHistory.map((l) => (
+              <option key={l.code} value={l.code}>{l.name}</option>
+            ))}
+          </select>
+          <span className="text-secondary small ms-auto">{filtered.length} {t('myp_results')}</span>
+        </div>
         <div className="ft-card">
           <ul className="list-group list-group-flush ft-stagger">
-            {history.map((h) => (
+            {pageItems.map((h) => (
               <li key={h.matchId} className="list-group-item py-3">
                 <div className="ft-predict-row">
                   <small className="text-secondary ft-predict-time">
@@ -135,6 +156,17 @@ export default function MyPredictionsHistory({ token, onBack }) {
             ))}
           </ul>
         </div>
+
+        {totalPages > 1 && (
+          <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
+            <button type="button" className="btn btn-sm btn-outline-secondary"
+              disabled={pageSafe === 0} onClick={() => setPage(pageSafe - 1)}>‹</button>
+            <span className="small">{t('myp_page')} {pageSafe + 1}/{totalPages}</span>
+            <button type="button" className="btn btn-sm btn-outline-secondary"
+              disabled={pageSafe >= totalPages - 1} onClick={() => setPage(pageSafe + 1)}>›</button>
+          </div>
+        )}
+        </>
       )}
     </div>
   )
