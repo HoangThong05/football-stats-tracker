@@ -3149,13 +3149,14 @@ video.ft-post-image {
   max-height: 220px;
   border-radius: 10px;
   margin-top: 6px;
-  cursor: zoom-in;
 }
+img.ft-comment-image { cursor: zoom-in; }
 .ft-comment-attach {
   position: relative;
   display: inline-block;
 }
-.ft-comment-attach img {
+.ft-comment-attach img,
+.ft-comment-attach video {
   max-height: 120px;
   max-width: 100%;
   border-radius: 10px;

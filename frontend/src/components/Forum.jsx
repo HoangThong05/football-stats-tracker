@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { API_BASE, authHeaders } from '../api'
 import { useTranslation } from '../i18n'
 import { imageUploadEnabled, uploadMedia } from '../cloudinary'
@@ -70,8 +70,10 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
   const [sendingPost, setSendingPost] = useState(null)
   // O chon GIF dang mo cho muc tieu nao: 'post' | postId (so, cho o binh luan) | null
   const [gifTarget, setGifTarget] = useState(null)
-  // GIF/anh dinh kem cho o binh luan tung bai: { [postId]: url }
+  // GIF/anh/video dinh kem cho o binh luan tung bai: { [postId]: url }
   const [commentImage, setCommentImage] = useState({})
+  const [commentUploading, setCommentUploading] = useState(null) // postId dang tai media
+  const commentFileRefs = useRef({}) // input file an, moi bai mot cai
 
   const errMap = {
     post_empty: t('forum_err_empty'),
@@ -152,6 +154,23 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
       setError(errMap[err.message] || err.message)
     } finally {
       setUploading(false)
+    }
+  }
+
+  // Tai anh/video dinh kem cho binh luan (dung chung cho ca tra loi)
+  const pickCommentMedia = async (postId, e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setError(null)
+    setCommentUploading(postId)
+    try {
+      const url = await uploadMedia(file)
+      setCommentImage((m) => ({ ...m, [postId]: url }))
+    } catch (err) {
+      setError(errMap[err.message] || err.message)
+    } finally {
+      setCommentUploading(null)
     }
   }
 
@@ -338,10 +357,12 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                 <BadgeFlair code={c.authorBadge} />
               </button>
               {c.content && <span className="small" style={{ overflowWrap: 'anywhere' }}>{renderMentions(c.content, onSelectUser)}</span>}
-              {c.imageUrl && (
+              {c.imageUrl && (isVideoUrl(c.imageUrl) ? (
+                <video src={c.imageUrl} controls preload="metadata" className="ft-comment-image" />
+              ) : (
                 <img src={c.imageUrl} alt="" loading="lazy" className="ft-comment-image"
                   role="button" onClick={() => setLightbox(c.imageUrl)} />
-              )}
+              ))}
             </div>
 
             <div className="ft-comment-tools">
@@ -566,10 +587,14 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                       </button>
                     </div>
                   )}
-                  {/* GIF/anh dinh kem dang cho gui */}
+                  {/* GIF/anh/video dinh kem dang cho gui */}
                   {commentImage[p.id] && (
                     <div className="ft-comment-attach">
-                      <img src={commentImage[p.id]} alt="" />
+                      {isVideoUrl(commentImage[p.id]) ? (
+                        <video src={commentImage[p.id]} controls />
+                      ) : (
+                        <img src={commentImage[p.id]} alt="" />
+                      )}
                       <button type="button" className="ft-comment-attach-x"
                         onClick={() => setCommentImage((m) => ({ ...m, [p.id]: null }))} aria-label="X">✕</button>
                     </div>
@@ -588,6 +613,20 @@ export default function Forum({ token, myName, myAvatar, myUserId, isAdmin, focu
                       onChange={(val) => setCommentText((m) => ({ ...m, [p.id]: val }))}
                       onKeyDown={(e) => e.key === 'Enter' && !e.repeat && submitComment(p.id)}
                     />
+                    {imageUploadEnabled() && (
+                      <>
+                        <button type="button" className="ft-gif-open-btn flex-shrink-0"
+                          disabled={commentUploading === p.id}
+                          onClick={() => commentFileRefs.current[p.id]?.click()}
+                          title={t('forum_add_image')}>
+                          {commentUploading === p.id ? '…' : '🖼️'}
+                        </button>
+                        <input type="file" hidden
+                          accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
+                          ref={(el) => { commentFileRefs.current[p.id] = el }}
+                          onChange={(e) => pickCommentMedia(p.id, e)} />
+                      </>
+                    )}
                     {giphyEnabled() && (
                       <button type="button" className="ft-gif-open-btn flex-shrink-0"
                         onClick={() => setGifTarget(p.id)}>
