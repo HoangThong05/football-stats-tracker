@@ -4,7 +4,7 @@ import { API_BASE } from './api'
 /** Tran dang da: football-data.org dung 3 trang thai nay. */
 export const LIVE_STATUSES = new Set(['LIVE', 'IN_PLAY', 'PAUSED'])
 
-const REFRESH_MS = 60_000
+const REFRESH_MS = 120_000
 
 /** Tu dau ngay hom nay den dau ngay mai, theo gio may nguoi dung. */
 function dayRange() {
@@ -40,7 +40,8 @@ export function useTodayMatches() {
     }
 
     load()
-    const timer = setInterval(load, REFRESH_MS)
+    // Bo qua khi tab an -> khong goi DB suot ngay khi nguoi dung khong nhin (do compute Neon)
+    const timer = setInterval(() => { if (!document.hidden) load() }, REFRESH_MS)
     return () => {
       cancelled = true
       clearInterval(timer)

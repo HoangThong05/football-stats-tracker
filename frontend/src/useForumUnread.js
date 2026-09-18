@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from './api'
 
 const SEEN_KEY = 'ft_forum_seen'
-const REFRESH_MS = 60_000
+const REFRESH_MS = 180_000
 
 /**
  * Dem bai va binh luan moi ke tu lan cuoi nguoi dung mo dien dan.

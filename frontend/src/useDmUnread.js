@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { API_BASE, authHeaders } from './api'
 
-const REFRESH_MS = 30_000
+const REFRESH_MS = 90_000
 
 /**
  * So tin nhan rieng chua doc - cho chấm do tren nav.

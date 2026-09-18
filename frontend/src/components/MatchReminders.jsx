@@ -19,8 +19,8 @@ const BADGE_WINDOW_HOURS = 48
  * - SLOW (60s): thu it doi - nhac tran, admin go bai, "nhat tuan", huy hieu.
  * Deu doc DB (khong ton han muc API), va deu dung khi tab an.
  */
-const FAST_MS = 10 * 1000
-const SLOW_MS = 60 * 1000
+const FAST_MS = 45 * 1000
+const SLOW_MS = 180 * 1000
 const SEEN_KEY = 'ft_seen_matches'
 
 /*

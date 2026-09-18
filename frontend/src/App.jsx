@@ -280,7 +280,7 @@ export default function App() {
       .then(applyMaintenance)
       .catch(() => {});
     load();
-    const id = setInterval(() => { if (!document.hidden) load(); }, 15000);
+    const id = setInterval(() => { if (!document.hidden) load(); }, 60000);
     // Admin gat cong tac -> cap nhat NGAY tren may admin, khong doi poll
     const onChange = (e) => applyMaintenance(e.detail);
     window.addEventListener("ft-maintenance-changed", onChange);
@@ -323,7 +323,7 @@ export default function App() {
       .then((list) => setLatestAnn(Array.isArray(list) && list.length ? list[0] : null))
       .catch(() => {});
     load();
-    const id = setInterval(() => { if (!document.hidden) load(); }, 60000);
+    const id = setInterval(() => { if (!document.hidden) load(); }, 180000);
     return () => clearInterval(id);
   }, [token]);
   const showAnnBanner = latestAnn && latestAnn.id !== annDismissed;
@@ -534,7 +534,7 @@ export default function App() {
     // Ping lai ngay khi quay lai tab, de online cua minh "song" lai nhanh cho ben kia
     const onVisible = () => { if (!document.hidden) ping(); };
     document.addEventListener("visibilitychange", onVisible);
-    const timer = setInterval(ping, 30000);
+    const timer = setInterval(ping, 60000);
     return () => { clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
   }, [token]);
 
