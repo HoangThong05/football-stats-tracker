@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,6 +48,14 @@ public class MatchSyncService {
     private final FootballDataClient client;
     private final MatchFixtureRepository repository;
 
+    /*
+     * Gio bong lan (kickoff) cua cac tran trong cua so dong bo, nap tu syncAll moi 60 phut.
+     * syncLiveCompetitions xem danh sach nay TRONG RAM de biet "co dang gio bong lan khong"
+     * ma KHONG phai truy van DB - nho vay ngoai gio co tran, Neon duoc ngu (do compute-hours).
+     * volatile: syncAll ghi, syncLiveCompetitions doc o hai luong lap lich khac nhau.
+     */
+    private volatile List<Instant> kickoffs = List.of();
+
     public MatchSyncService(FootballDataClient client, MatchFixtureRepository repository) {
         this.client = client;
         this.repository = repository;
@@ -64,15 +73,18 @@ public class MatchSyncService {
         LocalDate from = today.minusDays(PAST_DAYS);
         LocalDate to = today.plusDays(FUTURE_DAYS);
 
+        List<Instant> collected = new ArrayList<>();
         int totalSaved = 0;
         for (String code : COMPETITIONS) {
             try {
-                totalSaved += syncCompetition(code, from, to);
+                totalSaved += syncCompetition(code, from, to, collected);
             } catch (Exception ex) {
                 // 1 giai loi (vd 429 rate-limit) khong duoc lam dung cac giai con lai.
                 log.warn("Dong bo tran that bai cho giai {}: {}", code, ex.getMessage());
             }
         }
+        // Trao doi tham chieu (atomic nho volatile) cho job live doc gio bong lan moi nhat.
+        this.kickoffs = List.copyOf(collected);
         log.info("Dong bo tran hoan tat: luu/cap nhat {} tran.", totalSaved);
     }
 
@@ -93,6 +105,16 @@ public class MatchSyncService {
             fixedDelayString = "${app.sync.live-interval-ms:120000}")
     public void syncLiveCompetitions() {
         Instant now = Instant.now();
+
+        /*
+         * Cong tac trong RAM: neu BAY GIO khong roi vao khung gio tran nao (xem kickoffs
+         * da nap tu syncAll) thi ve ngay - KHONG cham DB. Day la mau chot giup Neon ngu
+         * suot dem va nhung luc khong co bong lan, thay vi bi danh thuc moi 10 phut.
+         */
+        if (!isLiveWindowNow(now)) {
+            return;
+        }
+
         List<String> live = repository.findCompetitionsWithMatchesAround(
                 LIVE_STATUSES, now.minus(LIVE_LOOKBACK), now.plus(LIVE_LOOKAHEAD));
 
@@ -111,8 +133,9 @@ public class MatchSyncService {
         int saved = 0;
         for (String code : batch) {
             try {
-                // Cua so hep: chi hom qua -> ngay mai, du cho tran dang da
-                saved += syncCompetition(code, today.minusDays(1), today.plusDays(1));
+                // Cua so hep: chi hom qua -> ngay mai, du cho tran dang da.
+                // kickoffs do syncAll phu trach nap, o day khong can gom -> truyen null.
+                saved += syncCompetition(code, today.minusDays(1), today.plusDays(1), null);
             } catch (Exception ex) {
                 log.warn("Dong bo truc tiep that bai cho giai {}: {}", code, ex.getMessage());
             }
@@ -120,7 +143,11 @@ public class MatchSyncService {
         log.info("Dong bo truc tiep {} giai {}: cap nhat {} tran.", batch.size(), batch, saved);
     }
 
-    private int syncCompetition(String code, LocalDate from, LocalDate to) {
+    /**
+     * Keo tran cua mot giai ve DB. Neu kickoffSink khac null thi gom them gio bong lan
+     * cua tung tran vao do (syncAll dung de nap cache cong tac live).
+     */
+    private int syncCompetition(String code, LocalDate from, LocalDate to, List<Instant> kickoffSink) {
         MatchesApiResponse response = client.getMatches(code, from, to);
         if (response == null || response.matches() == null) {
             return 0;
@@ -129,9 +156,30 @@ public class MatchSyncService {
         int count = 0;
         for (MatchesApiResponse.Match m : response.matches()) {
             repository.save(toEntity(code, m));
+            if (kickoffSink != null) {
+                try {
+                    kickoffSink.add(Instant.parse(m.utcDate()));
+                } catch (Exception ignore) {
+                    // utcDate hong -> bo qua tran do khoi cache, khong lam vo ca me dong bo
+                }
+            }
             count++;
         }
         return count;
+    }
+
+    /**
+     * BAY GIO co roi vao khung "dang co bong lan" cua tran nao khong - xet trong RAM.
+     * Cua so moi tran: [kickoff - LOOKAHEAD, kickoff + LOOKBACK], trung voi dieu kien
+     * loc o syncLiveCompetitions.
+     */
+    private boolean isLiveWindowNow(Instant now) {
+        for (Instant kickoff : kickoffs) {
+            if (now.isAfter(kickoff.minus(LIVE_LOOKAHEAD)) && now.isBefore(kickoff.plus(LIVE_LOOKBACK))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private MatchFixture toEntity(String code, MatchesApiResponse.Match m) {
