@@ -41,7 +41,7 @@ class MatchSyncLiveTest {
         repository = mock(MatchFixtureRepository.class);
         when(client.getMatches(anyString(), any(), any()))
                 .thenReturn(new MatchesApiResponse(List.of()));
-        service = new MatchSyncService(client, repository);
+        service = new MatchSyncService(client, repository, mock(PredictionScoringService.class));
     }
 
     private void dangCoBongLan(String... codes) {

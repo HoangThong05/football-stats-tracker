@@ -50,6 +50,7 @@ public class MatchSyncService {
 
     private final FootballDataClient client;
     private final MatchFixtureRepository repository;
+    private final PredictionScoringService scoringService;
 
     /*
      * Gio bong lan (kickoff) cua cac tran trong cua so dong bo, nap tu syncAll moi 60 phut.
@@ -58,10 +59,16 @@ public class MatchSyncService {
      * volatile: syncAll ghi, syncLiveCompetitions doc o hai luong lap lich khac nhau.
      */
     private volatile List<Instant> kickoffs = List.of();
+    // syncAll da nap lich lan nao chua. Khi CHUA nap (vua khoi dong), khong duoc dung cache
+    // rong de bo qua dong bo live - co the dang co tran live ma minh chua biet. Chi khi DA nap
+    // ma van rong (vd trai mua) moi thuc su "khong co gi de dong bo".
+    private volatile boolean kickoffsLoaded = false;
 
-    public MatchSyncService(FootballDataClient client, MatchFixtureRepository repository) {
+    public MatchSyncService(FootballDataClient client, MatchFixtureRepository repository,
+                            PredictionScoringService scoringService) {
         this.client = client;
         this.repository = repository;
+        this.scoringService = scoringService;
     }
 
     /**
@@ -88,6 +95,7 @@ public class MatchSyncService {
         }
         // Trao doi tham chieu (atomic nho volatile) cho job live doc gio bong lan moi nhat.
         this.kickoffs = List.copyOf(collected);
+        this.kickoffsLoaded = true;
         log.info("Dong bo tran hoan tat: luu/cap nhat {} tran.", totalSaved);
     }
 
@@ -179,6 +187,16 @@ public class MatchSyncService {
             }
         }
         log.info("Sua trang thai tran cu: {} giai {}, cap nhat {} tran.", stale.size(), stale, saved);
+
+        // Vua co tran chuyen sang FINISHED -> cham diem NGAY trong luot nay, khong bat nguoi
+        // dung doi den luot cham dinh ky ke tiep (toi 60 phut sau) moi thay diem/chuoi cap nhat.
+        if (saved > 0) {
+            try {
+                scoringService.scoreFinishedMatches();
+            } catch (Exception ex) {
+                log.warn("Cham diem bu sau khi sua tran cu that bai: {}", ex.getMessage());
+            }
+        }
     }
 
     /**
@@ -212,6 +230,10 @@ public class MatchSyncService {
      * loc o syncLiveCompetitions.
      */
     private boolean isLiveWindowNow(Instant now) {
+        // Chua tung nap lich (vua khoi dong) -> dong bo cho an toan, dung bo lo tran dang da.
+        if (!kickoffsLoaded) {
+            return true;
+        }
         for (Instant kickoff : kickoffs) {
             if (now.isAfter(kickoff.minus(LIVE_LOOKAHEAD)) && now.isBefore(kickoff.plus(LIVE_LOOKBACK))) {
                 return true;
