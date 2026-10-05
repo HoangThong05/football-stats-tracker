@@ -63,7 +63,45 @@
 <link rel="apple-touch-icon" href="/icon-192.png" />
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      Splash hien NGAY khi mo trang (truoc ca khi React chay) -> het man hinh trang chop.
+      React.createRoot().render() se thay toan bo noi dung #root khi app dung xong, nen
+      splash tu bien mat, khong can go bang tay. Thuan HTML/CSS, khong goi request nao.
+    -->
+    <div id="root">
+      <div id="boot-splash">
+        <div class="boot-ball">⚽</div>
+        <div class="boot-text">Đang tải… chờ xíu nhé ⚽</div>
+      </div>
+    </div>
+    <style>
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        background: #0F3D26;
+        color: #fff;
+        font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+        z-index: 9999;
+      }
+      #boot-splash .boot-ball {
+        font-size: 56px;
+        line-height: 1;
+        animation: boot-spin 1.1s linear infinite;
+      }
+      #boot-splash .boot-text {
+        font-size: 15px;
+        font-weight: 500;
+        opacity: 0.9;
+      }
+      @keyframes boot-spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

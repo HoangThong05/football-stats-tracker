@@ -264,6 +264,18 @@ export default function App() {
     return () => clearTimeout(id);
   }, [loading]);
 
+  /*
+   * Tai qua ~3.5s thuong la do may chu (Render/Neon) dang "ngu day" - lan dau co the
+   * 30-50s. Hien them mot dong tran an de nguoi dung biet ma cho, khong tuong app treo.
+   * Thuan UI, khong goi them request nao.
+   */
+  const [slowLoading, setSlowLoading] = useState(false);
+  useEffect(() => {
+    if (!loading) { setSlowLoading(false); return undefined; }
+    const id = setTimeout(() => setSlowLoading(true), 3500);
+    return () => clearTimeout(id);
+  }, [loading]);
+
   // Che do bao tri (cong khai): admin bat thi nguoi dung thuong bi chan bang man phu kin.
   // Kiem moi 15s de phat hien nhanh khi admin vua bat.
   const sawAppLive = useRef(false); // may chu da xac nhan KHONG bao tri -> nguoi dung dang dung app that
@@ -997,6 +1009,14 @@ export default function App() {
               />
 
               {showLoading && <Loading />}
+              {showLoading && slowLoading && (
+                <div className="text-center text-secondary small mt-2 ft-fade">
+                  Đang tải… chờ xíu nhé ⚽
+                  <div className="mt-1" style={{ opacity: 0.75 }}>
+                    Lần đầu máy chủ khởi động có thể hơi lâu một chút.
+                  </div>
+                </div>
+              )}
               {error && (
                 <div className="alert alert-danger">
                   {t("error_prefix")} {error}
