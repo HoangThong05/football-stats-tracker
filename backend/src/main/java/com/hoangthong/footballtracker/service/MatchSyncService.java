@@ -45,6 +45,9 @@ public class MatchSyncService {
     private static final List<String> LIVE_STATUSES =
             List.of("SCHEDULED", "TIMED", "IN_PLAY", "PAUSED");
 
+    // So ngay nhin lui khi "sua tran cu bi ket trang thai" - xem repairUnfinishedPastMatches.
+    private static final int REPAIR_PAST_DAYS = 30;
+
     private final FootballDataClient client;
     private final MatchFixtureRepository repository;
 
@@ -141,6 +144,41 @@ public class MatchSyncService {
             }
         }
         log.info("Dong bo truc tiep {} giai {}: cap nhat {} tran.", batch.size(), batch, saved);
+    }
+
+    /**
+     * Sua cac tran "da qua gio nhung status van la chua xong" (SCHEDULED/TIMED/IN_PLAY/PAUSED).
+     *
+     * Tinh huong xay ra khi dong bo bi gian doan ngay luc tran dien ra (vd DB het quota) va
+     * tran da troi ra khoi cua so cua syncAll (PAST_DAYS = 2 ngay) truoc khi kip cap nhat ->
+     * ket trang thai cu mai mai, keo theo du doan khong bao gio duoc cham diem.
+     *
+     * Quet {@link #REPAIR_PAST_DAYS} ngay gan nhat; CHI goi API khi that su con tran ket, con
+     * moi thu dung thi khong ton request nao -> nhe DB, hop voi han che quota.
+     */
+    @Scheduled(
+            initialDelayString = "${app.sync.repair-initial-delay-ms:90000}",
+            fixedDelayString = "${app.sync.repair-interval-ms:21600000}")
+    public void repairUnfinishedPastMatches() {
+        Instant now = Instant.now();
+        Instant from = now.minus(Duration.ofDays(REPAIR_PAST_DAYS));
+
+        // Giai co tran DA QUA GIO (utcDate <= now) nhung status van chua xong.
+        List<String> stale = repository.findCompetitionsWithMatchesAround(LIVE_STATUSES, from, now);
+        if (stale.isEmpty()) {
+            return; // moi tran cu da FINISHED dung -> khong goi API, khong ton gi
+        }
+
+        LocalDate today = LocalDate.now();
+        int saved = 0;
+        for (String code : stale) {
+            try {
+                saved += syncCompetition(code, today.minusDays(REPAIR_PAST_DAYS), today.plusDays(1), null);
+            } catch (Exception ex) {
+                log.warn("Sua tran cu that bai cho giai {}: {}", code, ex.getMessage());
+            }
+        }
+        log.info("Sua trang thai tran cu: {} giai {}, cap nhat {} tran.", stale.size(), stale, saved);
     }
 
     /**
