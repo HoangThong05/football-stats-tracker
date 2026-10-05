@@ -147,6 +147,10 @@ export default function MyPredictionsHistory({ token, onBack }) {
                         </div>
                         <span className={pointsBadgeClass(h.points)}>+{h.points} {t('myp_points_suffix')}</span>
                       </>
+                    ) : new Date(h.utcDate) < new Date() ? (
+                      // Da qua gio nhung chua cham diem -> tran chua duoc dong bo ket qua
+                      // (vd dong bo tung chet luc het quota). Job sua tran cu se cham bu.
+                      <span className="badge text-bg-secondary">{t('myp_awaiting_result')}</span>
                     ) : (
                       <span className="badge text-bg-secondary">{t('myp_not_played')}</span>
                     )}
