@@ -12,6 +12,7 @@ import NotificationToggle from './NotificationToggle'
 import OnlineStatusToggle from './OnlineStatusToggle'
 import AccentPicker from './AccentPicker'
 import ProfileStats from './ProfileStats'
+import StreakCard from './StreakCard'
 import FriendsList from './FriendsList'
 import PredictionPointsChart from './PredictionPointsChart'
 
@@ -175,6 +176,11 @@ export default function Profile({ token, userEmail, hasPassword, viaGoogle, disp
 
       {!isAdmin && (
       <>
+      {/* Chuoi du doan dung - an mung khi dat moc moi (ho so cua minh) */}
+      <div className="mb-3">
+        <StreakCard token={token} celebrate />
+      </div>
+
       {/* Thanh tich: huy hieu - bam de ghim/bo ghim canh ten */}
       <Badges badges={badges} onSetFeatured={setFeatured} />
 

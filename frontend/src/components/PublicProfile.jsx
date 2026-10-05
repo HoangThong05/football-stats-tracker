@@ -8,6 +8,7 @@ import { usePresence, presenceTag } from '../usePresence'
 import CoverMedia from './CoverMedia'
 import Loading from './Loading'
 import PointsAreaChart from './PointsAreaChart'
+import StreakCard from './StreakCard'
 
 /**
  * Ho so cong khai cua mot nguoi choi.
@@ -200,6 +201,12 @@ export default function PublicProfile({ userId, token, onBack, onMessage }) {
               )
             })}
           </div>
+        </div>
+      )}
+
+      {!profile.isAdmin && (
+        <div className="mt-3">
+          <StreakCard points={profile.pointsTimeline || []} />
         </div>
       )}
 
