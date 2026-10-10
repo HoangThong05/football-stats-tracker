@@ -32,7 +32,7 @@ public interface LeagueMemberRepository extends JpaRepository<LeagueMember, Long
                lm.user.displayName,
                COALESCE(SUM(p.points), 0),
                COUNT(p),
-               COALESCE(SUM(CASE WHEN p.points = 3 THEN 1 ELSE 0 END), 0),
+               COALESCE(SUM(CASE WHEN p.points = 3 OR p.points = 6 THEN 1 ELSE 0 END), 0),
                lm.user.featuredBadge
         FROM LeagueMember lm
         LEFT JOIN Prediction p ON p.user = lm.user AND p.points IS NOT NULL

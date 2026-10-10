@@ -32,7 +32,8 @@ export default function ProfileStats({ token }) {
 
   const scored = rows.filter((r) => r.points != null)
   const points = scored.reduce((sum, r) => sum + r.points, 0)
-  const exact = scored.filter((r) => r.points === 3).length
+  // x2: trung ti so co the la 3 hoac 6 diem -> dem ca hai, khong chi === 3
+  const exact = scored.filter((r) => r.points === 3 || r.points === 6).length
   // Ti le "co diem", khong phai ti le trung ti so - gom ca doan dung thang/hoa/thua
   const hitRate = scored.length ? Math.round((scored.filter((r) => r.points > 0).length / scored.length) * 100) : 0
 

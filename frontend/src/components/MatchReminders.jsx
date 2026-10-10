@@ -280,17 +280,22 @@ export default function MatchReminders({ token, myUserId, onSelectMatch, onSelec
       )}
       {m.myHomeScore != null && (
         <>
-          {/* Du doan da duoc cham diem -> bao ro DUNG hay SAI, khong chi mot con so */}
-          {m.myPoints != null && (
-            <span className={`d-block fw-semibold ${
-              m.myPoints === 3 ? 'text-success'
-                : m.myPoints === 1 ? 'text-warning' : 'text-danger'
-            }`} style={{ fontSize: '0.72rem' }}>
-              {m.myPoints === 3 ? t('rem_pred_exact')
-                : m.myPoints === 1 ? t('rem_pred_partial') : t('rem_pred_wrong')}
-              {m.myPoints > 0 && <span className="ft-num ms-1">+{m.myPoints}</span>}
-            </span>
-          )}
+          {/* Du doan da duoc cham diem -> bao ro DUNG hay SAI, khong chi mot con so.
+              Luu y x2: diem co the nhan doi nen trung ti so = 3 HOAC 6, dung ket qua = 1 HOAC 2,
+              sai = 0. Phan loai theo gia tri diem (khong chi === 3 / === 1) de khong bi
+              nham du doan da x2 thanh "doan sai". */}
+          {m.myPoints != null && (() => {
+            const exact = m.myPoints === 3 || m.myPoints === 6
+            const partial = m.myPoints === 1 || m.myPoints === 2
+            const cls = exact ? 'text-success' : partial ? 'text-warning' : 'text-danger'
+            const label = exact ? t('rem_pred_exact') : partial ? t('rem_pred_partial') : t('rem_pred_wrong')
+            return (
+              <span className={`d-block fw-semibold ${cls}`} style={{ fontSize: '0.72rem' }}>
+                {label}
+                {m.myPoints > 0 && <span className="ft-num ms-1">+{m.myPoints}</span>}
+              </span>
+            )
+          })()}
           <span className="d-block text-secondary" style={{ fontSize: '0.72rem' }}>
             {t('rem_my_pick')} {m.myHomeScore}-{m.myAwayScore}
           </span>

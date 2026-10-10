@@ -50,8 +50,9 @@ export default function MyPredictionsHistory({ token, onBack }) {
   const pageItems = filtered.slice(pageSafe * PAGE_SIZE, (pageSafe + 1) * PAGE_SIZE)
 
   const pointsBadgeClass = (points) => {
-    if (points === 3) return 'badge text-bg-success'
-    if (points === 1) return 'badge text-bg-warning'
+    // x2: trung ti so = 3 hoac 6, dung ket qua = 1 hoac 2 (khong chi === 3 / === 1)
+    if (points === 3 || points === 6) return 'badge text-bg-success'
+    if (points === 1 || points === 2) return 'badge text-bg-warning'
     return 'badge text-bg-secondary'
   }
 

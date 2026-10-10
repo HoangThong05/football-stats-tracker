@@ -55,7 +55,7 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
     /** Tong hop thanh tich cua 1 user, dung cho ho so cong khai. */
     @Query("SELECT COALESCE(SUM(p.points), 0) AS totalPoints, "
             + "COUNT(p) AS scored, "
-            + "COALESCE(SUM(CASE WHEN p.points = 3 THEN 1 ELSE 0 END), 0) AS exactScores "
+            + "COALESCE(SUM(CASE WHEN p.points = 3 OR p.points = 6 THEN 1 ELSE 0 END), 0) AS exactScores "
             + "FROM Prediction p WHERE p.user.id = :userId AND p.points IS NOT NULL")
     ProfileStatsRow findProfileStats(@Param("userId") Long userId);
 

@@ -335,8 +335,8 @@ if (!token) {
                         </span>
                         <span
                           className={`badge flex-shrink-0 ${
-                            p.points === 3 ? 'text-bg-success'
-                              : p.points === 1 ? 'text-bg-warning'
+                            (p.points === 3 || p.points === 6) ? 'text-bg-success'
+                              : (p.points === 1 || p.points === 2) ? 'text-bg-warning'
                                 : p.points === 0 ? 'text-bg-secondary'
                                   : 'text-bg-light'
                           }`}
