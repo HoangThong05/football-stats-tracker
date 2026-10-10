@@ -344,6 +344,9 @@ if (!token) {
                         >
                           {p.points == null ? '…' : `+${p.points}`}
                         </span>
+                        {(p.points === 2 || p.points === 6) && (
+                          <span className="ft-x2-tag flex-shrink-0" title={t('x2_earned')}>×2</span>
+                        )}
                       </div>
                     ))}
                   </div>

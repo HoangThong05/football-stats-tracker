@@ -293,6 +293,9 @@ export default function MatchReminders({ token, myUserId, onSelectMatch, onSelec
               <span className={`d-block fw-semibold ${cls}`} style={{ fontSize: '0.72rem' }}>
                 {label}
                 {m.myPoints > 0 && <span className="ft-num ms-1">+{m.myPoints}</span>}
+                {(m.myPoints === 2 || m.myPoints === 6) && (
+                  <span className="ft-x2-tag" title={t('x2_earned')}>×2</span>
+                )}
               </span>
             )
           })()}

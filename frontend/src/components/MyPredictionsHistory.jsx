@@ -147,6 +147,9 @@ export default function MyPredictionsHistory({ token, onBack }) {
                           {t('myp_result_prefix')} {h.actualHomeScore}-{h.actualAwayScore}
                         </div>
                         <span className={pointsBadgeClass(h.points)}>+{h.points} {t('myp_points_suffix')}</span>
+                        {(h.points === 2 || h.points === 6) && (
+                          <span className="ft-x2-tag" title={t('x2_earned')}>×2</span>
+                        )}
                       </>
                     ) : new Date(h.utcDate) < new Date() ? (
                       // Da qua gio nhung chua cham diem -> tran chua duoc dong bo ket qua

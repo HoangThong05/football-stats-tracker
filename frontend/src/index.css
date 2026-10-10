@@ -2921,6 +2921,20 @@ video.ft-post-image {
   .ft-confetti-bit { animation-duration: 0.01s; opacity: 0; }
 }
 
+/* Dau hieu diem duoc NHAN DOI nho luot x2 - gan canh so diem o chuong/lich su/mini league */
+.ft-x2-tag {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 5px;
+  border-radius: 6px;
+  font-size: 0.72em;
+  font-weight: 800;
+  line-height: 1.5;
+  color: var(--ft-on-accent, #17130a);
+  background: linear-gradient(90deg, var(--ft-accent-bright), var(--ft-accent));
+  vertical-align: middle;
+}
+
 /* ================= Hop xac nhan ================= */
 .ft-confirm-overlay {
   position: fixed;
