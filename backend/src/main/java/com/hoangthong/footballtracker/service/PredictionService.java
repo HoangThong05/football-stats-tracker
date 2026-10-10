@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.DayOfWeek;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -66,13 +65,14 @@ public class PredictionService {
      * email = null (chua dang nhap) -> myHomeScore/myAwayScore luon null.
      */
     public List<PredictableMatchDto> getUpcomingMatches(String competitionCode, String email) {
-        // An cac tran da lan banh qua 3 gio (chac chan da xong): neu dong bo tung chet, tran
-        // co the ket o status TIMED du da da tu lau -> loc theo GIO de khong lot vao tab Du doan.
-        Instant cutoff = Instant.now().minus(Duration.ofHours(3));
+        // Tab Du doan CHI hien tran CHUA toi gio (con du doan duoc). Tran da lan banh thi an
+        // ngay - loc theo GIO chu khong theo status, de khong phu thuoc nhip dong bo (co the
+        // cham) va khong lot nhung tran ket o status cu (TIMED) du da da tu lau.
+        Instant now = Instant.now();
         List<MatchFixture> matches =
                 matchRepository.findByCompetitionAndStatusInOrderByUtcDateAsc(competitionCode, UPCOMING_STATUSES)
                         .stream()
-                        .filter(m -> m.getUtcDate().isAfter(cutoff))
+                        .filter(m -> m.getUtcDate().isAfter(now))
                         .toList();
 
         Map<Long, Prediction> myPredictions = new HashMap<>();
