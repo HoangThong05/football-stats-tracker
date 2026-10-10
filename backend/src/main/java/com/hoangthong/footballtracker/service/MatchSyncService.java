@@ -152,6 +152,17 @@ public class MatchSyncService {
             }
         }
         log.info("Dong bo truc tiep {} giai {}: cap nhat {} tran.", batch.size(), batch, saved);
+
+        // Trong lan dong bo live nay co the co tran vua chuyen sang FINISHED -> cham diem NGAY
+        // de du doan duoc cong diem trong ~10 phut (nhip live), thay vi doi toi luot cham dinh
+        // ky ke tiep (60 phut). Chay trong cua so co tran -> DB von da thuc, khong ton them.
+        if (saved > 0) {
+            try {
+                scoringService.scoreFinishedMatches();
+            } catch (Exception ex) {
+                log.warn("Cham diem ngay sau dong bo live that bai: {}", ex.getMessage());
+            }
+        }
     }
 
     /**
